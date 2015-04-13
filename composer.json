@@ -1,5 +1,5 @@
 {
-    "name": "cosmologist/php-gears",
+    "name": "cosmologist/gears",
     "type": "library",
     "description": "Collection of useful functions",
     "license": "MIT",
