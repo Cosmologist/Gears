@@ -2,6 +2,9 @@
 
 namespace Cosmologist\Gears\ArrayGears;
 
+/**
+ * Collection of commonly used methods for working with arrays
+ */
 class Common
 {
     /**
