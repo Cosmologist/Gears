@@ -1,8 +1,8 @@
 <?php
 
-namespace Cosmologist\Gears;
+namespace Cosmologist\Gears\ArrayGears;
 
-class ArrayHelper
+class Common
 {
     /**
      * Unset array items by value
