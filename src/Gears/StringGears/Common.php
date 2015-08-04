@@ -8,33 +8,73 @@ namespace Cosmologist\Gears\StringGears;
 class Common
 {
     /**
-     * Search and return string before haystack string
+     * Search(case-sensitive) and return string before haystack string
      *
      * @param string $string String
      * @param string $before Before haystack
      *
      * @return string|false String before haystack string or false
      */
-    public function stringBefore($string, $before)
+    public function strBefore($string, $before)
     {
-        return current(explode($before, $string));
+        if ($pos = strpos($string, $before)) {
+            return substr($string, 0, $pos);
+        }
+
+        return false;
     }
 
 
     /**
-     * Search and return string after haystack string
+     * Search(case-insensitive) and return string before haystack string
+     *
+     * @param string $string String
+     * @param string $before Before haystack
+     *
+     * @return string|false String before haystack string or false
+     */
+    public function striBefore($string, $before)
+    {
+        if ($pos = stripos($string, $before)) {
+            return substr($string, 0, $pos);
+        }
+
+        return false;
+    }
+
+
+    /**
+     * Search(case-sensitive) and return string after haystack string
      *
      * @param string $string String
      * @param string $after After haystack
      *
      * @return string|false String after haystack string or false
      */
-    public function stringAfter($string, $after)
+    public function strAfter($string, $after)
     {
-        $result = explode($after, $string);
-        if (count($result) > 1) {
-            return $result[1];
+        if ($pos = strpos($string, $after)) {
+            return substr($string, $pos+1);
         }
+
+        return false;
+    }
+
+
+    /**
+     * Search(case-insensitive) and return string after haystack string
+     *
+     * @param string $string String
+     * @param string $after After haystack
+     *
+     * @return string|false String after haystack string or false
+     */
+    public function striAfter($string, $after)
+    {
+        if ($pos = stripos($string, $after)) {
+            return substr($string, $pos+1);
+        }
+
         return false;
     }
 }
