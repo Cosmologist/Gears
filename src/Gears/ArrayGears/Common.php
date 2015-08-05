@@ -17,7 +17,7 @@ class Common
      *
      * @return array Array after the items removing
      */
-    public static function unsetValue(&$array, $value)
+    public static function unsetValue($array, $value)
     {
         if(($key = array_search($value, $array)) !== false) {
             unset($array[$key]);
