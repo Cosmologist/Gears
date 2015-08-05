@@ -15,7 +15,7 @@ class Common
      *
      * @return string|false String before haystack string or false
      */
-    public function strBefore($string, $before)
+    public static function strBefore($string, $before)
     {
         if ($pos = strpos($string, $before)) {
             return substr($string, 0, $pos);
@@ -33,7 +33,7 @@ class Common
      *
      * @return string|false String before haystack string or false
      */
-    public function striBefore($string, $before)
+    public static function striBefore($string, $before)
     {
         if ($pos = stripos($string, $before)) {
             return substr($string, 0, $pos);
@@ -51,7 +51,7 @@ class Common
      *
      * @return string|false String after haystack string or false
      */
-    public function strAfter($string, $after)
+    public static function strAfter($string, $after)
     {
         if ($pos = strpos($string, $after)) {
             return substr($string, $pos+1);
@@ -69,7 +69,7 @@ class Common
      *
      * @return string|false String after haystack string or false
      */
-    public function striAfter($string, $after)
+    public static function striAfter($string, $after)
     {
         if ($pos = stripos($string, $after)) {
             return substr($string, $pos+1);
