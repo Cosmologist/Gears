@@ -19,10 +19,36 @@ class Common
      */
     public static function unsetValue($array, $value)
     {
-        if(($key = array_search($value, $array)) !== false) {
+        if (($key = array_search($value, $array)) !== false) {
             unset($array[$key]);
         }
 
         return $array;
+    }
+
+
+    /**
+     * Group array by key value
+     *
+     * @param array $array Array
+     * @param mixed $key Groupping key
+     *
+     * @return array Grouped array
+     */
+    public static function group($array, $key)
+    {
+        $result = array();
+
+        foreach ($array as $item) {
+            if (isset($item[$key])) {
+                if (isset($result[$item[$key]])) {
+                    $result[$item[$key]][] = $item;
+                } else {
+                    $result[$item[$key]] = array($item);
+                }
+            }
+        }
+
+        return $result;
     }
 }
