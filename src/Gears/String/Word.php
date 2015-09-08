@@ -1,11 +1,11 @@
 <?php
 
-namespace Cosmologist\Gears\StringGears;
+namespace Cosmologist\Gears;
 
 /**
  * Collection of commonly used methods for working with words
  */
-class Words
+class Word
 {
     /**
      * Extract words from string

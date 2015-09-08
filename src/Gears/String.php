@@ -1,11 +1,11 @@
 <?php
 
-namespace Cosmologist\Gears\StringGears;
+namespace Cosmologist\Gears;
 
 /**
  * Collection of commonly used methods for working with strings
  */
-class Common
+class String
 {
     /**
      * Search(case-sensitive) and return string before haystack string

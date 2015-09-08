@@ -1,11 +1,11 @@
 <?php
 
-namespace Cosmologist\Gears\ArrayGears;
+namespace Cosmologist\Gears;
 
 /**
- * Collection of commonly used methods for working with arrays
+ * Collection of commonly used methods for working with collections
  */
-class Common
+class Collection
 {
     /**
      * Unset array items by value

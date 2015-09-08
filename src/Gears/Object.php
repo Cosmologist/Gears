@@ -1,13 +1,13 @@
 <?php
 
-namespace Cosmologist\Gears\ObjectGears;
+namespace Cosmologist\Gears;
 
 use Cosmologist\Gears\ObjectGears\Exception\PropertyNotFoundException;
 
 /**
  * Collection of commonly used methods for working with objects
  */
-class Common
+class Object
 {
     /**
      * Return the value of the object property

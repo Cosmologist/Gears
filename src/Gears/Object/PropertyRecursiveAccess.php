@@ -1,8 +1,8 @@
 <?php
 
-namespace Cosmologist\Gears\ObjectGears;
+namespace Cosmologist\Gears\Object;
 
-use Cosmologist\Gears\ObjectGears\Exception\PropertyNotFoundException;
+use Cosmologist\Gears\Object\Exception\PropertyNotFoundException;
 
 /**
  * Collection of methods for recursive access to object properties
