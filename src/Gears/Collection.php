@@ -51,4 +51,17 @@ class Collection
 
         return $result;
     }
+
+
+    /**
+     * Check if array is associative
+     *
+     * @param array $array Array
+     *
+     * @return bool
+     */
+    public static function checkAssoc($array)
+    {
+        return (bool)count(array_filter(array_keys($array), 'is_string'));
+    }
 }
