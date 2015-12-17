@@ -1,6 +1,6 @@
 <?php
 
-namespace AppGear\PlatformBundle\Service\Standard\ArrayType;
+namespace Cosmologist\Gears\Collection;
 
 /**
  * Class able to convert a flat array with parent ID's to a nested tree
@@ -30,14 +30,14 @@ class FlatToTreeConverter
         }
 
         // second pass
-        $root = null;
+        $root = array();
         foreach ($indexed as $id => $row) {
-            $indexed[$row[$parentIdKey]][$childNodesField][$id] =& $indexed[$id];
+            $indexed[$row[$parentIdKey]][$childNodesField][$id] = &$indexed[$id];
             if (!$row[$parentIdKey]) {
-                $root = $id;
+                $root[$id] = &$indexed[$id];
             }
         }
 
-        return array($root => $indexed[$root]);
+        return $root;
     }
 }
