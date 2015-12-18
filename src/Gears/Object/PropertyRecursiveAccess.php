@@ -2,6 +2,7 @@
 
 namespace Cosmologist\Gears\Object;
 
+use Cosmologist\Gears\Object;
 use Cosmologist\Gears\Object\Exception\PropertyNotFoundException;
 
 /**
@@ -38,7 +39,7 @@ class PropertyRecursiveAccess
     {
         $result = [];
 
-        $items = Common::get($object, $propertyName);
+        $items = Object::get($object, $propertyName);
 
         if (!is_array($items)) {
             $items = [$items];
@@ -88,7 +89,7 @@ class PropertyRecursiveAccess
 
         $items = self::get($object, $propertyName);
         foreach ($items as $item) {
-            if (Common::get($item, $propertyName) === null) {
+            if (Object::get($item, $propertyName) === null) {
                 $result[] = $item;
             }
         }
