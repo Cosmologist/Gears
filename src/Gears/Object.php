@@ -39,6 +39,6 @@ class Object
             }
         }
 
-        throw new PropertyNotFoundException;
+        throw new PropertyNotFoundException(sprintf('Property #%s does not exists', $propertyName));
     }
 }
