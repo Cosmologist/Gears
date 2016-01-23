@@ -54,46 +54,4 @@ class PropertyRecursiveAccess
 
         return $result;
     }
-
-
-    /**
-     * Get the final values of a property recursively
-     *
-     * The final value - the value that contains the null in the property
-     *
-     * <code>
-     * $grandfather = new Person();
-     *
-     * $dad = new Person();
-     * $dad->setParent($grandfather);
-     *
-     * $i = new Person();
-     * $i->setParent($dad);
-     *
-     * $parents = PropertyRecursiveAccess::get($i, 'parent');
-     *
-     * var_dump($parents); // Return the objects of dad and grandfather
-     * </code>
-     *
-     *
-     * @param object $object Object
-     * @param string $propertyName Property name
-     *
-     * @return array
-     *
-     * @throws PropertyNotFoundException When the the property is not exist
-     */
-    public static function getLast($object, $propertyName)
-    {
-        $result = [];
-
-        $items = self::get($object, $propertyName);
-        foreach ($items as $item) {
-            if (Object::get($item, $propertyName) === null) {
-                $result[] = $item;
-            }
-        }
-
-        return $result;
-    }
 }
