@@ -27,28 +27,25 @@ class PropertyRecursiveAccess
      * var_dump($parents); // Return the objects of dad and grandfather
      * </code>
      *
-     *
      * @param object $object Object
      * @param string $propertyName Property name
+     * @param bool $addSourceObjectToResult Also add source object to result
      *
      * @return array
      *
-     * @throws PropertyNotFoundException When the the property is not exist
      */
-    public static function get($object, $propertyName)
+    public static function get($object, $propertyName, $addSourceObjectToResult = false)
     {
-        $result = [];
+        $result = $addSourceObjectToResult ? [$object] : [];
 
         $items = Object::get($object, $propertyName);
-
         if (!is_array($items)) {
             $items = [$items];
         }
 
         foreach ($items as $item) {
             if ($item !== null) {
-                $result[] = $item;
-                $result = array_merge($result, self::get($item, $propertyName));
+                $result = array_merge($result, self::get($item, $propertyName, true));
             }
         }
 
