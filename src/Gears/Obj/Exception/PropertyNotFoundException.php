@@ -1,6 +1,6 @@
 <?php
 
-namespace Cosmologist\Gears\Object\Exception;
+namespace Cosmologist\Gears\Obj\Exception;
 
 /**
  * This exception is thrown whenever the property of an object is not exist.

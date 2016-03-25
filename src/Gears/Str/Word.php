@@ -1,6 +1,6 @@
 <?php
 
-namespace Cosmologist\Gears\String;
+namespace Cosmologist\Gears\Str;
 
 /**
  * Collection of commonly used methods for working with words

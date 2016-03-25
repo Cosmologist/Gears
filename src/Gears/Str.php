@@ -5,7 +5,7 @@ namespace Cosmologist\Gears;
 /**
  * Collection of commonly used methods for working with strings
  */
-class String
+class Str
 {
     /**
      * Search(case-sensitive) and return string before haystack string

@@ -3,9 +3,9 @@
 namespace Cosmologist\Gears;
 
 /**
- * Collection of commonly used methods for working with collections
+ * Collection of commonly used methods for working with arrays
  */
-class Collection
+class Arr
 {
     /**
      * Unset array items by value
@@ -26,12 +26,11 @@ class Collection
         return $array;
     }
 
-
     /**
      * Group array by key value
      *
      * @param array $array Array
-     * @param mixed $key Groupping key
+     * @param mixed $key   Group key
      *
      * @return array Grouped array
      */
@@ -52,7 +51,6 @@ class Collection
         return $result;
     }
 
-
     /**
      * Check if array is associative
      *
@@ -62,6 +60,6 @@ class Collection
      */
     public static function checkAssoc($array)
     {
-        return (bool)count(array_filter(array_keys($array), 'is_string'));
+        return (bool) count(array_filter(array_keys($array), 'is_string'));
     }
 }

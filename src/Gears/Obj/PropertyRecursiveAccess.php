@@ -1,9 +1,8 @@
 <?php
 
-namespace Cosmologist\Gears\Object;
+namespace Cosmologist\Gears\Obj;
 
-use Cosmologist\Gears\Object;
-use Cosmologist\Gears\Object\Exception\PropertyNotFoundException;
+use Cosmologist\Gears\Obj;
 
 /**
  * Collection of methods for recursive access to object properties
@@ -38,7 +37,7 @@ class PropertyRecursiveAccess
     {
         $result = $addSourceObjectToResult ? [$object] : [];
 
-        $items = Object::get($object, $propertyName);
+        $items = Obj::get($object, $propertyName);
         if (!is_array($items)) {
             $items = [$items];
         }
