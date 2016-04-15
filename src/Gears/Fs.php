@@ -35,4 +35,21 @@ class Fs
         return preg_replace('#' . preg_quote($directorySeparator) . '+#', $directorySeparator,
             implode($directorySeparator, $paths));
     }
+
+    /**
+     * Normalize path separators
+     *
+     * Function replace path separators by separator specific for the current OS
+     *
+     * @param string $path The file path
+     *
+     * @return string
+     */
+    public static function normalizeSeparators($path)
+    {
+        $incorrectSeparator = (DIRECTORY_SEPARATOR === self::UNIX_DIRECTORY_SEPARATOR) ?
+            self::WINDOWS_DIRECTORY_SEPARATOR : self::UNIX_DIRECTORY_SEPARATOR;
+
+        return str_replace($incorrectSeparator, DIRECTORY_SEPARATOR, $path);
+    }
 }
