@@ -30,7 +30,7 @@ class Fs
      *
      * @return string Path
      */
-    public static function joinPaths(array $paths, $directorySeparator=self::UNIX_DIRECTORY_SEPARATOR)
+    public static function joinPaths(array $paths, $directorySeparator=DIRECTORY_SEPARATOR)
     {
         return preg_replace('#' . preg_quote($directorySeparator) . '+#', $directorySeparator,
             implode($directorySeparator, $paths));
