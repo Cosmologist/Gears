@@ -32,10 +32,13 @@ class CamelSnakeCase
      */
     public static function camelToSnake($value)
     {
-        return preg_replace_callback(
-            '/[A-Z]/',
-            create_function('$match', 'return "_" . strtolower($match[0]);'),
+        $value = preg_replace_callback(
+            '/(.)([A-Z])/',
+            function($matches) {
+                return $matches[1] . '_' . strtolower($matches[2]);
+            },
             $value
         );
+        return lcfirst($value);
     }
 }
