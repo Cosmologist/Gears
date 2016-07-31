@@ -2,7 +2,9 @@
 
 namespace Cosmologist\Gears\Obj;
 
+use Cosmologist\Gears\Arr;
 use Cosmologist\Gears\Obj;
+use Traversable;
 
 /**
  * Collection of methods for recursive access to object properties
@@ -38,13 +40,13 @@ class PropertyRecursiveAccess
         $result = $addSourceObjectToResult ? [$object] : [];
 
         $items = Obj::get($object, $propertyName);
-        if (!is_array($items)) {
+        if (!(is_array($items) || $items instanceof Traversable)) {
             $items = [$items];
         }
 
         foreach ($items as $item) {
             if ($item !== null) {
-                $result = array_merge($result, self::get($item, $propertyName, true));
+                $result = Arr::merge($result, self::get($item, $propertyName, true));
             }
         }
 
