@@ -5,7 +5,7 @@ namespace Cosmologist\Gears;
 /**
  * Collection of commonly used methods for working with filesystem
  */
-class Fs
+class FileSystem
 {
     /**
      * Directory separator in the *nix systems
@@ -22,7 +22,7 @@ class Fs
      *
      * Example:
      * <code>
-     * Fs::joinPaths('a/', '/b/', '/c', 'd'); // Return a/b/c/d
+     * FileSystem::joinPaths('a/', '/b/', '/c', 'd'); // Return a/b/c/d
      * </code>
      *
      * @param array  $paths Paths

@@ -1,9 +1,9 @@
 <?php
 
-namespace Cosmologist\Gears\Obj;
+namespace Cosmologist\Gears\ObjectType;
 
-use Cosmologist\Gears\Arr;
-use Cosmologist\Gears\Obj;
+use Cosmologist\Gears\ArrayType;
+use Cosmologist\Gears\ObjectType;
 use Traversable;
 
 /**
@@ -39,14 +39,14 @@ class PropertyRecursiveAccess
     {
         $result = $addSourceObjectToResult ? [$object] : [];
 
-        $items = Obj::get($object, $propertyName);
+        $items = ObjectType::get($object, $propertyName);
         if (!(is_array($items) || $items instanceof Traversable)) {
             $items = [$items];
         }
 
         foreach ($items as $item) {
             if ($item !== null) {
-                $result = Arr::merge($result, self::get($item, $propertyName, true));
+                $result = ArrayType::merge($result, self::get($item, $propertyName, true));
             }
         }
 

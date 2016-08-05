@@ -1,6 +1,6 @@
 <?php
 
-namespace Cosmologist\Gears\Str;
+namespace Cosmologist\Gears\StringType;
 
 /**
  * Collection of methods for manipulate with CamelCase and snake_case strings

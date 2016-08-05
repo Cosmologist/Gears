@@ -1,6 +1,6 @@
 <?php
 
-namespace Cosmologist\Gears\Arr;
+namespace Cosmologist\Gears\ArrayType;
 
 /**
  * Class able to convert a flat array with parent ID's to a nested tree

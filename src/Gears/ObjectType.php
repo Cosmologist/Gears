@@ -2,12 +2,12 @@
 
 namespace Cosmologist\Gears;
 
-use Cosmologist\Gears\Obj\Exception\PropertyNotFoundException;
+use Cosmologist\Gears\ObjectType\Exception\PropertyNotFoundException;
 
 /**
  * Collection of commonly used methods for working with objects
  */
-class Obj
+class ObjectType
 {
     /**
      * Return the value of the object property

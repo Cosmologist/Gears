@@ -6,7 +6,7 @@ use Traversable;
 /**
  * Collection of commonly used methods for working with arrays
  */
-class Arr
+class ArrayType
 {
     /**
      * Unset array items by value
