@@ -5,7 +5,8 @@
     "license": "MIT",
 
     "require": {
-        "php": ">=5.3.0"
+        "php": ">=5.3.0",
+        "symfony/property-access": "^2.8||^3.1"
     },
 
     "autoload": {
@@ -13,4 +14,4 @@
             "Cosmologist\\": "src/"
         }
     }
-} 
+}

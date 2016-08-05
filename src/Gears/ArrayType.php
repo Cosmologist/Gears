@@ -1,6 +1,9 @@
 <?php
 
 namespace Cosmologist\Gears;
+
+use Symfony\Component\PropertyAccess\Exception\AccessException;
+use Symfony\Component\PropertyAccess\PropertyAccessor;
 use Traversable;
 
 /**
@@ -84,5 +87,42 @@ class ArrayType
         }
 
         return array_merge($array1, $array2);
+    }
+
+    /**
+     * Sort the array by contents
+     *
+     * @param array  $array              The array to sort
+     * @param string $propertyPath       The path to the sort element in the collection item
+     * @param bool   $preserveKeys       Preserve array keys or not?
+     * @param string $comparisonFunction The comparison function name (strcmp, strnatcmp etc.)
+     *
+     * @return array Sorted array
+     */
+    public static function sort($array, $propertyPath, $preserveKeys = false, $comparisonFunction = null)
+    {
+        $sortFunction     = $preserveKeys ? 'uasort' : 'usort';
+        $propertyAccessor = new PropertyAccessor();
+
+        $sortFunction($array, function ($left, $right) use ($propertyAccessor, $propertyPath, $comparisonFunction) {
+            try {
+                $leftValue = $propertyAccessor->getValue($left, $propertyPath);
+            } catch (AccessException $e) {
+                $leftValue = null;
+            }
+            try {
+                $rightValue = $propertyAccessor->getValue($right, $propertyPath);
+            } catch (AccessException $e) {
+                $rightValue = null;
+            }
+
+            if ($comparisonFunction !== null) {
+                return $comparisonFunction($leftValue, $rightValue);
+            }
+
+            return ($leftValue < $rightValue) ? -1 : 1;
+        });
+
+        return $array;
     }
 }
