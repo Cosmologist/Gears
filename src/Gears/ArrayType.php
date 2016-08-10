@@ -158,4 +158,28 @@ class ArrayType
             }
         );
     }
+
+    /**
+     * Collects the items by path from an array
+     *
+     * @param array  $array        The input array
+     * @param string $propertyPath The path to the item for collecting
+     *
+     * @return array
+     */
+    public static function collect($array, $propertyPath)
+    {
+        $propertyAccessor = new PropertyAccessor();
+
+        return array_map(
+            function ($item) use ($propertyAccessor, $propertyPath) {
+                try {
+                    return $propertyAccessor->getValue($item, $propertyPath);
+                } catch (AccessException $e) {
+                    return null;
+                }
+            },
+            $array
+        );
+    }
 }
