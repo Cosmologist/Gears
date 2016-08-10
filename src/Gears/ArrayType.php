@@ -93,7 +93,7 @@ class ArrayType
      * Sort the array by contents
      *
      * @param array  $array              The array to sort
-     * @param string $propertyPath       The path to the sort element in the collection item
+     * @param string $propertyPath       The path to the sort element in the collection
      * @param bool   $preserveKeys       Preserve array keys or not?
      * @param string $comparisonFunction The comparison function name (strcmp, strnatcmp etc.)
      *
@@ -124,5 +124,38 @@ class ArrayType
         });
 
         return $array;
+    }
+
+    /**
+     * Remove the items with duplicates values from an array
+     *
+     * @param array  $array        The input array
+     * @param string $propertyPath The path to the unique element in the collection
+     *
+     * @return array
+     */
+    public static function unique($array, $propertyPath)
+    {
+        $propertyAccessor = new PropertyAccessor();
+        $uniqueValues     = [];
+
+        return array_filter(
+            $array,
+            function ($item) use ($propertyAccessor, $propertyPath, &$uniqueValues) {
+                try {
+                    $value = $propertyAccessor->getValue($item, $propertyPath);
+                } catch (AccessException $e) {
+                    $value = null;
+                }
+
+                if (!in_array($value, $uniqueValues)) {
+                    $uniqueValues[] = $value;
+
+                    return true;
+                }
+
+                return false;
+            }
+        );
     }
 }
