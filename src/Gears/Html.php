@@ -17,7 +17,7 @@ class Html
      * then left elements will be truncated
      *
      * @param string $html   Html to truncate.
-     * @param int    $limit  Length of returned string, including ellipsis.
+     * @param int    $limit  Length of returned string.
      * @param string $ending Will be used as ending and appended to the trimmed string
      *
      * @return string Truncated HTML
@@ -40,7 +40,7 @@ class Html
         foreach ($bodyNode->childNodes as $node) {
 
             // Collect the node outerHtml
-            $result .= $node->ownerDocument->saveXML($node);
+            $result .= $node->ownerDocument->saveHTML($node);
 
             // Increase summary length by the node text length
             $length += strlen($node->textContent);
