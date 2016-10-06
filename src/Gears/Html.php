@@ -3,6 +3,7 @@
 namespace Cosmologist\Gears;
 
 use DOMDocument;
+use Symfony\Component\DomCrawler\Crawler;
 
 /**
  * Collection of commonly used methods for working with HTML
@@ -10,14 +11,19 @@ use DOMDocument;
 class Html
 {
     /**
-     * Truncates html with tags preserving.
+     * Paragraph tag name
+     */
+    const TAG_PARAGRAPH = 'p';
+
+    /**
+     * Truncates html with tags preserving
      *
      * HTML truncating based on the roots html elements.
      * The algorithm collects the roots html elements, when text length of collected elements reach the limit,
      * then left elements will be truncated
      *
-     * @param string $html   Html to truncate.
-     * @param int    $limit  Length of returned string.
+     * @param string $html   Html to truncate
+     * @param int    $limit  Length of returned string
      * @param string $ending Will be used as ending and appended to the trimmed string
      *
      * @return string Truncated HTML
@@ -57,5 +63,28 @@ class Html
         }
 
         return $result;
+    }
+
+    /**
+     * Extracts short description from HTML
+     *
+     * We believe that the description it is content of first paragraph
+     *
+     * @param string $html            HTML
+     * @param string $contentSelector CSS-selector of content node
+     *
+     * @return string|null
+     */
+    public static function extractDescription($html, $contentSelector = '')
+    {
+        $crawler = new Crawler();
+        $crawler->addHtmlContent($html, 'UTF-8');
+
+        foreach ($crawler->filter($contentSelector . ' ' . self::TAG_PARAGRAPH) as $paragraph) {
+            /** DOMElement $content */
+            return $paragraph->ownerDocument->saveHTML($paragraph);
+        }
+
+        return null;
     }
 }
