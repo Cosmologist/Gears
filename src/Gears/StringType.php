@@ -8,82 +8,48 @@ namespace Cosmologist\Gears;
 class StringType
 {
     /**
-     * Search(case-sensitive) and return string before haystack string
+     * Search and return string before haystack string
      *
-     * @param string $string String
-     * @param string $before Before haystack
+     * @param string $string        String
+     * @param string $before        Before haystack
+     * @param bool   $caseSensitive Case-sensitive search?
      *
-     * @return string|false String before haystack string or false
+     * @return false|string String before haystack string or false
      */
-    public static function strBefore($string, $before)
+    public static function strBefore($string, $before, $caseSensitive = true)
     {
-        if ($pos = strpos($string, $before)) {
+        $pos = $caseSensitive ? strpos($string, $before) : stripos($string, $before);
+        if ($pos !== false) {
             return substr($string, 0, $pos);
         }
 
         return false;
     }
-
-
-    /**
-     * Search(case-insensitive) and return string before haystack string
-     *
-     * @param string $string String
-     * @param string $before Before haystack
-     *
-     * @return string|false String before haystack string or false
-     */
-    public static function striBefore($string, $before)
-    {
-        if ($pos = stripos($string, $before)) {
-            return substr($string, 0, $pos);
-        }
-
-        return false;
-    }
-
 
     /**
      * Search(case-sensitive) and return string after haystack string
      *
-     * @param string $string String
-     * @param string $after After haystack
+     * @param string $string        String
+     * @param string $after         After haystack
+     * @param bool   $caseSensitive Case-sensitive search?
      *
      * @return string|false String after haystack string or false
      */
-    public static function strAfter($string, $after)
+    public static function strAfter($string, $after, $caseSensitive = true)
     {
-        if ($pos = strpos($string, $after)) {
-            return substr($string, $pos+1);
+        $pos = $caseSensitive ? strpos($string, $after) : stripos($string, $after);
+        if ($pos !== false) {
+            return substr($string, $pos + 1);
         }
 
         return false;
     }
-
-
-    /**
-     * Search(case-insensitive) and return string after haystack string
-     *
-     * @param string $string String
-     * @param string $after After haystack
-     *
-     * @return string|false String after haystack string or false
-     */
-    public static function striAfter($string, $after)
-    {
-        if ($pos = stripos($string, $after)) {
-            return substr($string, $pos+1);
-        }
-
-        return false;
-    }
-
 
     /**
      * Determine if a given string starts with a given substring.
      *
-     * @param  string  $haystack
-     * @param  string|array  $needles
+     * @param  string       $haystack
+     * @param  string|array $needles
      *
      * @see Illuminate/Support/Str
      *
@@ -91,20 +57,18 @@ class StringType
      */
     public static function startsWith($haystack, $needles)
     {
-        foreach ((array) $needles as $needle)
-        {
+        foreach ((array) $needles as $needle) {
             if ($needle != '' && strpos($haystack, $needle) === 0) return true;
         }
 
         return false;
     }
 
-
     /**
      * Determine if a given string ends with a given substring.
      *
-     * @param  string  $haystack
-     * @param  string|array  $needles
+     * @param  string       $haystack
+     * @param  string|array $needles
      *
      * @see Illuminate/Support/Str
      *
@@ -112,8 +76,7 @@ class StringType
      */
     public static function endsWith($haystack, $needles)
     {
-        foreach ((array) $needles as $needle)
-        {
+        foreach ((array) $needles as $needle) {
             if ((string) $needle === substr($haystack, -strlen($needle))) return true;
         }
 
