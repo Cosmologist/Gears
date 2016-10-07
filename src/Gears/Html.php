@@ -66,6 +66,42 @@ class Html
     }
 
     /**
+     * Decorates nodes that contains another nodes by attributes and class
+     *
+     * Nodes selected by selector will be decorated if contain nodes by another selector.
+     *
+     * Cases of use like cases of use the :has pseudo-selector
+     *
+     * @see https://drafts.csswg.org/selectors-4/#has-pseudo Selector Level 4
+     *
+     * @param string $html       Html for processing
+     * @param string $selector   CSS-selector for children nodes
+     * @param array  $attributes Attributes that will be set
+     * @param string $class      Class that will be appended
+     *
+     * @return string
+     */
+    public static function decorateParent($html, $selector, $attributes = [], $class = '')
+    {
+        $crawler = new Crawler();
+        $crawler->addHtmlContent($html, 'UTF-8');
+
+        foreach ($crawler->filter($selector) as $node) {
+            $parent = $node->parentNode;
+            foreach ($attributes as $name => $value) {
+                $parent->setAttribute($name, $value);
+            }
+            if ($parent->hasAttribute('class')) {
+                $parent->setAttribute('class', $parent->getAttribute('class') . ' ' . $class);
+            } else {
+                $parent->setAttribute('class', $class);
+            }
+        }
+
+        return $crawler->html();
+    }
+
+    /**
      * Extracts short description from HTML
      *
      * We believe that the description it is content of first paragraph
