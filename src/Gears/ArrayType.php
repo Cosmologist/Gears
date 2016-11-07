@@ -23,6 +23,8 @@ class ArrayType
      */
     public static function unsetValue($array, $value)
     {
+        $array = self::cast($array);
+
         if (($key = array_search($value, $array)) !== false) {
             unset($array[$key]);
         }
@@ -86,7 +88,7 @@ class ArrayType
             $array2 = iterator_to_array($array1);
         }
 
-        return array_merge($array1, $array2);
+        return array_merge(self::cast($array1), self::cast($array2));
     }
 
     /**
@@ -101,6 +103,8 @@ class ArrayType
      */
     public static function sort($array, $propertyPath, $preserveKeys = false, $comparisonFunction = null)
     {
+        $array = self::cast($array);
+
         $sortFunction     = $preserveKeys ? 'uasort' : 'usort';
         $propertyAccessor = new PropertyAccessor();
 
@@ -136,6 +140,8 @@ class ArrayType
      */
     public static function unique($array, $propertyPath)
     {
+        $array = self::cast($array);
+
         $propertyAccessor = new PropertyAccessor();
         $uniqueValues     = [];
 
@@ -169,6 +175,8 @@ class ArrayType
      */
     public static function collect($array, $propertyPath)
     {
+        $array = self::cast($array);
+
         $propertyAccessor = new PropertyAccessor();
 
         return array_map(
@@ -181,5 +189,28 @@ class ArrayType
             },
             $array
         );
+    }
+
+    /**
+     * Cast value to array
+     *
+     * If value is an array -return it
+     * If value is instance of Traversable - convert it to array
+     * Else - return new array, where value is a item
+     *
+     * @param $value
+     *
+     * @return array
+     */
+    public static function cast($value)
+    {
+        if (is_array($value)) {
+            return $value;
+        }
+        if ($value instanceof Traversable) {
+            return iterator_to_array($value);
+        }
+
+        return [$value];
     }
 }
