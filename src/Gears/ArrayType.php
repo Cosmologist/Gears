@@ -2,6 +2,7 @@
 
 namespace Cosmologist\Gears;
 
+use Symfony\Component\ExpressionLanguage\ExpressionLanguage;
 use Symfony\Component\PropertyAccess\Exception\AccessException;
 use Symfony\Component\PropertyAccess\PropertyAccessor;
 use Traversable;
@@ -188,6 +189,33 @@ class ArrayType
                 }
             },
             $array
+        );
+    }
+
+    /**
+     * Filters the items by expression
+     *
+     * @param array  $array      The input array
+     * @param string $expression The expression
+     *                           If the expression returns true, the current value from array is returned into
+     *                           the result array. Array keys are preserved.
+     *                           Use "item" alias in the expression for access to iterated array item.
+     *
+     * @return array
+     */
+    public static function filter($array, $expression)
+    {
+        $array = self::cast($array);
+
+        $language = new ExpressionLanguage();
+        $parsedNodes = $language->parse($expression, ['item'])->getNodes();
+
+        return array_filter(
+            $array,
+            function ($item) use ($parsedNodes) {
+                $res = (bool) $parsedNodes->evaluate([], ['item' => $item]);
+                return $res;
+            }
         );
     }
 
