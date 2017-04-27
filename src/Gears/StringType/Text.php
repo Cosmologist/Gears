@@ -51,7 +51,7 @@ class Text
      */
     public static function splitIntoWords($text)
     {
-        return preg_split('/\s+/', $text);
+        return preg_split('/[\s.,!?]+/', $text);
     }
 
     /**
