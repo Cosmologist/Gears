@@ -99,17 +99,18 @@ class ArrayType
      * @param string $propertyPath       The path to the sort element in the collection
      * @param bool   $preserveKeys       Preserve array keys or not?
      * @param string $comparisonFunction The comparison function name (strcmp, strnatcmp etc.)
+     * @param bool   $reverse            Reverse sorted result (DESC if true, ASC is false)
      *
      * @return array Sorted array
      */
-    public static function sort($array, $propertyPath, $preserveKeys = false, $comparisonFunction = null)
+    public static function sort($array, $propertyPath, $preserveKeys = false, $comparisonFunction = null, $reverse = false)
     {
         $array = self::cast($array);
 
         $sortFunction     = $preserveKeys ? 'uasort' : 'usort';
         $propertyAccessor = new PropertyAccessor();
 
-        $sortFunction($array, function ($left, $right) use ($propertyAccessor, $propertyPath, $comparisonFunction) {
+        $sortFunction($array, function ($left, $right) use ($propertyAccessor, $propertyPath, $comparisonFunction, $reverse) {
             try {
                 $leftValue = $propertyAccessor->getValue($left, $propertyPath);
             } catch (AccessException $e) {
@@ -122,10 +123,18 @@ class ArrayType
             }
 
             if ($comparisonFunction !== null) {
-                return $comparisonFunction($leftValue, $rightValue);
+                $result = $comparisonFunction($leftValue, $rightValue);
+            } elseif ($leftValue === $rightValue) {
+                $result = 0;
+            } else {
+                $result = ($leftValue < $rightValue) ? -1 : 1;
             }
 
-            return ($leftValue < $rightValue) ? -1 : 1;
+            if ($reverse) {
+                $result *= -1;
+            }
+
+            return $result;
         });
 
         return $array;
@@ -207,13 +216,14 @@ class ArrayType
     {
         $array = self::cast($array);
 
-        $language = new ExpressionLanguage();
+        $language    = new ExpressionLanguage();
         $parsedNodes = $language->parse($expression, ['item'])->getNodes();
 
         return array_filter(
             $array,
             function ($item) use ($parsedNodes) {
                 $res = (bool) $parsedNodes->evaluate([], ['item' => $item]);
+
                 return $res;
             }
         );
