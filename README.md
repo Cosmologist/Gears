@@ -2,8 +2,12 @@
 Collection of useful functions
 
 ## Installation
-Add the following dependency to your composer.json:
-
 ```
-"cosmologist/gears": "dev-master"
+composer require cosmologist/gears
+```
+
+## String functions
+```php
+// Replace first string occurrence in an another string
+StringType::replaceFirst('name name name', 'name', 'title'); // 'title name name'
 ```
