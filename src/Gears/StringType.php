@@ -1,6 +1,7 @@
 <?php
 
 namespace Cosmologist\Gears;
+
 use RuntimeException;
 
 /**
@@ -8,6 +9,19 @@ use RuntimeException;
  */
 class StringType
 {
+    /**
+     * Determine if a given string contains a given substring.
+     * 
+     * @param string $haystack
+     * @param string $needle
+     *
+     * @return bool
+     */
+    public static function contains($haystack, $needle)
+    {
+        return mb_strpos($haystack, $needle) !== false;
+    }
+
     /**
      * Search and return string before haystack string
      *
@@ -19,9 +33,9 @@ class StringType
      */
     public static function strBefore($string, $before, $caseSensitive = true)
     {
-        $pos = $caseSensitive ? strpos($string, $before) : stripos($string, $before);
+        $pos = $caseSensitive ? mb_strpos($string, $before) : mb_stripos($string, $before);
         if ($pos !== false) {
-            return substr($string, 0, $pos);
+            return mb_substr($string, 0, $pos);
         }
 
         return false;
@@ -38,9 +52,9 @@ class StringType
      */
     public static function strAfter($string, $after, $caseSensitive = true)
     {
-        $pos = $caseSensitive ? strpos($string, $after) : stripos($string, $after);
+        $pos = $caseSensitive ? mb_strpos($string, $after) : mb_stripos($string, $after);
         if ($pos !== false) {
-            return substr($string, $pos + 1);
+            return mb_substr($string, $pos + mb_strlen($after));
         }
 
         return false;
@@ -51,15 +65,19 @@ class StringType
      *
      * @param  string       $haystack
      * @param  string|array $needles
+     * @param bool          $caseSensitive
      *
      * @see Illuminate/Support/Str
      *
      * @return bool
      */
-    public static function startsWith($haystack, $needles)
+    public static function startsWith($haystack, $needles, $caseSensitive = true)
     {
         foreach ((array) $needles as $needle) {
-            if ($needle != '' && strpos($haystack, $needle) === 0) return true;
+            $pos = $caseSensitive ? mb_strpos($haystack, $needle) : mb_stripos($haystack, $needle);
+            if ($needle != '' && $pos === 0) {
+                return true;
+            }
         }
 
         return false;
@@ -70,15 +88,26 @@ class StringType
      *
      * @param  string       $haystack
      * @param  string|array $needles
+     * @param bool          $caseSensitive
      *
      * @see Illuminate/Support/Str
      *
      * @return bool
      */
-    public static function endsWith($haystack, $needles)
+    public static function endsWith($haystack, $needles, $caseSensitive = true)
     {
         foreach ((array) $needles as $needle) {
-            if ((string) $needle === substr($haystack, -strlen($needle))) return true;
+            $needle    = (string) $needle;
+            $substring = mb_substr($haystack, -mb_strlen($needle));
+
+            if (!$caseSensitive) {
+                $needle    = mb_strtolower($needle);
+                $substring = mb_strtolower($substring);
+            }
+
+            if ($needle === $substring) {
+                return true;
+            }
         }
 
         return false;
@@ -97,8 +126,8 @@ class StringType
      */
     public function replaceFirst($string, $from, $to)
     {
-        if (false !== $pos = strpos($string, $from)) {
-            return substr_replace($string, $to, $pos, strlen($from));
+        if (false !== $pos = mb_strpos($string, $from)) {
+            return mb_substr_replace($string, $to, $pos, mb_strlen($from));
         }
 
         return $string;
