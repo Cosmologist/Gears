@@ -126,8 +126,8 @@ class StringType
      */
     public function replaceFirst($string, $from, $to)
     {
-        if (false !== $pos = mb_strpos($string, $from)) {
-            return mb_substr_replace($string, $to, $pos, mb_strlen($from));
+        if (false !== $pos = strpos($string, $from)) {
+            return substr_replace($string, $to, $pos, strlen($from));
         }
 
         return $string;
