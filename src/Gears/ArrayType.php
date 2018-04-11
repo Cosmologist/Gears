@@ -71,6 +71,29 @@ class ArrayType
     }
 
     /**
+     * Cast value to array
+     *
+     * If value is an array -return it
+     * If value is instance of Traversable - convert it to array
+     * Else - return new array, where value is a item
+     *
+     * @param $value
+     *
+     * @return array
+     */
+    public static function cast($value)
+    {
+        if (is_array($value)) {
+            return $value;
+        }
+        if ($value instanceof Traversable) {
+            return iterator_to_array($value);
+        }
+
+        return [$value];
+    }
+
+    /**
      * Merge arrays
      *
      * Merge arrays like array_merge, but supports Traversable objects too
@@ -82,13 +105,6 @@ class ArrayType
      */
     public static function merge($array1, $array2)
     {
-        if ($array1 instanceof Traversable) {
-            $array1 = iterator_to_array($array1);
-        }
-        if ($array2 instanceof Traversable) {
-            $array2 = iterator_to_array($array1);
-        }
-
         return array_merge(self::cast($array1), self::cast($array2));
     }
 
@@ -227,28 +243,5 @@ class ArrayType
                 return $res;
             }
         );
-    }
-
-    /**
-     * Cast value to array
-     *
-     * If value is an array -return it
-     * If value is instance of Traversable - convert it to array
-     * Else - return new array, where value is a item
-     *
-     * @param $value
-     *
-     * @return array
-     */
-    public static function cast($value)
-    {
-        if (is_array($value)) {
-            return $value;
-        }
-        if ($value instanceof Traversable) {
-            return iterator_to_array($value);
-        }
-
-        return [$value];
     }
 }
