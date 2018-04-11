@@ -13,27 +13,6 @@ use Traversable;
 class ArrayType
 {
     /**
-     * Unset array items by value
-     *
-     * @see http://stackoverflow.com/a/7225113/663322
-     *
-     * @param array $array Array
-     * @param mixed $value Value
-     *
-     * @return array Array after the items removing
-     */
-    public static function unsetValue($array, $value)
-    {
-        $array = self::cast($array);
-
-        if (($key = array_search($value, $array)) !== false) {
-            unset($array[$key]);
-        }
-
-        return $array;
-    }
-
-    /**
      * Group array by key value
      *
      * @param array $array Array
@@ -56,6 +35,56 @@ class ArrayType
         }
 
         return $result;
+    }
+
+    /**
+     * Create ranges from list
+     *
+     * Example: [1, 3, 7, 9] => [[1, 3], [3, 7], [7, 9]]
+     *
+     * @param array $list
+     */
+    public static function ranges(array $list)
+    {
+        $ranges = [];
+
+        $currentRange = null;
+        foreach ($list as $item) {
+            if ($currentRange === null) {
+                $currentRange[] = $item;
+            } else {
+                $currentRange[] = $item;
+                $ranges[]       = $currentRange;
+                $currentRange   = [$item];
+            }
+        }
+        if (count($currentRange) === 1) {
+            $currentRange[] = null;
+            $ranges[]       = $currentRange;
+        }
+
+        return $ranges;
+    }
+
+    /**
+     * Unset array item by value
+     *
+     * @see http://stackoverflow.com/a/7225113/663322
+     *
+     * @param array $array Array
+     * @param mixed $value Value
+     *
+     * @return array Array after the items removing
+     */
+    public static function unsetValue($array, $value)
+    {
+        $array = self::cast($array);
+
+        if (($key = array_search($value, $array)) !== false) {
+            unset($array[$key]);
+        }
+
+        return $array;
     }
 
     /**
