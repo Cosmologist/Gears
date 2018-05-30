@@ -59,7 +59,7 @@ class ObjectType
     }
 
     /**
-     * Reads values of internal object properties (protected and private).
+     * Reads value of internal object property (protected and private).
      *
      * Use with caution!
      *
@@ -74,6 +74,28 @@ class ObjectType
     {
         $closure = function () use ($property) {
             return $this->$property;
+        };
+
+        return $closure->call($object);
+    }
+
+    /**
+     * Writes value to internal object property (protected and private).
+     *
+     * Use with caution!
+     *
+     * @see https://ocramius.github.io/blog/accessing-private-php-class-members-without-reflection/
+     *
+     * @param object $object   Object
+     * @param string $property Property name
+     * @param mixed  $value    Value
+     *
+     * @return mixed
+     */
+    public static function writeInternalProperty($object, $property, $value)
+    {
+        $closure = function () use ($property, $value) {
+            $this->$property = $value;
         };
 
         return $closure->call($object);
