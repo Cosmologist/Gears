@@ -57,4 +57,25 @@ class ObjectType
 
         return null;
     }
+
+    /**
+     * Reads values of internal object properties (protected and private).
+     *
+     * Use with caution!
+     *
+     * @see https://ocramius.github.io/blog/accessing-private-php-class-members-without-reflection/
+     *
+     * @param object $object   Object
+     * @param string $property Property name
+     *
+     * @return mixed
+     */
+    public static function readInternalProperty($object, $property)
+    {
+        $closure = function () use ($property) {
+            return $this->$property;
+        };
+
+        return $closure->call($object);
+    }
 }
