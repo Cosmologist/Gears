@@ -11,7 +11,7 @@ class StringType
 {
     /**
      * Determine if a given string contains a given substring.
-     * 
+     *
      * @param string $haystack
      * @param string $needle
      *
@@ -124,13 +124,26 @@ class StringType
      *
      * @return string Replaced string or haystack
      */
-    public function replaceFirst($string, $from, $to)
+    public static function replaceFirst($string, $from, $to)
     {
         if (false !== $pos = strpos($string, $from)) {
             return substr_replace($string, $to, $pos, strlen($from));
         }
 
         return $string;
+    }
+
+    /**
+     * Wraps string by another string.
+     *
+     * @param string $string Target string
+     * @param string $with   Another string
+     *
+     * @return string
+     */
+    public static function wrap($string, $with)
+    {
+        return $with . $string . $with;
     }
 
     /**
@@ -141,7 +154,7 @@ class StringType
      *
      * @return string A formatted string
      */
-    function namedSprintf($format, $args)
+    public static function namedSprintf($format, $args)
     {
         preg_match_all('/\%\((\S*?)\)\b/', $format, $matches, PREG_SET_ORDER);
 
