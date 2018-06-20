@@ -19,17 +19,29 @@ ArrayType::checkAssoc(['foo' => 'bar']); // true
 ArrayType::ranges([1, 3, 7, 9]); // [[1, 3], [3, 7], [7, 9]]
 ```
 
+##### Unset array item by value
+```php
+ArrayType::unsetValue(['a', 'b', 'c'], 'b'); // ['a', 'c']
+```
+
 ## Math functions
-Round to nearest multiple
+
+##### Round to nearest multiple
 ```php
 MathType::roundStep(50, 5); // 50
 MathType::roundStep(52, 5); // 50
 MathType::roundStep(53, 5); // 55
+```
 
+##### Round down to nearest multiple
+```php
 MathType::floorStep(50, 5); // 50
 MathType::floorStep(52, 5); // 50
 MathType::floorStep(53, 5); // 50
+```
 
+##### Round up to nearest multiple
+```php
 MathType::ceilStep(50, 5); // 50
 MathType::ceilStep(52, 5); // 55
 MathType::ceilStep(53, 5); // 55
