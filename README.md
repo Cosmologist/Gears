@@ -19,6 +19,22 @@ ArrayType::checkAssoc(['foo' => 'bar']); // true
 ArrayType::ranges([1, 3, 7, 9]); // [[1, 3], [3, 7], [7, 9]]
 ```
 
+## Math functions
+Round to nearest multiple
+```php
+MathType::roundStep(50, 5); // 50
+MathType::roundStep(52, 5); // 50
+MathType::roundStep(53, 5); // 55
+
+MathType::floorStep(50, 5); // 50
+MathType::floorStep(52, 5); // 50
+MathType::floorStep(53, 5); // 50
+
+MathType::ceilStep(50, 5); // 50
+MathType::ceilStep(52, 5); // 55
+MathType::ceilStep(53, 5); // 55
+```
+
 ## Object functions
 ##### Reads value of internal object property (protected and private)
 Read [ocramius](https://ocramius.github.io/blog/accessing-private-php-class-members-without-reflection/)
