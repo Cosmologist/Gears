@@ -96,7 +96,7 @@ class ArrayType
      */
     public static function checkAssoc($array)
     {
-        return (bool) count(array_filter(array_keys($array), 'is_string'));
+        return (bool)count(array_filter(array_keys($array), 'is_string'));
     }
 
     /**
@@ -267,10 +267,22 @@ class ArrayType
         return array_filter(
             $array,
             function ($item) use ($parsedNodes) {
-                $res = (bool) $parsedNodes->evaluate([], ['item' => $item]);
+                $res = (bool)$parsedNodes->evaluate([], ['item' => $item]);
 
                 return $res;
             }
         );
+    }
+
+    /**
+     * Calculate the average of values in an array
+     *
+     * @param array $array The input array
+     *
+     * @return float|int
+     */
+    public static function average($array)
+    {
+        return array_sum($array) / count($array);
     }
 }

@@ -8,6 +8,11 @@ composer require cosmologist/gears
 
 ## Array functions
 
+##### Calculate the average of values in an array (array_avg)
+```php
+ArrayType::average([1, 2, 3]); // 3
+```
+
 ##### Check if array is associative
 ```php
 ArrayType::checkAssoc([1, 2, 3]); // false
