@@ -29,6 +29,19 @@ ArrayType::ranges([1, 3, 7, 9]); // [[1, 3], [3, 7], [7, 9]]
 ArrayType::unsetValue(['a', 'b', 'c'], 'b'); // ['a', 'c']
 ```
 
+## Json functions
+
+#### Decodes a JSON string, used exceptions instead errors.
+```php
+try {
+    Json::decode($json);
+    // or
+    Json::decodeToArray($json);
+} catch (JsonParseException $e) {
+    throw $e;
+}
+```
+
 ## Math functions
 
 ##### Round to nearest multiple
