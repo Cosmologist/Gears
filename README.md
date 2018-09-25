@@ -66,12 +66,22 @@ MathType::ceilStep(53, 5); // 55
 ```
 
 ## Object functions
-##### Reads value of internal object property (protected and private)
+##### Reads the value at the end of the property path of the object graph
+```php
+ObjectType::get($person, 'address.street');
+```
+Uses Symfony PropertyAccessor
+##### Sets the value at the end of the property path of the object graph
+```php
+ObjectType::set($person, 'address.street', 'Abbey Road');
+```
+Uses Symfony PropertyAccessor
+##### Reads the value of internal object property (protected and private)
 Read [ocramius](https://ocramius.github.io/blog/accessing-private-php-class-members-without-reflection/)
 ```php
 ObjectType::readInternalProperty($object, $property);
 ```
-##### Writes value to internal object property (protected and private)
+##### Writes the value to internal object property (protected and private)
 Read [ocramius](https://ocramius.github.io/blog/accessing-private-php-class-members-without-reflection/)
 ```php
 ObjectType::writeInternalProperty($object, $property, $value);
