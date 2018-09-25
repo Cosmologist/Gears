@@ -43,6 +43,8 @@ class ArrayType
      * Example: [1, 3, 7, 9] => [[1, 3], [3, 7], [7, 9]]
      *
      * @param array $list
+     *
+     * @return array
      */
     public static function ranges(array $list)
     {
