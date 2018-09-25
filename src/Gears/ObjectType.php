@@ -2,7 +2,8 @@
 
 namespace Cosmologist\Gears;
 
-use Cosmologist\Gears\ObjectType\Exception\PropertyNotFoundException;
+use Symfony\Component\PropertyAccess\PropertyAccessor;
+use Symfony\Component\PropertyAccess\PropertyAccessorInterface;
 
 /**
  * Collection of commonly used methods for working with objects
@@ -10,36 +11,32 @@ use Cosmologist\Gears\ObjectType\Exception\PropertyNotFoundException;
 class ObjectType
 {
     /**
-     * Return the value of the object property
+     * Returns the value at the end of the property path of the object graph.
      *
-     * If the property is not available, try to find and use a getter (property(), getProperty(), get_property())
+     * @see PropertyAccessorInterface::getValue()
      *
-     * @param object $object       Object
-     * @param string $propertyName Property name
+     * @param object $object       The object to traverse
+     * @param string $propertyPath The property path to read
      *
-     * @return mixed
-     *
-     * @throws PropertyNotFoundException When the the property is not exist
+     * @return mixed The value at the end of the property path
      */
-    public static function get($object, $propertyName)
+    public static function get($object, $propertyPath)
     {
-        if (array_key_exists($propertyName, get_object_vars($object))) {
-            return $object->$propertyName;
-        }
+        return (new PropertyAccessor())->getValue($object, $propertyPath);
+    }
 
-        $possiblePropertyNames = [
-            $propertyName,
-            'get' . $propertyName,
-            'get_' . $propertyName
-        ];
-
-        foreach ($possiblePropertyNames as $possiblePropertyName) {
-            if (is_callable([$object, $possiblePropertyName])) {
-                return $object->$possiblePropertyName();
-            }
-        }
-
-        throw new PropertyNotFoundException(sprintf('Property #%s does not exists', $propertyName));
+    /**
+     * Sets the value at the end of the property path of the object graph.
+     *
+     * @see PropertyAccessorInterface::setValue()
+     *
+     * @param object $object       The object to modify
+     * @param string $propertyPath The property path to modify
+     * @param mixed  $value        The value to set at the end of the property path
+     */
+    public static function set($object, $propertyPath, $value)
+    {
+        (new PropertyAccessor())->setValue($object, $propertyPath, $value);
     }
 
     /**
@@ -52,7 +49,7 @@ class ObjectType
     public static function getStringRepresentation($object)
     {
         if (method_exists($object, '__toString')) {
-            return (string) $object;
+            return (string)$object;
         }
 
         return null;
