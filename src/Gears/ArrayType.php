@@ -22,14 +22,14 @@ class ArrayType
      */
     public static function group($array, $key)
     {
-        $result = array();
+        $result = [];
 
         foreach ($array as $item) {
             if (isset($item[$key])) {
                 if (isset($result[$item[$key]])) {
                     $result[$item[$key]][] = $item;
                 } else {
-                    $result[$item[$key]] = array($item);
+                    $result[$item[$key]] = [$item];
                 }
             }
         }
@@ -98,7 +98,7 @@ class ArrayType
      */
     public static function checkAssoc($array)
     {
-        return (bool)count(array_filter(array_keys($array), 'is_string'));
+        return (bool) count(array_filter(array_keys($array), 'is_string'));
     }
 
     /**
@@ -225,8 +225,40 @@ class ArrayType
     /**
      * Collects the items by path from an array
      *
-     * @param array  $array        The input array
-     * @param string $propertyPath The path to the item for collecting
+     * ```php
+     * class MyClass
+     * {
+     *     public $foo;
+     *     private $bar;
+     *     public $baz;
+     *
+     *     public function __construct($foo, $bar, MyClass $baz = null)
+     *     {
+     *         $this->foo = $foo;
+     *         $this->bar = $bar;
+     *         $this->baz = $baz;
+     *     }
+     *
+     *     public getBar()
+     *     {
+     *          return $this->bar;
+     *     }
+     * }
+     *
+     * $a = [new MyClass('foo1', 'bar1', 'baz1'), new MyClass('foo2', 'bar2', new MyClass('foo3', 'bar3'))];
+     *
+     * ArrayType::collect($a, 'foo'); // ['foo1', 'foo2'];
+     * ArrayType::collect($a, 'bar'); // returns ['bar1', 'bar2'];
+     * ArrayType::collect($a, 'baz.foo'); // returns [null, 'foo3'];
+     *
+     * ArrayType::collect($a, ['foo', 'bar']); // [['foo1', 'bar1'], ['foo2', 'bar2']];
+     * ArrayType::collect($a, ['f' => 'foo', 'b' => 'bar']); // [['f' => 'foo1', 'b' => 'bar1'], ['f' => 'foo2', 'b' => 'bar2']];
+     * ```
+     *
+     * @see https://symfony.com/doc/current/components/property_access.html
+     *
+     * @param array        $array        The input array
+     * @param string|array $propertyPath The path to the item for collection or array of paths (@see Symfony PropertyAccess syntax)
      *
      * @return array
      */
@@ -234,18 +266,58 @@ class ArrayType
     {
         $array = self::cast($array);
 
+        if (count($array) === 0) {
+            return [];
+        }
+
+        $propertyPath     = (array) $propertyPath;
         $propertyAccessor = new PropertyAccessor();
 
-        return array_map(
+        $result = array_map(
             function ($item) use ($propertyAccessor, $propertyPath) {
                 try {
-                    return $propertyAccessor->getValue($item, $propertyPath);
+                    $result = [];
+                    foreach ($propertyPath as $key => $path) {
+                        $result[$key] = $propertyAccessor->getValue($item, $path);
+                    }
+
+                    return $result;
                 } catch (AccessException $e) {
                     return null;
                 }
             },
             $array
         );
+
+        if (count($propertyPath) === 1) {
+            return array_column($result, key($propertyPath));
+            //return array_pop($result);
+        }
+
+        return $result;
+    }
+
+    /**
+     * Map data to the object
+     *
+     * @param array         $data   Data
+     * @param string|object $target FQCN or object
+     *
+     * @return object
+     */
+    public static function map($data, $target)
+    {
+        if (is_string($target)) {
+            $target = new $target;
+        }
+
+        $propertyAccessor = new PropertyAccessor();
+
+        foreach ($data as $key => $value) {
+            $propertyAccessor->setValue($target, $key, $value);
+        }
+
+        return $target;
     }
 
     /**
@@ -269,7 +341,7 @@ class ArrayType
         return array_filter(
             $array,
             function ($item) use ($parsedNodes) {
-                $res = (bool)$parsedNodes->evaluate([], ['item' => $item]);
+                $res = (bool) $parsedNodes->evaluate([], ['item' => $item]);
 
                 return $res;
             }
