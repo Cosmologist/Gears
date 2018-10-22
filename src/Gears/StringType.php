@@ -147,6 +147,21 @@ class StringType
     }
 
     /**
+     * Join strings with a glue, ignore null-strings
+     *
+     * @param string   $glue    The glue
+     * @param string[] $strings The array of strings to implode
+     *
+     * @return string
+     */
+    public static function implode(string $glue, ...$strings)
+    {
+        $strings = array_filter($strings);
+
+        return implode($glue, $strings);
+    }
+
+    /**
      * Formats a string like spintf, but with name arguments support.
      *
      * @param string $format A formatted string with named template fields
