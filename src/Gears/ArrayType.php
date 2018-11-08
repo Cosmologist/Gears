@@ -90,18 +90,6 @@ class ArrayType
     }
 
     /**
-     * Check if array is associative
-     *
-     * @param array $array Array
-     *
-     * @return bool
-     */
-    public static function checkAssoc($array)
-    {
-        return (bool) count(array_filter(array_keys($array), 'is_string'));
-    }
-
-    /**
      * Cast value to array
      *
      * If value is an array -return it
@@ -122,6 +110,18 @@ class ArrayType
         }
 
         return [$value];
+    }
+
+    /**
+     * Check if array is associative
+     *
+     * @param array $array Array
+     *
+     * @return bool
+     */
+    public static function checkAssoc($array)
+    {
+        return (bool) count(array_filter(array_keys($array), 'is_string'));
     }
 
     /**
@@ -358,5 +358,27 @@ class ArrayType
     public static function average($array)
     {
         return array_sum($array) / count($array);
+    }
+
+    /**
+     * Remove a specified column from in the input array
+     *
+     * @param array $array  The input array.
+     * @param mixed $column The column of values to return.
+     *                      This value may be the integer key of the column you wish to retrieve,
+     *                      or it may be the string key name for an associative array
+     *
+     * @return array
+     */
+    public static function unsetColumn($array, $column)
+    {
+        foreach ($array as $key => $row) {
+            if (array_key_exists($column, $row)) {
+                unset($array[$key][$column]);
+            }
+
+        }
+
+        return $array;
     }
 }
