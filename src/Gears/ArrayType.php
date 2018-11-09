@@ -381,4 +381,20 @@ class ArrayType
 
         return $array;
     }
+
+    /**
+     * Get the first element of an array
+     *
+     * @param array $array The input array.
+     *
+     * @return mixed|null
+     */
+    public static function first($array)
+    {
+        if (count($array) === 0) {
+            return null;
+        }
+
+        return reset($array);
+    }
 }
