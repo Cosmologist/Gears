@@ -40,6 +40,22 @@ class ObjectType
     }
 
     /**
+     * Casts target to class name.
+     *
+     * @param object|string $target Object or FQCN
+     *
+     * @return string FQCN
+     */
+    public static function castClass($target)
+    {
+        if (is_object($target)) {
+            return get_class($target);
+        }
+
+        return $target;
+    }
+
+    /**
      * Try to get object string representation (via __toString)
      *
      * @param object $object Object
