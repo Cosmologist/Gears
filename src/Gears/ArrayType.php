@@ -397,4 +397,22 @@ class ArrayType
 
         return reset($array);
     }
+
+    /**
+     * Creates array by using the value by the path as keys and the item as value.
+     *
+     * @see https://symfony.com/doc/current/components/property_access.html
+     *
+     * @param array  $array The input array
+     * @param string $path  The array column or property path
+     *
+     * @return array
+     */
+    public static function index($array, $path)
+    {
+        return array_combine(
+            self::collect($array, $path),
+            $array
+        );
+    }
 }
