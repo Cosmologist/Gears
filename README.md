@@ -42,29 +42,6 @@ try {
 }
 ```
 
-## Math functions
-
-##### Round to nearest multiple
-```php
-MathType::roundStep(50, 5); // 50
-MathType::roundStep(52, 5); // 50
-MathType::roundStep(53, 5); // 55
-```
-
-##### Round down to nearest multiple
-```php
-MathType::floorStep(50, 5); // 50
-MathType::floorStep(52, 5); // 50
-MathType::floorStep(53, 5); // 50
-```
-
-##### Round up to nearest multiple
-```php
-MathType::ceilStep(50, 5); // 50
-MathType::ceilStep(52, 5); // 55
-MathType::ceilStep(53, 5); // 55
-```
-
 ## Object functions
 ##### Reads the value at the end of the property path of the object graph
 ```php
@@ -100,4 +77,27 @@ StringType::replaceFirst('name name name', 'name', 'title'); // 'title name name
 ##### Wrap string
 ```php
 StringType::wrap('target', '/'); // '/target/'
+```
+
+## Number functions
+
+##### Round to nearest multiple
+```php
+NumberType::roundStep(50, 5); // 50
+NumberType::roundStep(52, 5); // 50
+NumberType::roundStep(53, 5); // 55
+```
+
+##### Round down to nearest multiple
+```php
+NumberType::floorStep(50, 5); // 50
+NumberType::floorStep(52, 5); // 50
+NumberType::floorStep(53, 5); // 50
+```
+
+##### Round up to nearest multiple
+```php
+NumberType::ceilStep(50, 5); // 50
+NumberType::ceilStep(52, 5); // 55
+NumberType::ceilStep(53, 5); // 55
 ```

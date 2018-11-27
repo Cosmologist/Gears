@@ -18,4 +18,43 @@ class NumberType
 
         return $result;
     }
+
+    /**
+     * Round value to nearest multiple
+     *
+     * @param int|float $value Value
+     * @param int       $step  Round step
+     *
+     * @return float|int
+     */
+    public static function roundStep($value, int $step = 1)
+    {
+        return round($value / $step) * $step;
+    }
+
+    /**
+     * Round value down to nearest multiple
+     *
+     * @param int|float $value Value
+     * @param int       $step  Round step
+     *
+     * @return float|int
+     */
+    public static function floorStep($value, int $step = 1)
+    {
+        return floor($value / $step) * $step;
+    }
+
+    /**
+     * Round value up to nearest multiple
+     *
+     * @param int|float $value Value
+     * @param int       $step  Round step
+     *
+     * @return float|int
+     */
+    public static function ceilStep($value, int $step = 1)
+    {
+        return ceil($value / $step) * $step;
+    }
 }
