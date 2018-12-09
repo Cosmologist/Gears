@@ -441,6 +441,22 @@ class ArrayType
     }
 
     /**
+     * Get the last element of an array
+     *
+     * @param array $array The input array.
+     *
+     * @return mixed|null
+     */
+    public static function last($array)
+    {
+        if (count($array) === 0) {
+            return null;
+        }
+
+        return end($array);
+    }
+
+    /**
      * Creates array by using the value by the path as keys and the item as value.
      *
      * @see https://symfony.com/doc/current/components/property_access.html
