@@ -19,6 +19,13 @@ ArrayType::checkAssoc([1, 2, 3]); // false
 ArrayType::checkAssoc(['foo' => 'bar']); // true
 ```
 
+##### Get an item from the array by key
+```php
+ArrayType::get(['fruit' => 'apple', 'color' => 'red'], 'fruit'); // apple
+ArrayType::get(['fruit' => 'apple', 'color' => 'red'], 'weight'); // null
+ArrayType::get(['fruit' => 'apple', 'color' => 'red'], 'weight', 15); // 15
+```
+
 ##### Convert list of items to ranges
 ```php
 ArrayType::ranges([1, 3, 7, 9]); // [[1, 3], [3, 7], [7, 9]]

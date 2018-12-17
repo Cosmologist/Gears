@@ -13,6 +13,22 @@ use Traversable;
 class ArrayType
 {
     /**
+     * Get an item from the array by key.
+     *
+     * Return default value if key does not exist.
+     *
+     * @param  array $array
+     * @param  mixed $key
+     * @param  mixed $default
+     *
+     * @return mixed
+     */
+    public static function get($array, $key, $default = null)
+    {
+        return array_key_exists($key, $array) ? $array[$key] : $default;
+    }
+
+    /**
      * Group array by key value
      *
      * @param array $array Array
