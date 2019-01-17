@@ -307,7 +307,6 @@ class ArrayType
 
         if (count($propertyPath) === 1) {
             return array_column($result, key($propertyPath));
-            //return array_pop($result);
         }
 
         return $result;
@@ -347,20 +346,24 @@ class ArrayType
      *
      * @return array
      */
-    public static function filter($array, $expression)
+    public static function filter($array, $expression = null)
     {
-        $array = self::cast($array);
+        $array    = self::cast($array);
+        $filterFn = null;
 
-        $language    = new ExpressionLanguage();
-        $parsedNodes = $language->parse($expression, ['item'])->getNodes();
+        if ($expression !== null) {
+            $language    = new ExpressionLanguage();
+            $parsedNodes = $language->parse($expression, ['item'])->getNodes();
 
-        return array_filter(
-            $array,
-            function ($item) use ($parsedNodes) {
-                $res = (bool) $parsedNodes->evaluate([], ['item' => $item]);
+            $filterFn = function ($item) use ($parsedNodes) {
+                return (bool) $parsedNodes->evaluate([], ['item' => $item]);
+            };
+        }
 
-                return $res;
-            }
+        // use call_user_func because array_filter checks the number of passed arguments, instead "callback is null" checks
+        return call_user_func_array(
+            'array_filter',
+            array_filter([$array, $filterFn])
         );
     }
 
