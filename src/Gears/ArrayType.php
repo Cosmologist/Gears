@@ -29,24 +29,20 @@ class ArrayType
     }
 
     /**
-     * Group array by key value
+     * Group an array by the specified column
      *
-     * @param array $array Array
-     * @param mixed $key   Group key
+     * @param array $array  Array
+     * @param mixed $column Group column
      *
      * @return array Grouped array
      */
-    public static function group($array, $key)
+    public static function group($array, $column)
     {
         $result = [];
 
         foreach ($array as $item) {
-            if (isset($item[$key])) {
-                if (isset($result[$item[$key]])) {
-                    $result[$item[$key]][] = $item;
-                } else {
-                    $result[$item[$key]] = [$item];
-                }
+            if (array_key_exists($column, $item)) {
+                $result[$item[$column]][] = $item;
             }
         }
 
