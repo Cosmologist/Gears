@@ -344,23 +344,16 @@ class ArrayType
      */
     public static function filter($array, $expression = null)
     {
-        $array    = self::cast($array);
-        $filterFn = null;
-
-        if ($expression !== null) {
-            $language    = new ExpressionLanguage();
-            $parsedNodes = $language->parse($expression, ['item'])->getNodes();
-
-            $filterFn = function ($item) use ($parsedNodes) {
-                return (bool) $parsedNodes->evaluate([], ['item' => $item]);
-            };
+        if ($expression === null) {
+            return array_filter($array);
         }
 
-        // use call_user_func because array_filter checks the number of passed arguments, instead "callback is null" checks
-        return call_user_func_array(
-            'array_filter',
-            array_filter([$array, $filterFn])
-        );
+        $language    = new ExpressionLanguage();
+        $parsedNodes = $language->parse($expression, ['item'])->getNodes();
+
+        return array_filter(self::cast($array), function ($item) use ($parsedNodes) {
+            return (bool) $parsedNodes->evaluate([], ['item' => $item]);
+        });
     }
 
     /**
