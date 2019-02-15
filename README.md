@@ -108,3 +108,12 @@ NumberType::ceilStep(50, 5); // 50
 NumberType::ceilStep(52, 5); // 55
 NumberType::ceilStep(53, 5); // 55
 ```
+
+##### Spell out
+```php
+// Current locale used
+NumberType::spellout(123.45); // one hundred twenty-three point four five
+
+// Specific locale used
+NumberType::spellout(123.45, 'ru'); // сто двадцать три целых сорок пять сотых
+```
