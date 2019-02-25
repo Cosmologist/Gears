@@ -309,26 +309,26 @@ class ArrayType
     }
 
     /**
-     * Map data to the object
+     * Bind data to the object
      *
      * @param array         $data   Data
-     * @param string|object $target FQCN or object
+     * @param string|object $object FQCN or object
      *
      * @return object
      */
-    public static function map($data, $target)
+    public static function bind($data, $object)
     {
-        if (is_string($target)) {
-            $target = new $target;
+        if (is_string($object)) {
+            $object = new $object;
         }
 
         $propertyAccessor = new PropertyAccessor();
 
         foreach ($data as $key => $value) {
-            $propertyAccessor->setValue($target, $key, $value);
+            $propertyAccessor->setValue($object, $key, $value);
         }
 
-        return $target;
+        return $object;
     }
 
     /**
