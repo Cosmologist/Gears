@@ -68,13 +68,13 @@ class ArrayType
                 $currentRange[] = $item;
             } else {
                 $currentRange[] = $item;
-                $ranges[]       = $currentRange;
-                $currentRange   = [$item];
+                $ranges[] = $currentRange;
+                $currentRange = [$item];
             }
         }
         if (count($currentRange) === 1) {
             $currentRange[] = null;
-            $ranges[]       = $currentRange;
+            $ranges[] = $currentRange;
         }
 
         return $ranges;
@@ -133,7 +133,7 @@ class ArrayType
      */
     public static function checkAssoc($array)
     {
-        return (bool) count(array_filter(array_keys($array), 'is_string'));
+        return (bool)count(array_filter(array_keys($array), 'is_string'));
     }
 
     /**
@@ -162,39 +162,47 @@ class ArrayType
      *
      * @return array Sorted array
      */
-    public static function sort($array, $propertyPath, $preserveKeys = false, $comparisonFunction = null, $reverse = false)
-    {
+    public static function sort(
+        $array,
+        $propertyPath,
+        $preserveKeys = false,
+        $comparisonFunction = null,
+        $reverse = false
+    ) {
         $array = self::cast($array);
 
-        $sortFunction     = $preserveKeys ? 'uasort' : 'usort';
+        $sortFunction = $preserveKeys ? 'uasort' : 'usort';
         $propertyAccessor = new PropertyAccessor();
 
-        $sortFunction($array, function ($left, $right) use ($propertyAccessor, $propertyPath, $comparisonFunction, $reverse) {
-            try {
-                $leftValue = $propertyAccessor->getValue($left, $propertyPath);
-            } catch (AccessException $e) {
-                $leftValue = null;
-            }
-            try {
-                $rightValue = $propertyAccessor->getValue($right, $propertyPath);
-            } catch (AccessException $e) {
-                $rightValue = null;
-            }
+        $sortFunction(
+            $array,
+            function ($left, $right) use ($propertyAccessor, $propertyPath, $comparisonFunction, $reverse) {
+                try {
+                    $leftValue = $propertyAccessor->getValue($left, $propertyPath);
+                } catch (AccessException $e) {
+                    $leftValue = null;
+                }
+                try {
+                    $rightValue = $propertyAccessor->getValue($right, $propertyPath);
+                } catch (AccessException $e) {
+                    $rightValue = null;
+                }
 
-            if ($comparisonFunction !== null) {
-                $result = $comparisonFunction($leftValue, $rightValue);
-            } elseif ($leftValue === $rightValue) {
-                $result = 0;
-            } else {
-                $result = ($leftValue < $rightValue) ? -1 : 1;
-            }
+                if ($comparisonFunction !== null) {
+                    $result = $comparisonFunction($leftValue, $rightValue);
+                } elseif ($leftValue === $rightValue) {
+                    $result = 0;
+                } else {
+                    $result = ($leftValue < $rightValue) ? -1 : 1;
+                }
 
-            if ($reverse) {
-                $result *= -1;
-            }
+                if ($reverse) {
+                    $result *= -1;
+                }
 
-            return $result;
-        });
+                return $result;
+            }
+        );
 
         return $array;
     }
@@ -212,7 +220,7 @@ class ArrayType
         $array = self::cast($array);
 
         $propertyAccessor = new PropertyAccessor();
-        $uniqueValues     = [];
+        $uniqueValues = [];
 
         return array_filter(
             $array,
@@ -232,6 +240,75 @@ class ArrayType
                 return false;
             }
         );
+    }
+
+    /**
+     * Iterates over an array and calls the callback for each item
+     *
+     * @param iterable $array                          The input array
+     * @param callable $callback                       The callback
+     *                                                 Arguments:
+     *                                                 - 1: Array item value
+     *                                                 - 2: Array item key/index
+     */
+    public static function each(iterable $array, callable $callback)
+    {
+        foreach ($array as $key => $value) {
+            $callback($value, $key);
+        }
+    }
+
+    /**
+     * Recursively iterates over an array and calls the callback for each item
+     *
+     * @param iterable      $array                       The input array
+     * @param callable      $callback                    The callback
+     *                                                   Arguments:
+     *                                                   - 1: Array item
+     *                                                   - 2: Array item key/index
+     * @param callable|null $filter                      The callback, which should return TRUE to accept the current
+     *                                                   item to recursive or FALSE otherwise
+     *                                                   Arguments:
+     *                                                   - 1: Array item
+     *                                                   - 2: Array item key/index
+     */
+    public static function eachRecursive(iterable $array, callable $callback, callable $filter = null)
+    {
+        // Default filter callback - accept all items to
+        if (is_null($filter)) {
+            $filter = function () {
+                return true;
+            };
+        }
+        $recursive = function ($current, $key) use ($callback, $filter) {
+            if ($filter($current, $key) === true) {
+                self::eachRecursive($current, $callback, $filter);
+            }
+        };
+
+        self::each($array, $recursive);
+    }
+
+    /**
+     * Iterates over an array and calls the callback for each item
+     * Recursive calls only for children, which are determined by the specified key name
+     *
+     * @see self::eachRecursive
+     *
+     * @param iterable $array                            The input array
+     * @param callable $callback                         The callback
+     *                                                   Arguments:
+     *                                                   - 1: Array item
+     *                                                   - 2: Array item key/index
+     * @param string   $childrenKey                      Name of the key referring to children
+     */
+    public static function eachDescendant(iterable $array, callable $callback, string $childrenKey)
+    {
+        $filter = function ($current, $key) use ($childrenKey) {
+            return $key === $childrenKey;
+        };
+
+        self::eachRecursive($array, $callback, $filter);
     }
 
     /**
@@ -264,13 +341,15 @@ class ArrayType
      * ArrayType::collect($a, 'baz.foo'); // returns [null, 'foo3'];
      *
      * ArrayType::collect($a, ['foo', 'bar']); // [['foo1', 'bar1'], ['foo2', 'bar2']];
-     * ArrayType::collect($a, ['f' => 'foo', 'b' => 'bar']); // [['f' => 'foo1', 'b' => 'bar1'], ['f' => 'foo2', 'b' => 'bar2']];
+     * ArrayType::collect($a, ['f' => 'foo', 'b' => 'bar']); // [['f' => 'foo1', 'b' => 'bar1'], ['f' => 'foo2', 'b' =>
+     * 'bar2']];
      * ```
      *
      * @see https://symfony.com/doc/current/components/property_access.html
      *
      * @param array        $array        The input array
-     * @param string|array $propertyPath The path to the item for collection or array of paths (@see Symfony PropertyAccess syntax)
+     * @param string|array $propertyPath The path to the item for collection or array of paths (@see Symfony
+     *                                   PropertyAccess syntax)
      *
      * @return array
      */
@@ -282,7 +361,7 @@ class ArrayType
             return [];
         }
 
-        $propertyPath     = (array) $propertyPath;
+        $propertyPath = (array)$propertyPath;
         $propertyAccessor = new PropertyAccessor();
 
         $result = array_map(
@@ -309,26 +388,26 @@ class ArrayType
     }
 
     /**
-     * Bind data to the object
+     * Map data to the object
      *
      * @param array         $data   Data
-     * @param string|object $object FQCN or object
+     * @param string|object $target FQCN or object
      *
      * @return object
      */
-    public static function bind($data, $object)
+    public static function map($data, $target)
     {
-        if (is_string($object)) {
-            $object = new $object;
+        if (is_string($target)) {
+            $target = new $target;
         }
 
         $propertyAccessor = new PropertyAccessor();
 
         foreach ($data as $key => $value) {
-            $propertyAccessor->setValue($object, $key, $value);
+            $propertyAccessor->setValue($target, $key, $value);
         }
 
-        return $object;
+        return $target;
     }
 
     /**
@@ -348,12 +427,15 @@ class ArrayType
             return array_filter($array);
         }
 
-        $language    = new ExpressionLanguage();
+        $language = new ExpressionLanguage();
         $parsedNodes = $language->parse($expression, ['item'])->getNodes();
 
-        return array_filter(self::cast($array), function ($item) use ($parsedNodes) {
-            return (bool) $parsedNodes->evaluate([], ['item' => $item]);
-        });
+        return array_filter(
+            self::cast($array),
+            function ($item) use ($parsedNodes) {
+                return (bool)$parsedNodes->evaluate([], ['item' => $item]);
+            }
+        );
     }
 
     /**
@@ -397,10 +479,10 @@ class ArrayType
 
             return false;
         }
-        $mean  = array_sum($a) / $n;
+        $mean = array_sum($a) / $n;
         $carry = 0.0;
         foreach ($a as $val) {
-            $d     = ((double) $val) - $mean;
+            $d = ((double)$val) - $mean;
             $carry += $d * $d;
         };
         if ($sample) {
