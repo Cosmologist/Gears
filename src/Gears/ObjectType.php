@@ -40,6 +40,17 @@ class ObjectType
     }
 
     /**
+     * @param $object
+     * @param $propertyPath
+     *
+     * @return bool
+     */
+    public static function has($object, $propertyPath)
+    {
+        return (new PropertyAccessor())->isReadable($object, $propertyPath);
+    }
+
+    /**
      * Casts target to class name.
      *
      * @param object|string $target Object or FQCN
@@ -65,7 +76,7 @@ class ObjectType
     public static function getStringRepresentation($object)
     {
         if (method_exists($object, '__toString')) {
-            return (string)$object;
+            return (string) $object;
         }
 
         return null;

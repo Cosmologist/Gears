@@ -13,7 +13,20 @@ use Traversable;
 class ArrayType
 {
     /**
-     * Get an item from the array by key.
+     * Checks if the given key or index exists in the array
+     *
+     * @param array $array
+     * @param mixed $key
+     *
+     * @return bool
+     */
+    public static function has(array $array, $key): bool
+    {
+        return array_key_exists($key, $array);
+    }
+
+    /**
+     * Gets an item from the array by key.
      *
      * Return default value if key does not exist.
      *
@@ -23,9 +36,25 @@ class ArrayType
      *
      * @return mixed
      */
-    public static function get($array, $key, $default = null)
+    public static function get(array $array, $key, $default = null)
     {
-        return array_key_exists($key, $array) ? $array[$key] : $default;
+        return $array[$key] ?? $default;
+    }
+
+    /**
+     * Adds a value to an array with a specific key.
+     *
+     * @param  array $array
+     * @param  mixed $key
+     * @param  mixed $value
+     *
+     * @return array The input array with new item
+     */
+    public static function set(array $array, $key, $value): array
+    {
+        $array[$key] = $value;
+
+        return $array;
     }
 
     /**
@@ -274,13 +303,14 @@ class ArrayType
      */
     public static function eachRecursive(iterable $array, callable $callback, callable $filter = null)
     {
-        // Default filter callback - accept all items to
-        if (is_null($filter)) {
-            $filter = function () {
+        // Default filter callback - accept all items
+        $filter = $filter ?? function () {
                 return true;
             };
-        }
+
         $recursive = function ($current, $key) use ($callback, $filter) {
+            self::each($item);
+
             if ($filter($current, $key) === true) {
                 self::eachRecursive($current, $callback, $filter);
             }
@@ -290,8 +320,8 @@ class ArrayType
     }
 
     /**
-     * Iterates over an array and calls the callback for each item
-     * Recursive calls only for children, which are determined by the specified key name
+     * Iterates over an array and calls the callback for each children item.
+     * Children are determined by the specified key name.
      *
      * @see self::eachRecursive
      *
@@ -304,11 +334,15 @@ class ArrayType
      */
     public static function eachDescendant(iterable $array, callable $callback, string $childrenKey)
     {
-        $filter = function ($current, $key) use ($childrenKey) {
-            return $key === $childrenKey;
+        $recursionCallback = function ($current, $key) use ($callback, $childrenKey) {
+            $callback($current, $key);
+
+            if (CompositeType::has($current, $childrenKey)) {
+                self::eachDescendant(CompositeType::get($current, $childrenKey), $callback, $childrenKey);
+            }
         };
 
-        self::eachRecursive($array, $callback, $filter);
+        self::each($array, $recursionCallback);
     }
 
     /**
