@@ -2,6 +2,7 @@
 
 namespace Cosmologist\Gears;
 
+use ArrayObject;
 use Symfony\Component\ExpressionLanguage\ExpressionLanguage;
 use Symfony\Component\PropertyAccess\Exception\AccessException;
 use Symfony\Component\PropertyAccess\PropertyAccessor;
@@ -97,13 +98,13 @@ class ArrayType
                 $currentRange[] = $item;
             } else {
                 $currentRange[] = $item;
-                $ranges[] = $currentRange;
-                $currentRange = [$item];
+                $ranges[]       = $currentRange;
+                $currentRange   = [$item];
             }
         }
         if (count($currentRange) === 1) {
             $currentRange[] = null;
-            $ranges[] = $currentRange;
+            $ranges[]       = $currentRange;
         }
 
         return $ranges;
@@ -200,7 +201,7 @@ class ArrayType
     ) {
         $array = self::cast($array);
 
-        $sortFunction = $preserveKeys ? 'uasort' : 'usort';
+        $sortFunction     = $preserveKeys ? 'uasort' : 'usort';
         $propertyAccessor = new PropertyAccessor();
 
         $sortFunction(
@@ -249,7 +250,7 @@ class ArrayType
         $array = self::cast($array);
 
         $propertyAccessor = new PropertyAccessor();
-        $uniqueValues = [];
+        $uniqueValues     = [];
 
         return array_filter(
             $array,
@@ -272,77 +273,73 @@ class ArrayType
     }
 
     /**
-     * Iterates over an array and calls the callback for each item
+     * List walker
      *
-     * @param iterable $array                          The input array
+     * Walks through the list and calls a callback for each item.
+     *
+     * @param iterable $list                           The input list
      * @param callable $callback                       The callback
      *                                                 Arguments:
      *                                                 - 1: Array item value
      *                                                 - 2: Array item key/index
      */
-    public static function each(iterable $array, callable $callback)
+    public static function each(iterable $list, callable $callback)
     {
-        foreach ($array as $key => $value) {
+        foreach ($list as $key => $value) {
             $callback($value, $key);
         }
     }
 
     /**
-     * Recursively iterates over an array and calls the callback for each item
+     * Recursive walker for list and descendants (determined by key)
      *
-     * @param iterable      $array                       The input array
-     * @param callable      $callback                    The callback
-     *                                                   Arguments:
-     *                                                   - 1: Array item
-     *                                                   - 2: Array item key/index
-     * @param callable|null $filter                      The callback, which should return TRUE to accept the current
-     *                                                   item to recursive or FALSE otherwise
-     *                                                   Arguments:
-     *                                                   - 1: Array item
-     *                                                   - 2: Array item key/index
-     */
-    public static function eachRecursive(iterable $array, callable $callback, callable $filter = null)
-    {
-        // Default filter callback - accept all items
-        $filter = $filter ?? function () {
-                return true;
-            };
-
-        $recursive = function ($current, $key) use ($callback, $filter) {
-            self::each($item);
-
-            if ($filter($current, $key) === true) {
-                self::eachRecursive($current, $callback, $filter);
-            }
-        };
-
-        self::each($array, $recursive);
-    }
-
-    /**
-     * Iterates over an array and calls the callback for each children item.
-     * Children are determined by the specified key name.
+     * Walks through the list and calls a callback for each item and for each child item (recursively).
      *
-     * @see self::eachRecursive
-     *
-     * @param iterable $array                            The input array
+     * @param iterable $list                             The input array
      * @param callable $callback                         The callback
      *                                                   Arguments:
      *                                                   - 1: Array item
      *                                                   - 2: Array item key/index
      * @param string   $childrenKey                      Name of the key referring to children
      */
-    public static function eachDescendant(iterable $array, callable $callback, string $childrenKey)
+    public static function eachDescendantOrSelf(iterable $list, callable $callback, string $childrenKey)
     {
         $recursionCallback = function ($current, $key) use ($callback, $childrenKey) {
             $callback($current, $key);
 
             if (CompositeType::has($current, $childrenKey)) {
-                self::eachDescendant(CompositeType::get($current, $childrenKey), $callback, $childrenKey);
+                self::eachDescendantOrSelf(CompositeType::get($current, $childrenKey), $callback, $childrenKey);
             }
         };
 
-        self::each($array, $recursionCallback);
+        self::each($list, $recursionCallback);
+    }
+
+    /**
+     * Collect children recursively
+     *
+     * Collects children recursively of each item in the list, as well as the item itself
+     *
+     * @see self::eachDescendantOrSelf
+     *
+     * @param iterable $list
+     * @param string   $childrenKey
+     *
+     * @return ArrayObject
+     */
+    public static function descendantOrSelf(iterable $list, string $childrenKey): ArrayObject
+    {
+        $result = new ArrayObject();
+
+        self::eachDescendantOrSelf(
+            $list,
+            function ($item) use ($result) {
+                $result->append($item);
+            },
+            $childrenKey
+        );
+
+        return $result;
     }
 
     /**
@@ -395,7 +392,7 @@ class ArrayType
             return [];
         }
 
-        $propertyPath = (array)$propertyPath;
+        $propertyPath     = (array)$propertyPath;
         $propertyAccessor = new PropertyAccessor();
 
         $result = array_map(
@@ -461,7 +458,7 @@ class ArrayType
             return array_filter($array);
         }
 
-        $language = new ExpressionLanguage();
+        $language    = new ExpressionLanguage();
         $parsedNodes = $language->parse($expression, ['item'])->getNodes();
 
         return array_filter(
@@ -513,10 +510,10 @@ class ArrayType
 
             return false;
         }
-        $mean = array_sum($a) / $n;
+        $mean  = array_sum($a) / $n;
         $carry = 0.0;
         foreach ($a as $val) {
-            $d = ((double)$val) - $mean;
+            $d     = ((double)$val) - $mean;
             $carry += $d * $d;
         };
         if ($sample) {
