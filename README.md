@@ -54,6 +54,15 @@ Collects children recursively of each item in the list, as well as the item itse
 ArrayType::descendantOrSelf(iterable $list, string $childrenKey): ArrayObject
 ```
 
+##### Cast to an array
+Behavior for different types:
+  - array - returns as is
+  - iterable - converts to a native array (`iterator_to_array()`)
+  - another - creates an array with argument ([value])
+```php
+ArrayType::toArray($value);
+```
+
 ## Json functions
 
 #### Decodes a JSON string, used exceptions instead errors.

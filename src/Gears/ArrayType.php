@@ -132,17 +132,18 @@ class ArrayType
     }
 
     /**
-     * Cast value to array
+     * Cast to an array
      *
-     * If value is an array -return it
-     * If value is instance of Traversable - convert it to array
-     * Else - return new array, where value is a item
+     * Behavior for different types:
+     *   - array - returns as is
+     *   - iterable - converts to a native array (`iterator_to_array()`)
+     *   - another - creates an array with argument ([value])
      *
-     * @param $value
+     * @param mixed $value
      *
      * @return array
      */
-    public static function cast($value)
+    public static function toArray($value)
     {
         if (is_array($value)) {
             return $value;
@@ -152,6 +153,15 @@ class ArrayType
         }
 
         return [$value];
+    }
+
+    /**
+     * BC-stub, renamed to ArrayType::toArray
+     * @deprecated
+     */
+    public static function cast($value)
+    {
+        return self::toArray($value);
     }
 
     /**
