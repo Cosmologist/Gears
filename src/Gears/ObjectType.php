@@ -67,19 +67,26 @@ class ObjectType
     }
 
     /**
-     * Try to get object string representation (via __toString)
-     *
-     * @param object $object Object
-     *
-     * @return null|string
+     * @deprecated
+     * @see self::toString
      */
     public static function getStringRepresentation($object)
     {
-        if (method_exists($object, '__toString')) {
-            return (string) $object;
-        }
+        return self::toString($object);
+    }
 
-        return null;
+    /**
+     * A string representation of the object
+     *
+     * Useful to avoid: `PHP Recoverable fatal error:  Object of class X could not be converted to string`
+     *
+     * @param object $object Object
+     *
+     * @return string|null
+     */
+    public static function toString($object)
+    {
+        return method_exists($object, '__toString') ? $object->__toString() : null;
     }
 
     /**
