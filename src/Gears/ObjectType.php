@@ -76,7 +76,26 @@ class ObjectType
     }
 
     /**
-     * A string representation of the object
+     * Returns the result of __toString method if presents or generate object string
+     *
+     * @see self::toStringOrNull
+     * @see self::toStringAuto
+     *
+     * @param object $object Object
+     *
+     * @return string
+     */
+    public static function toString($object)
+    {
+        if (null !== $objectString = self::toStringOrNull($object)) {
+            return $objectString;
+        }
+
+        return  self::toStringAuto($object);
+    }
+
+    /**
+     * Returns the result of __toString method if presents or null
      *
      * Useful to avoid: `PHP Recoverable fatal error:  Object of class X could not be converted to string`
      *
@@ -84,9 +103,21 @@ class ObjectType
      *
      * @return string|null
      */
-    public static function toString($object)
+    public static function toStringOrNull($object)
     {
         return method_exists($object, '__toString') ? $object->__toString() : null;
+    }
+
+    /**
+     * Generates a readable string representation of any object
+     *
+     * @param object $object Object
+     *
+     * @return string
+     */
+    public static function toStringAuto($object)
+    {
+        return get_class($object) . '@' . spl_object_id($object);
     }
 
     /**
