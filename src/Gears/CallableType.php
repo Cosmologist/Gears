@@ -10,8 +10,8 @@ class CallableType
      * Parse callable from string expression.
      *
      * Supported syntax:
-     * - 'My\ClassName::method' - callable for static class method.
-     * - 'myFunction' - callable for function.
+     * - 'Foo\Bar::baz' - callable for static class method.
+     * - 'baz' - callable for function.
      *
      * @param string $expression The callable expression.
      *
