@@ -23,6 +23,30 @@ class NumberType
     }
 
     /**
+     * Checks if the value is odd
+     *
+     * @param int $value
+     *
+     * @return bool
+     */
+    public static function odd(int $value): bool
+    {
+        return boolval($value & 1);
+    }
+
+    /**
+     * Checks if the value is even
+     *
+     * @param int $value
+     *
+     * @return bool
+     */
+    public static function even(int $value): bool
+    {
+        return !self::odd($value);
+    }
+
+    /**
      * Round value to nearest multiple
      *
      * @param int|float $value Value
