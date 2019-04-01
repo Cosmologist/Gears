@@ -122,6 +122,18 @@ StringType::wrap('target', '/'); // '/target/'
 
 ## Number functions
 
+#### Checks if the value is odd
+```php
+NumberType::odd(2); // false
+NumberType::odd(3); // true
+```
+
+#### Checks if the value is even
+```php
+NumberType::even(2); // true
+NumberType::even(3); // false
+```
+
 ##### Round to nearest multiple
 ```php
 NumberType::roundStep(50, 5); // 50
