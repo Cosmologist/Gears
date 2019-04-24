@@ -8,7 +8,7 @@ namespace Cosmologist\Gears;
 class ClassType
 {
     /**
-     * Gets short namey
+     * Returns class short name
      *
      * If the property is not available, try to find and use a getter (property(), getProperty(), get_property())
      *
@@ -16,7 +16,7 @@ class ClassType
      *
      * @return string The class short name.
      */
-    public static function getShortName($class)
+    public static function shortName($class)
     {
         return (new \ReflectionClass($class))->getShortName();
     }
