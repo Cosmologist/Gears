@@ -29,7 +29,7 @@ class CallableType
      *
      * @return callable
      */
-    protected static function parseComposite($expression): callable
+    protected static function parseComposite($expression): array
     {
         return [
             StringType::strBefore($expression, self::SEPARATOR),
