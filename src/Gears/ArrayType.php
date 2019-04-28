@@ -157,6 +157,7 @@ class ArrayType
 
     /**
      * BC-stub, renamed to ArrayType::toArray
+     *
      * @deprecated
      */
     public static function cast($value)
@@ -214,35 +215,32 @@ class ArrayType
         $sortFunction     = $preserveKeys ? 'uasort' : 'usort';
         $propertyAccessor = new PropertyAccessor();
 
-        $sortFunction(
-            $array,
-            function ($left, $right) use ($propertyAccessor, $propertyPath, $comparisonFunction, $reverse) {
-                try {
-                    $leftValue = $propertyAccessor->getValue($left, $propertyPath);
-                } catch (AccessException $e) {
-                    $leftValue = null;
-                }
-                try {
-                    $rightValue = $propertyAccessor->getValue($right, $propertyPath);
-                } catch (AccessException $e) {
-                    $rightValue = null;
-                }
-
-                if ($comparisonFunction !== null) {
-                    $result = $comparisonFunction($leftValue, $rightValue);
-                } elseif ($leftValue === $rightValue) {
-                    $result = 0;
-                } else {
-                    $result = ($leftValue < $rightValue) ? -1 : 1;
-                }
-
-                if ($reverse) {
-                    $result *= -1;
-                }
-
-                return $result;
+        $sortFunction($array, function ($left, $right) use ($propertyAccessor, $propertyPath, $comparisonFunction, $reverse) {
+            try {
+                $leftValue = $propertyAccessor->getValue($left, $propertyPath);
+            } catch (AccessException $e) {
+                $leftValue = null;
             }
-        );
+            try {
+                $rightValue = $propertyAccessor->getValue($right, $propertyPath);
+            } catch (AccessException $e) {
+                $rightValue = null;
+            }
+
+            if ($comparisonFunction !== null) {
+                $result = $comparisonFunction($leftValue, $rightValue);
+            } elseif ($leftValue === $rightValue) {
+                $result = 0;
+            } else {
+                $result = ($leftValue < $rightValue) ? -1 : 1;
+            }
+
+            if ($reverse) {
+                $result *= -1;
+            }
+
+            return $result;
+        });
 
         return $array;
     }
@@ -262,24 +260,21 @@ class ArrayType
         $propertyAccessor = new PropertyAccessor();
         $uniqueValues     = [];
 
-        return array_filter(
-            $array,
-            function ($item) use ($propertyAccessor, $propertyPath, &$uniqueValues) {
-                try {
-                    $value = $propertyAccessor->getValue($item, $propertyPath);
-                } catch (AccessException $e) {
-                    $value = null;
-                }
-
-                if (!in_array($value, $uniqueValues)) {
-                    $uniqueValues[] = $value;
-
-                    return true;
-                }
-
-                return false;
+        return array_filter($array, function ($item) use ($propertyAccessor, $propertyPath, &$uniqueValues) {
+            try {
+                $value = $propertyAccessor->getValue($item, $propertyPath);
+            } catch (AccessException $e) {
+                $value = null;
             }
-        );
+
+            if (!in_array($value, $uniqueValues)) {
+                $uniqueValues[] = $value;
+
+                return true;
+            }
+
+            return false;
+        });
     }
 
     /**
@@ -341,13 +336,9 @@ class ArrayType
     {
         $result = new ArrayObject();
 
-        self::eachDescendantOrSelf(
-            $list,
-            function ($item) use ($result) {
-                $result->append($item);
-            },
-            $childrenKey
-        );
+        self::eachDescendantOrSelf($list, function ($item) use ($result) {
+            $result->append($item);
+        }, $childrenKey);
 
         return $result;
     }
@@ -405,21 +396,18 @@ class ArrayType
         $propertyPath     = (array)$propertyPath;
         $propertyAccessor = new PropertyAccessor();
 
-        $result = array_map(
-            function ($item) use ($propertyAccessor, $propertyPath) {
-                try {
-                    $result = [];
-                    foreach ($propertyPath as $key => $path) {
-                        $result[$key] = $propertyAccessor->getValue($item, $path);
-                    }
-
-                    return $result;
-                } catch (AccessException $e) {
-                    return null;
+        $result = array_map(function ($item) use ($propertyAccessor, $propertyPath) {
+            try {
+                $result = [];
+                foreach ($propertyPath as $key => $path) {
+                    $result[$key] = $propertyAccessor->getValue($item, $path);
                 }
-            },
-            $array
-        );
+
+                return $result;
+            } catch (AccessException $e) {
+                return null;
+            }
+        }, $array);
 
         if (count($propertyPath) === 1) {
             return array_column($result, key($propertyPath));
@@ -454,29 +442,26 @@ class ArrayType
     /**
      * Filters the items by expression
      *
-     * @param array  $array      The input array
-     * @param string $expression The expression
-     *                           If the expression returns true, the current value from array is returned into
-     *                           the result array. Array keys are preserved.
-     *                           Use "item" alias in the expression for access to iterated array item.
+     * @param array                   $array              The input array
+     * @param string                  $expression         The expression
+     *                                                    If the expression returns true, the current value from array is returned into
+     *                                                    the result array. Array keys are preserved.
+     *                                                    Use "item" alias in the expression for access to iterated array item.
+     * @param ExpressionLanguage|null $expressionLanguage Pre-configured ExpressionLanguage instance
      *
      * @return array
      */
-    public static function filter($array, $expression = null)
+    public static function filter($array, $expression = null, ExpressionLanguage $expressionLanguage = null)
     {
         if ($expression === null) {
             return array_filter($array);
         }
 
-        $language    = new ExpressionLanguage();
-        $parsedNodes = $language->parse($expression, ['item'])->getNodes();
+        $language = $expressionLanguage ?? new ExpressionLanguage();
 
-        return array_filter(
-            self::cast($array),
-            function ($item) use ($parsedNodes) {
-                return (bool)$parsedNodes->evaluate([], ['item' => $item]);
-            }
-        );
+        return array_filter(self::cast($array), function ($item) use ($language, $expression) {
+            return (bool) $language->evaluate($expression, compact('item'));
+        });
     }
 
     /**
@@ -599,9 +584,6 @@ class ArrayType
      */
     public static function index($array, $path)
     {
-        return array_combine(
-            self::collect($array, $path),
-            $array
-        );
+        return array_combine(self::collect($array, $path), $array);
     }
 }
