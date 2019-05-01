@@ -78,7 +78,7 @@ class ObjectType
     /**
      * Returns the result of __toString method if presents or generate object string
      *
-     * @see self::toStringOrNull
+     * @see self::toStringMagicMethod
      * @see self::toStringAuto
      *
      * @param object $object Object
@@ -87,7 +87,7 @@ class ObjectType
      */
     public static function toString($object)
     {
-        if (null !== $objectString = self::toStringOrNull($object)) {
+        if (null !== $objectString = self::toStringMagicMethod($object)) {
             return $objectString;
         }
 
@@ -95,7 +95,7 @@ class ObjectType
     }
 
     /**
-     * Returns the result of __toString method if presents or null
+     * Returns the result of __toString magic method or null
      *
      * Useful to avoid: `PHP Recoverable fatal error:  Object of class X could not be converted to string`
      *
@@ -103,7 +103,7 @@ class ObjectType
      *
      * @return string|null
      */
-    public static function toStringOrNull($object)
+    public static function toStringMagicMethod($object)
     {
         return method_exists($object, '__toString') ? $object->__toString() : null;
     }
