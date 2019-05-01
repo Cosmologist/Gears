@@ -541,19 +541,19 @@ class ArrayType
     }
 
     /**
-     * Get the first element of an array
+     * Returs the first element from an array or iterable
      *
-     * @param array $array The input array.
+     * @param array|iterable $array The input array.
      *
      * @return mixed|null
      */
     public static function first($array)
     {
-        if (count($array) === 0) {
-            return null;
+        foreach ($array as $item) {
+            return $item;
         }
 
-        return reset($array);
+        return null;
     }
 
     /**
