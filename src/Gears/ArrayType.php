@@ -440,28 +440,38 @@ class ArrayType
     }
 
     /**
-     * Filters the items by expression
+     * Filters the items.
      *
-     * @param array                   $array              The input array
-     * @param string                  $expression         The expression
-     *                                                    If the expression returns true, the current value from array is returned into
-     *                                                    the result array. Array keys are preserved.
-     *                                                    Use "item" alias in the expression for access to iterated array item.
-     * @param ExpressionLanguage|null $expressionLanguage Pre-configured ExpressionLanguage instance
+     * @param array                   $array                The input array
+     * @param string|callable|null    $expressionOrFunction The function or ExpressionLanguage expression for filter callback.
+     *                                                      The callback function will auto-generated if passed ExpressionLanguage expression.
+     *                                                      If the callback or expression evaluation result returns true, the current value from array is returned into
+     *                                                      the result array. Array keys are preserved.
+     *                                                      Use "item" keyword in the expression for access to iterated array item.
+     * @param bool                    $invert
+     * @param ExpressionLanguage|null $expressionLanguage   Pre-configured ExpressionLanguage instance
      *
      * @return array
      */
-    public static function filter($array, $expression = null, ExpressionLanguage $expressionLanguage = null)
+    public static function filter($array, $expressionOrFunction = null, $invert = false, ExpressionLanguage $expressionLanguage = null)
     {
-        if ($expression === null) {
+        if ($expressionOrFunction === null) {
             return array_filter($array);
         }
 
         $language = $expressionLanguage ?? new ExpressionLanguage();
 
-        return array_filter(self::cast($array), function ($item) use ($language, $expression) {
-            return (bool) $language->evaluate($expression, compact('item'));
-        });
+        $callback = is_callable($expressionOrFunction) ? $expressionOrFunction : function ($item) use ($language, $expressionOrFunction) {
+            return (bool) $language->evaluate($expressionOrFunction, compact('item'));
+        };
+
+        if ($invert === true) {
+            $callback = function ($item) use ($callback) {
+                return !$callback($item);
+            };
+        }
+
+        return array_filter(self::cast($array), $callback);
     }
 
     /**
