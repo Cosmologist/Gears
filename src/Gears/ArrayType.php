@@ -3,6 +3,7 @@
 namespace Cosmologist\Gears;
 
 use ArrayObject;
+use Countable;
 use Symfony\Component\ExpressionLanguage\ExpressionLanguage;
 use Symfony\Component\PropertyAccess\Exception\AccessException;
 use Symfony\Component\PropertyAccess\PropertyAccessor;
@@ -595,5 +596,19 @@ class ArrayType
     public static function index($array, $path)
     {
         return array_combine(self::collect($array, $path), $array);
+    }
+
+    /**
+     * Verify that the contents of a variable is a countable value
+     *
+     * @use If PHP >= 7.3.0 use is_countable function
+     *
+     * @param mixed $arrayOrCountable
+     *
+     * @return bool
+     */
+    public static function isCountable($arrayOrCountable): bool
+    {
+        return is_array($arrayOrCountable) || ($arrayOrCountable instanceof Countable);
     }
 }

@@ -63,6 +63,12 @@ Behavior for different types:
 ArrayType::toArray($value);
 ```
 
+##### Verify that the contents of a variable is a countable value
+> If PHP >= 7.3.0 use `is_countable` function
+```php
+ArrayType::isCountable($arrayOrCountable): bool;
+```
+
 ## Json functions
 
 #### Decodes a JSON string, used exceptions instead errors.
