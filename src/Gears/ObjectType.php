@@ -51,19 +51,15 @@ class ObjectType
     }
 
     /**
-     * Casts target to class name.
+     * Cast an object or a FQCN to FQCN
      *
-     * @param object|string $target Object or FQCN
+     * @param object|string $objectOrClass The object or classname
      *
-     * @return string FQCN
+     * @return string
      */
-    public static function castClass($target)
+    public static function toClassName($objectOrClass): string
     {
-        if (is_object($target)) {
-            return get_class($target);
-        }
-
-        return $target;
+        return is_object($objectOrClass) ? get_class($objectOrClass) : $objectOrClass;
     }
 
     /**

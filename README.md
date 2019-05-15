@@ -111,6 +111,13 @@ PHP default behavior: if the method is not defined, an error (`Object of class X
 ObjectType::toString($instance);
 ```
 
+##### Cast an object or a FQCN to FQCN
+Returns the result of `__toString` or null if the method is not defined.  
+PHP default behavior: if the method is not defined, an error (`Object of class X could not be converted to string`) is triggered.
+```php
+ObjectType::toClassName($objectOrClass): string;
+```
+
 ## String functions
 ##### Determine if a given string contains a given substring
 ```php
