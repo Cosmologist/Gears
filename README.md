@@ -1,6 +1,13 @@
 # php-gears
 Collection of useful functions
 
+- [Installation](#installation)
+- [Array functions](#array-functions)
+- [Object functions](#json-functions)
+- [String functions](#json-functions)
+- [Number functions](#json-functions)
+- [Callable functions](#callable-functions)
+
 ## Installation
 ```
 composer require cosmologist/gears
@@ -175,4 +182,11 @@ NumberType::spellout(123.45); // one hundred twenty-three point four five
 
 // Specific locale used
 NumberType::spellout(123.45, 'ru'); // сто двадцать три целых сорок пять сотых
+```
+
+#### Callable functions
+Get a suitable reflection object for the callable
+```php
+CallableType::reflection('is_null'); // Returns a ReflectionFunction instance
+CallableType::reflection([$foo, 'bar']); // Returns a ReflectionMethod instance
 ```

@@ -2,6 +2,10 @@
 
 namespace Cosmologist\Gears;
 
+use ReflectionFunction;
+use ReflectionFunctionAbstract;
+use ReflectionMethod;
+
 class CallableType
 {
     protected const SEPARATOR = '::';
@@ -71,5 +75,17 @@ class CallableType
     public static function validate(string $expression): bool
     {
         return is_callable(self::parse($expression));
+    }
+
+    /**
+     * Get a suitable reflection object for the callable
+     *
+     * @param callable $callable
+     *
+     * @return ReflectionFunctionAbstract|ReflectionFunction|ReflectionMethod
+     */
+    public static function reflection(callable $callable): ReflectionFunctionAbstract
+    {
+        return is_array($callable) ? new ReflectionMethod(...$callable) : new ReflectionFunction($callable);
     }
 }
