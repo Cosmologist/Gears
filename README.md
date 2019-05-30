@@ -99,7 +99,7 @@ Uses Symfony PropertyAccessor
 ```php
 ObjectType::set($person, 'address.street', 'Abbey Road');
 ```
-Uses Symfony PropertyAccessor
+Used Symfony PropertyAccessor
 ##### Reads the value of internal object property (protected and private)
 Read [ocramius](https://ocramius.github.io/blog/accessing-private-php-class-members-without-reflection/)
 ```php
@@ -118,11 +118,12 @@ PHP default behavior: if the method is not defined, an error (`Object of class X
 ObjectType::toString($instance);
 ```
 
-##### Cast an object or a FQCN to FQCN
-Returns the result of `__toString` or null if the method is not defined.  
-PHP default behavior: if the method is not defined, an error (`Object of class X could not be converted to string`) is triggered.
+##### Determine data classname
+ - if $data is object then returns FQCN of the object
+ - if $data is FQCN of existing class then returns as is
+ - else returns null
 ```php
-ObjectType::toClassName($objectOrClass): string;
+ObjectType::toClassName($data): ?string;
 ```
 
 ## String functions

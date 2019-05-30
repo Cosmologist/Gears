@@ -51,15 +51,26 @@ class ObjectType
     }
 
     /**
-     * Cast an object or a FQCN to FQCN
+     * Determine data classname
      *
-     * @param object|string $objectOrClass The object or classname
+     *  - if $data is object then returns FQCN of the object
+     *  - if $data is FQCN of existing class then returns as is
+     *  - else returns null
      *
-     * @return string
+     * @param object|string
+     *
+     * @return string|null
      */
-    public static function toClassName($objectOrClass): string
+    public static function toClassName($data): ?string
     {
-        return is_object($objectOrClass) ? get_class($objectOrClass) : $objectOrClass;
+        if (is_object($data)) {
+            return get_class($data);
+        }
+        if (class_exists($data)) {
+            return $data;
+        }
+
+        return null;
     }
 
     /**
