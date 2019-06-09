@@ -26,6 +26,11 @@ ArrayType::checkAssoc([1, 2, 3]); // false
 ArrayType::checkAssoc(['foo' => 'bar']); // true
 ```
 
+##### Check if a value exists in an array
+```php
+ArrayType::contains(array $list, mixed $item);
+```
+
 ##### Get an item from the array by key
 ```php
 ArrayType::get(['fruit' => 'apple', 'color' => 'red'], 'fruit'); // apple
@@ -99,7 +104,7 @@ Uses Symfony PropertyAccessor
 ```php
 ObjectType::set($person, 'address.street', 'Abbey Road');
 ```
-Used Symfony PropertyAccessor
+Uses Symfony PropertyAccessor
 ##### Reads the value of internal object property (protected and private)
 Read [ocramius](https://ocramius.github.io/blog/accessing-private-php-class-members-without-reflection/)
 ```php
@@ -118,12 +123,11 @@ PHP default behavior: if the method is not defined, an error (`Object of class X
 ObjectType::toString($instance);
 ```
 
-##### Determine data classname
- - if $data is object then returns FQCN of the object
- - if $data is FQCN of existing class then returns as is
- - else returns null
+##### Cast an object or a FQCN to FQCN
+Returns the result of `__toString` or null if the method is not defined.  
+PHP default behavior: if the method is not defined, an error (`Object of class X could not be converted to string`) is triggered.
 ```php
-ObjectType::toClassName($data): ?string;
+ObjectType::toClassName($objectOrClass): string;
 ```
 
 ## String functions

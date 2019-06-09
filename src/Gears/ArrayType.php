@@ -60,6 +60,19 @@ class ArrayType
     }
 
     /**
+     * Checks if a value exists in an array
+     *
+     * @param array $array
+     * @param       $value
+     *
+     * @return bool
+     */
+    public static function contains(array $array, $value): bool
+    {
+        return in_array($value, $array);
+    }
+
+    /**
      * Group an array by the specified column
      *
      * @param array $array  Array
