@@ -74,8 +74,11 @@ class StringType
     public static function startsWith($haystack, $needles, $caseSensitive = true)
     {
         foreach ((array) $needles as $needle) {
-            $pos = $caseSensitive ? mb_strpos($haystack, $needle) : mb_stripos($haystack, $needle);
-            if ($needle != '' && $pos === 0) {
+            if (!is_string($needle) || $needle === '') {
+                continue;
+            }
+
+            if (($caseSensitive ? mb_strpos($haystack, $needle) : mb_stripos($haystack, $needle)) === 0) {
                 return true;
             }
         }
