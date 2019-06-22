@@ -10,12 +10,24 @@ class FileSystem
     /**
      * Directory separator in the *nix systems
      */
-    const UNIX_DIRECTORY_SEPARATOR = '/';
+    public const UNIX_DIRECTORY_SEPARATOR = '/';
 
     /**
      * Directory separator in the Windows
      */
-    const WINDOWS_DIRECTORY_SEPARATOR = '\\';
+    public const WINDOWS_DIRECTORY_SEPARATOR = '\\';
+
+    /**
+     * Returns whether the path is an absolute path
+     *
+     * @param string $path A path
+     *
+     * @return bool
+     */
+    public static function isAbsolutePath(string $path): bool
+    {
+        return StringType::startsWith($path, [self::UNIX_DIRECTORY_SEPARATOR, self::WINDOWS_DIRECTORY_SEPARATOR]);
+    }
 
     /**
      * Join paths and correct separators count
@@ -25,31 +37,35 @@ class FileSystem
      * FileSystem::joinPaths('a/', '/b/', '/c', 'd'); // Return a/b/c/d
      * </code>
      *
-     * @param array  $paths Paths
-     * @param string $directorySeparator Final directory separator
+     * @param string[] $paths Paths
      *
      * @return string Path
      */
-    public static function joinPaths(array $paths, $directorySeparator=DIRECTORY_SEPARATOR)
+    public static function joinPaths(...$paths): string
     {
-        return preg_replace('#' . preg_quote($directorySeparator) . '+#', $directorySeparator,
-            implode($directorySeparator, $paths));
+        return (self::isAbsolutePath(ArrayType::first($paths)) ? DIRECTORY_SEPARATOR : '')
+            .implode(
+                DIRECTORY_SEPARATOR,
+                array_map(
+                    static function ($path) {
+                        return trim($path, self::WINDOWS_DIRECTORY_SEPARATOR . self::UNIX_DIRECTORY_SEPARATOR);
+                    },
+                    $paths
+                )
+            );
     }
 
     /**
-     * Normalize path separators
+     * Corrects the path separators
      *
-     * Function replace path separators by separator specific for the current OS
+     * Replace the separators in the path to the system suitable separators
      *
-     * @param string $path The file path
+     * @param string $path The path
      *
      * @return string
      */
-    public static function normalizeSeparators($path)
+    public static function correctPathSeparators(string $path): string
     {
-        $incorrectSeparator = (DIRECTORY_SEPARATOR === self::UNIX_DIRECTORY_SEPARATOR) ?
-            self::WINDOWS_DIRECTORY_SEPARATOR : self::UNIX_DIRECTORY_SEPARATOR;
-
-        return str_replace($incorrectSeparator, DIRECTORY_SEPARATOR, $path);
+        return str_replace([self::WINDOWS_DIRECTORY_SEPARATOR, self::UNIX_DIRECTORY_SEPARATOR], DIRECTORY_SEPARATOR, $path);
     }
 }
