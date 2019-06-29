@@ -43,16 +43,14 @@ class FileSystem
      */
     public static function joinPaths(...$paths): string
     {
-        return (self::isAbsolutePath(ArrayType::first($paths)) ? DIRECTORY_SEPARATOR : '')
-            .implode(
+        return str_replace(
+            [self::UNIX_DIRECTORY_SEPARATOR, self::WINDOWS_DIRECTORY_SEPARATOR, DIRECTORY_SEPARATOR . DIRECTORY_SEPARATOR],
+            DIRECTORY_SEPARATOR,
+            implode(
                 DIRECTORY_SEPARATOR,
-                array_map(
-                    static function ($path) {
-                        return trim($path, self::WINDOWS_DIRECTORY_SEPARATOR . self::UNIX_DIRECTORY_SEPARATOR);
-                    },
-                    $paths
-                )
-            );
+                $paths
+            )
+        );
     }
 
     /**
@@ -61,11 +59,12 @@ class FileSystem
      * Replace the separators in the path to the system suitable separators
      *
      * @param string $path The path
+     * @param string $separator The separator [optional]
      *
      * @return string
      */
-    public static function correctPathSeparators(string $path): string
+    public static function correctPathSeparators(string $path, string $separator = DIRECTORY_SEPARATOR): string
     {
-        return str_replace([self::WINDOWS_DIRECTORY_SEPARATOR, self::UNIX_DIRECTORY_SEPARATOR], DIRECTORY_SEPARATOR, $path);
+        return str_replace([self::WINDOWS_DIRECTORY_SEPARATOR, self::UNIX_DIRECTORY_SEPARATOR], $separator, $path);
     }
 }
