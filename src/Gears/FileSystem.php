@@ -44,7 +44,7 @@ class FileSystem
     public static function joinPaths(...$paths): string
     {
         return preg_replace(
-            '/[/\\\]+/',
+            '#[/\\\]+#',
             DIRECTORY_SEPARATOR,
             implode(
                 DIRECTORY_SEPARATOR,
