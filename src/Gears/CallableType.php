@@ -11,34 +11,39 @@ class CallableType
     protected const SEPARATOR = '::';
 
     /**
-     * Parse callable expression.
+     * Extracts a class name from callable expression
      *
-     * Supported syntax:
-     * - 'Foo\Bar::baz' - callable for static class method.
-     * - 'baz' - callable for function.
+     * Example:
+     * ```php
+     * self::extractClassFromExpression('Foo\Bar::baz');
+     * // Result is: 'Foo\Bar'
+     * ```
      *
-     * @param string $expression The callable expression.
+     * @param string $expression
      *
-     * @return callable
+     * @return string
      */
-    public static function parse(string $expression): callable
+    protected static function extractClassFromExpression(string $expression): string
     {
-        return self::isFunctionFormat($expression) ? $expression : self::parseComposite($expression);
+        return StringType::strBefore($expression, self::SEPARATOR);
     }
 
     /**
-     * Parse composite (like "Foo::bar") callable expression
+     * Extracts a method name from callable expression
      *
-     * @param string $expression The callable expression.
+     * Example:
+     * ```php
+     * self::extractClassFromExpression('Foo\Bar::baz');
+     * // Result is: 'baz'
+     * ```
      *
-     * @return callable
+     * @param string $expression
+     *
+     * @return string
      */
-    protected static function parseComposite($expression): array
+    protected static function extractMethodFromExpression(string $expression): string
     {
-        return [
-            StringType::strBefore($expression, self::SEPARATOR),
-            StringType::strAfter($expression, self::SEPARATOR)
-        ];
+        return StringType::strAfter($expression, self::SEPARATOR);
     }
 
     /**
@@ -74,7 +79,7 @@ class CallableType
      */
     public static function validate(string $expression): bool
     {
-        return is_callable(self::parse($expression));
+        return is_callable($expression) && (!self::isCompositeFormat($expression) || (new ReflectionMethod(self::extractClassFromExpression($expression), self::extractMethodFromExpression($expression)))->isStatic()) ;
     }
 
     /**
