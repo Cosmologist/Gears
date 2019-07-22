@@ -464,10 +464,12 @@ class ArrayType
      *                                                      Use "item" keyword in the expression for access to iterated array item.
      * @param bool                    $invert
      * @param ExpressionLanguage|null $expressionLanguage   Pre-configured ExpressionLanguage instance
+     * @param array                   $vars The parameters used in the expression and to be passed to the evaluator
+     *                                      As an associative array
      *
      * @return array
      */
-    public static function filter($array, $expressionOrFunction = null, $invert = false, ExpressionLanguage $expressionLanguage = null)
+    public static function filter($array, $expressionOrFunction = null, $invert = false, ExpressionLanguage $expressionLanguage = null, array $vars = [])
     {
         if ($expressionOrFunction === null) {
             return array_filter($array);
@@ -475,8 +477,8 @@ class ArrayType
 
         $language = $expressionLanguage ?? new ExpressionLanguage();
 
-        $callback = is_callable($expressionOrFunction) ? $expressionOrFunction : function ($item) use ($language, $expressionOrFunction) {
-            return (bool) $language->evaluate($expressionOrFunction, compact('item'));
+        $callback = is_callable($expressionOrFunction) ? $expressionOrFunction : function ($item) use ($language, $expressionOrFunction, $vars) {
+            return (bool) $language->evaluate($expressionOrFunction, compact('item') + $vars);
         };
 
         if ($invert === true) {
