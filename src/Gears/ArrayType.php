@@ -15,7 +15,9 @@ use Traversable;
 class ArrayType
 {
     /**
-     * Checks if the given key or index exists in the array
+     * Checks if the given key or index exists in the array.
+     *
+     * Supports negative indexes.
      *
      * @param array $array
      * @param mixed $key
@@ -24,39 +26,55 @@ class ArrayType
      */
     public static function has(array $array, $key): bool
     {
-        return array_key_exists($key, $array);
+        return array_key_exists(self::getRealIndex($key, $array), $array);
     }
 
     /**
-     * Gets an item from the array by key.
+     * Gets an item from the array.
      *
      * Return default value if key does not exist.
+     * Supports negative indexes.
      *
-     * @param  array $array
-     * @param  mixed $key
-     * @param  mixed $default
+     * @param array $array
+     * @param mixed $key
+     * @param mixed $default
      *
      * @return mixed
      */
     public static function get(array $array, $key, $default = null)
     {
-        return $array[$key] ?? $default;
+        return $array[self::getRealIndex($key, $array)] ?? $default;
     }
 
     /**
      * Adds a value to an array with a specific key.
      *
-     * @param  array $array
-     * @param  mixed $key
-     * @param  mixed $value
+     * Supports negative indexes.
+     *
+     * @param array $array
+     * @param mixed $key
+     * @param mixed $value
      *
      * @return array The input array with new item
      */
     public static function set(array $array, $key, $value): array
     {
-        $array[$key] = $value;
+        $array[self::getRealIndex($key, $array)] = $value;
 
         return $array;
+    }
+
+    /**
+     * Returns the real index if the passed index is negative or returns the original passed index.
+     *
+     * @param mixed           $index
+     * @param array|Countable $array
+     *
+     * @return int
+     */
+    public static function getRealIndex($index, $array)
+    {
+        return is_int($index) && ($index < 0) ? count($array) + $index : $index;
     }
 
     /**
@@ -229,32 +247,35 @@ class ArrayType
         $sortFunction     = $preserveKeys ? 'uasort' : 'usort';
         $propertyAccessor = new PropertyAccessor();
 
-        $sortFunction($array, function ($left, $right) use ($propertyAccessor, $propertyPath, $comparisonFunction, $reverse) {
-            try {
-                $leftValue = $propertyAccessor->getValue($left, $propertyPath);
-            } catch (AccessException $e) {
-                $leftValue = null;
-            }
-            try {
-                $rightValue = $propertyAccessor->getValue($right, $propertyPath);
-            } catch (AccessException $e) {
-                $rightValue = null;
-            }
+        $sortFunction(
+            $array,
+            function ($left, $right) use ($propertyAccessor, $propertyPath, $comparisonFunction, $reverse) {
+                try {
+                    $leftValue = $propertyAccessor->getValue($left, $propertyPath);
+                } catch (AccessException $e) {
+                    $leftValue = null;
+                }
+                try {
+                    $rightValue = $propertyAccessor->getValue($right, $propertyPath);
+                } catch (AccessException $e) {
+                    $rightValue = null;
+                }
 
-            if ($comparisonFunction !== null) {
-                $result = $comparisonFunction($leftValue, $rightValue);
-            } elseif ($leftValue === $rightValue) {
-                $result = 0;
-            } else {
-                $result = ($leftValue < $rightValue) ? -1 : 1;
-            }
+                if ($comparisonFunction !== null) {
+                    $result = $comparisonFunction($leftValue, $rightValue);
+                } elseif ($leftValue === $rightValue) {
+                    $result = 0;
+                } else {
+                    $result = ($leftValue < $rightValue) ? -1 : 1;
+                }
 
-            if ($reverse) {
-                $result *= -1;
-            }
+                if ($reverse) {
+                    $result *= -1;
+                }
 
-            return $result;
-        });
+                return $result;
+            }
+        );
 
         return $array;
     }
@@ -274,21 +295,24 @@ class ArrayType
         $propertyAccessor = new PropertyAccessor();
         $uniqueValues     = [];
 
-        return array_filter($array, function ($item) use ($propertyAccessor, $propertyPath, &$uniqueValues) {
-            try {
-                $value = $propertyAccessor->getValue($item, $propertyPath);
-            } catch (AccessException $e) {
-                $value = null;
+        return array_filter(
+            $array,
+            function ($item) use ($propertyAccessor, $propertyPath, &$uniqueValues) {
+                try {
+                    $value = $propertyAccessor->getValue($item, $propertyPath);
+                } catch (AccessException $e) {
+                    $value = null;
+                }
+
+                if (!in_array($value, $uniqueValues)) {
+                    $uniqueValues[] = $value;
+
+                    return true;
+                }
+
+                return false;
             }
-
-            if (!in_array($value, $uniqueValues)) {
-                $uniqueValues[] = $value;
-
-                return true;
-            }
-
-            return false;
-        });
+        );
     }
 
     /**
@@ -339,20 +363,24 @@ class ArrayType
      *
      * Collects children recursively of each item in the list, as well as the item itself
      *
-     * @see self::eachDescendantOrSelf
-     *
      * @param iterable $list
      * @param string   $childrenKey
      *
      * @return ArrayObject
+     * @see self::eachDescendantOrSelf
+     *
      */
     public static function descendantOrSelf(iterable $list, string $childrenKey): ArrayObject
     {
         $result = new ArrayObject();
 
-        self::eachDescendantOrSelf($list, function ($item) use ($result) {
-            $result->append($item);
-        }, $childrenKey);
+        self::eachDescendantOrSelf(
+            $list,
+            function ($item) use ($result) {
+                $result->append($item);
+            },
+            $childrenKey
+        );
 
         return $result;
     }
@@ -410,18 +438,21 @@ class ArrayType
         $propertyPath     = (array)$propertyPath;
         $propertyAccessor = new PropertyAccessor();
 
-        $result = array_map(function ($item) use ($propertyAccessor, $propertyPath) {
-            try {
-                $result = [];
-                foreach ($propertyPath as $key => $path) {
-                    $result[$key] = $propertyAccessor->getValue($item, $path);
-                }
+        $result = array_map(
+            function ($item) use ($propertyAccessor, $propertyPath) {
+                try {
+                    $result = [];
+                    foreach ($propertyPath as $key => $path) {
+                        $result[$key] = $propertyAccessor->getValue($item, $path);
+                    }
 
-                return $result;
-            } catch (AccessException $e) {
-                return null;
-            }
-        }, $array);
+                    return $result;
+                } catch (AccessException $e) {
+                    return null;
+                }
+            },
+            $array
+        );
 
         if (count($propertyPath) === 1) {
             return array_column($result, key($propertyPath));
@@ -464,8 +495,8 @@ class ArrayType
      *                                                      Use "item" keyword in the expression for access to iterated array item.
      * @param bool                    $invert
      * @param ExpressionLanguage|null $expressionLanguage   Pre-configured ExpressionLanguage instance
-     * @param array                   $vars The parameters used in the expression and to be passed to the evaluator
-     *                                      As an associative array
+     * @param array                   $vars                 The parameters used in the expression and to be passed to the evaluator
+     *                                                      As an associative array
      *
      * @return array
      */
@@ -478,7 +509,7 @@ class ArrayType
         $language = $expressionLanguage ?? new ExpressionLanguage();
 
         $callback = is_callable($expressionOrFunction) ? $expressionOrFunction : function ($item) use ($language, $expressionOrFunction, $vars) {
-            return (bool) $language->evaluate($expressionOrFunction, compact('item') + $vars);
+            return (bool)$language->evaluate($expressionOrFunction, compact('item') + $vars);
         };
 
         if ($invert === true) {
@@ -513,10 +544,10 @@ class ArrayType
      * @param array $a
      * @param bool  $sample [optional] Defaults to false
      *
-     * @see http://php.net/manual/en/function.stats-standard-deviation.php
+     * @return float|bool The standard deviation or false on error.
      * @see http://php.net/manual/ru/function.stats-standard-deviation.php#114473
      *
-     * @return float|bool The standard deviation or false on error.
+     * @see http://php.net/manual/en/function.stats-standard-deviation.php
      */
     public static function deviation(array $a, $sample = false)
     {
