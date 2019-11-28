@@ -198,8 +198,41 @@ class StringType
      *
      * @return string|null
      */
-    public function guessMime(string $string): ?string
+    public static function guessMime(string $string): ?string
     {
         return (new finfo(FILEINFO_MIME_TYPE))->buffer($string) ?? null;
+    }
+
+    /**
+     * Guess the suitable file-extension for string
+     *
+     * @param string $string
+     *
+     * @return string|null
+     */
+    public static function guessExtension(string $string): ?string
+    {
+        $result = (new finfo(FILEINFO_EXTENSION))->buffer($string);
+
+        if (is_string($result) && $result !== '???') {
+            return ArrayType::first(explode('|', $result));
+        }
+
+        return null;
+    }
+
+    /**
+     * Check if a string is a binary string
+     *
+     * @param string $string The string
+     * @param bool   $isNullBinary Consider zero binary?
+     *
+     * @return bool
+     */
+    public static function isBinary(string $string, $isNullBinary=false): bool
+    {
+        $mime = self::guessMime($string);
+
+        return $mime === null ? $isNullBinary : !self::startsWith($mime, 'text/');
     }
 }

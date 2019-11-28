@@ -150,6 +150,16 @@ StringType::wrap('target', '/'); // '/target/'
 StringType::guessMime(file_get_contents('/foo/bar.baz'));
 ```
 
+##### Guess the suitable file-extension for string
+```php
+StringType::guessExtension('Foo bar baz'); // txt
+```
+
+##### Check if a string is a binary string
+```php
+StringType::isBinary('Foo bar baz'); // false
+```
+
 ## Number functions
 
 #### Checks if the value is odd
