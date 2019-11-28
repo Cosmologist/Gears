@@ -2,6 +2,7 @@
 
 namespace Cosmologist\Gears;
 
+use finfo;
 use RuntimeException;
 
 /**
@@ -188,5 +189,17 @@ class StringType
         }
 
         return vsprintf($format, $values);
+    }
+
+    /**
+     * Guess the mime-type of string
+     *
+     * @param string $string
+     *
+     * @return string|null
+     */
+    public function guessMime(string $string): ?string
+    {
+        return (new finfo(FILEINFO_MIME_TYPE))->buffer($string) ?? null;
     }
 }

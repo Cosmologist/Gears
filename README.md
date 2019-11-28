@@ -3,9 +3,9 @@ Collection of useful functions
 
 - [Installation](#installation)
 - [Array functions](#array-functions)
-- [Object functions](#json-functions)
-- [String functions](#json-functions)
-- [Number functions](#json-functions)
+- [Object functions](#object-functions)
+- [String functions](#string-functions)
+- [Number functions](#number-functions)
 - [Callable functions](#callable-functions)
 
 ## Installation
@@ -143,6 +143,11 @@ StringType::replaceFirst('name name name', 'name', 'title'); // 'title name name
 ##### Wrap string
 ```php
 StringType::wrap('target', '/'); // '/target/'
+```
+
+##### Guess the type of string
+```php
+StringType::guessMime(file_get_contents('/foo/bar.baz'));
 ```
 
 ## Number functions
