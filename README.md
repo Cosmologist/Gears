@@ -204,6 +204,12 @@ NumberType::spellout(123.45); // one hundred twenty-three point four five
 NumberType::spellout(123.45, 'ru'); // сто двадцать три целых сорок пять сотых
 ```
 
+##### Division with zero tolerance
+```php
+NumberType::divideSafely(1, 0); // null
+NumberType::divideSafely(1, 0, 'zero'); // 'zero'
+```
+
 #### Callable functions
 Get a suitable reflection object for the callable
 ```php
