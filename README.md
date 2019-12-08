@@ -207,6 +207,7 @@ NumberType::spellout(123.45, 'ru'); // сто двадцать три целых
 ##### Division with zero tolerance
 ```php
 NumberType::divideSafely(1, 0); // null
+NumberType::divideSafely(1, null); // null
 NumberType::divideSafely(1, 0, 'zero'); // 'zero'
 ```
 

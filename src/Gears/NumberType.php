@@ -106,14 +106,14 @@ class NumberType
     /**
      * Division with zero tolerance
      *
-     * @param      $left          Left operand
-     * @param      $right         Right operand
-     * @param null $fallbackValue Value to return when the right operand is zero
+     * @param float|int $left          Left operand
+     * @param float|int $right         Right operand
+     * @param null      $fallbackValue Value to return when the right operand is zero
      *
      * @return float|int|null
      */
     public static function divideSafely($left, $right, $fallbackValue = null)
     {
-        return $right === 0 ? $fallbackValue : ($left / $right);
+        return $right === 0 || $right === null ? $fallbackValue : ($left / $right);
     }
 }
