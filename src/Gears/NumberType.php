@@ -116,4 +116,18 @@ class NumberType
     {
         return $right === 0 || $right === null ? $fallbackValue : ($left / $right);
     }
+
+    /**
+     * Unsign number.
+     *
+     * A negative value will be converted to zero, the rest of the value will be returned unchanged.
+     *
+     * @param float|int $number
+     *
+     * @return float|int
+     */
+    public static function unsign($number)
+    {
+        return $number < 0 ? 0 : $number;
+    }
 }
