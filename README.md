@@ -211,6 +211,16 @@ NumberType::divideSafely(1, null); // null
 NumberType::divideSafely(1, 0, 'zero'); // 'zero'
 ```
 
+##### Unsign number
+A negative value will be converted to zero, the rest of the value will be returned unchanged.
+```php
+NumberType::unsign(-1); // 0
+NumberType::unsign(-0.99); // 0
+NumberType::unsign(0); // 0
+NumberType::unsign(0.99); // 0.99
+NumberType::unsign(1); // 1
+```
+
 #### Callable functions
 Get a suitable reflection object for the callable
 ```php
