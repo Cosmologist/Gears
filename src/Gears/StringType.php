@@ -3,6 +3,7 @@
 namespace Cosmologist\Gears;
 
 use finfo;
+use Mimey\MimeTypes;
 use RuntimeException;
 
 /**
@@ -64,13 +65,13 @@ class StringType
     /**
      * Determine if a given string starts with a given substring.
      *
-     * @param  string       $haystack
-     * @param  string|array $needles
-     * @param bool          $caseSensitive
-     *
-     * @see Illuminate/Support/Str
+     * @param string       $haystack
+     * @param string|array $needles
+     * @param bool         $caseSensitive
      *
      * @return bool
+     * @see Illuminate/Support/Str
+     *
      */
     public static function startsWith($haystack, $needles, $caseSensitive = true)
     {
@@ -90,13 +91,13 @@ class StringType
     /**
      * Determine if a given string ends with a given substring.
      *
-     * @param  string       $haystack
-     * @param  string|array $needles
-     * @param bool          $caseSensitive
-     *
-     * @see Illuminate/Support/Str
+     * @param string       $haystack
+     * @param string|array $needles
+     * @param bool         $caseSensitive
      *
      * @return bool
+     * @see Illuminate/Support/Str
+     *
      */
     public static function endsWith($haystack, $needles, $caseSensitive = true)
     {
@@ -192,33 +193,69 @@ class StringType
     }
 
     /**
-     * Guess the mime-type of string
+     * Guess the mime-type of data
      *
-     * @param string $string
+     * @param string $data
      *
      * @return string|null
      */
-    public static function guessMime(string $string): ?string
+    public static function guessMime(string $data): ?string
     {
-        return (new finfo(FILEINFO_MIME_TYPE))->buffer($string) ?? null;
+        return (new finfo(FILEINFO_MIME_TYPE))->buffer($data) ?? null;
     }
 
     /**
-     * Guess the suitable file-extension for string
+     * Guess the suitable file-extension for data
      *
-     * @param string $string
+     * @param string $data
      *
      * @return string|null
      */
-    public static function guessExtension(string $string): ?string
+    public static function guessExtension(string $data): ?string
     {
-        $result = (new finfo(FILEINFO_EXTENSION))->buffer($string);
+        return self::guessExtensionFinfo($data) ?? self::guessExtensionMimey($data);
+    }
+
+    /**
+     * Guess extension for data with finfo
+     *
+     * @param string $data
+     *
+     * @return string|null
+     */
+    private static function guessExtensionFinfo(string $data): ?string
+    {
+        if (!class_exists('finfo')) {
+            return null;
+        }
+
+        $result = (new finfo(FILEINFO_EXTENSION))->buffer($data);
 
         if (is_string($result) && $result !== '???') {
             return ArrayType::first(explode('|', $result));
         }
 
         return null;
+    }
+
+    /**
+     * Guess extension for data with ralouphie/mimey library
+     *
+     * @param string $data
+     *
+     * @return string|null
+     */
+    private static function guessExtensionMimey(string $data): ?string
+    {
+        if (!class_exists('Mimey\\MimeTypes')) {
+            return null;
+        }
+
+        if (null === $mime = self::guessMime($data)) {
+            return null;
+        }
+
+        return (new MimeTypes())->getExtension($mime);
     }
 
     /**

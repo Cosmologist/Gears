@@ -10,6 +10,10 @@
         "myclabs/php-enum": "^1.6"
     },
 
+    "suggest": {
+        "ralouphie/mimey": "^2.1"
+    },
+
     "autoload": {
         "psr-4": {
             "Cosmologist\\": "src/"
