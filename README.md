@@ -15,6 +15,17 @@ composer require cosmologist/gears
 
 ## Array functions
 
+##### Push element onto the end of array and returns the modified array
+```php
+$a = [1,2];
+ArrayType::push($a, 3); // [1,2,3]
+```
+##### Prepend element to the beginning of an array and returns the modified array
+```php
+$a = [2,3];
+ArrayType::unshift($a, 1); // [1,2,3]
+```
+
 ##### Calculate the average of values in an array (array_avg)
 ```php
 ArrayType::average([1, 2, 3]); // 3

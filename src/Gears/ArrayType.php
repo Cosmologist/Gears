@@ -206,7 +206,7 @@ class ArrayType
      */
     public static function checkAssoc($array)
     {
-        return (bool)count(array_filter(array_keys($array), 'is_string'));
+        return (bool) count(array_filter(array_keys($array), 'is_string'));
     }
 
     /**
@@ -435,7 +435,7 @@ class ArrayType
             return [];
         }
 
-        $propertyPath     = (array)$propertyPath;
+        $propertyPath     = (array) $propertyPath;
         $propertyAccessor = new PropertyAccessor();
 
         $result = array_map(
@@ -509,7 +509,7 @@ class ArrayType
         $language = $expressionLanguage ?? new ExpressionLanguage();
 
         $callback = is_callable($expressionOrFunction) ? $expressionOrFunction : function ($item) use ($language, $expressionOrFunction, $vars) {
-            return (bool)$language->evaluate($expressionOrFunction, compact('item') + $vars);
+            return (bool) $language->evaluate($expressionOrFunction, compact('item') + $vars);
         };
 
         if ($invert === true) {
@@ -565,7 +565,7 @@ class ArrayType
         $mean  = array_sum($a) / $n;
         $carry = 0.0;
         foreach ($a as $val) {
-            $d     = ((double)$val) - $mean;
+            $d     = ((double) $val) - $mean;
             $carry += $d * $d;
         };
         if ($sample) {
@@ -656,5 +656,38 @@ class ArrayType
     public static function isCountable($arrayOrCountable): bool
     {
         return is_array($arrayOrCountable) || ($arrayOrCountable instanceof Countable);
+    }
+
+    /**
+     * Push element onto the end of array and returns the modified array
+     *
+     * This is a wrapper around array_push, the difference in the return value - this function returns a modified array
+     *
+     * @param array $array
+     * @param mixed $element
+     *
+     * @return array
+     */
+    public static function push(array $array, $element)
+    {
+        array_push($array, $element);
+
+        return $array;
+    }
+
+    /**
+     * Prepend element to the beginning of an array and returns the modified array
+     *
+     * This is a wrapper around array_unshift, the difference in the return value - this function returns a modified array
+     *
+     * @param array $array
+     * @param mixed $element
+     *
+     * @return array
+     */
+    public static function unshift(array $array, $element)
+    {
+        array_unshift($array, $element);
+        return $array;
     }
 }
