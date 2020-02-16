@@ -130,4 +130,30 @@ class NumberType
     {
         return $number < 0 ? 0 : $number;
     }
+
+    /**
+     * Calculates percentage
+     *
+     * @param float|int $value The value for calculating the percentage
+     * @param float|int $baseValue Base value corresponding to 100%
+     *
+     * @return float|int
+     */
+    public static function percentage($value, $baseValue)
+    {
+        return ($value * 100) / $baseValue;
+    }
+
+    /**
+     * Calculates the percentage change in value
+     *
+     * @param float|int $value The value for calculating the percentage
+     * @param float|int $baseValue Base value corresponding to 100%
+     *
+     * @return float|int
+     */
+    public static function percentageDelta($value, $baseValue)
+    {
+        return self::percentage($value - $baseValue, $baseValue);
+    }
 }
