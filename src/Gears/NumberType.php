@@ -10,15 +10,41 @@ class NumberType
     /**
      * Extract number from a string
      *
-     * @param string}int}float $value Value
+     * @param string|int|float $value Value
+     *
+     * @return int|float|null
+     */
+    public static function parse($value)
+    {
+        return self::parseInteger($value) ?? self::parseFloat($value);
+    }
+
+    /**
+     * Extract number from a string
+     *
+     * @param string|int|float $value Value
      *
      * @return float|null
      */
-    public static function parse($value): ?float
+    public static function parseFloat($value): ?float
     {
         $result = filter_var($value, FILTER_SANITIZE_NUMBER_FLOAT, FILTER_FLAG_ALLOW_FRACTION | FILTER_FLAG_ALLOW_THOUSAND | FILTER_FLAG_ALLOW_SCIENTIFIC);
 
         return $result === false ? null : (float) $result;
+    }
+
+    /**
+     * Extract number from a string
+     *
+     * @param string|int|float $value Value
+     *
+     * @return int|null
+     */
+    public static function parseInteger($value): ?int
+    {
+        $result = filter_var($value, FILTER_SANITIZE_NUMBER_INT);
+
+        return $result === false ? null : (int) $result;
     }
 
     /**
@@ -106,15 +132,21 @@ class NumberType
     /**
      * Division with zero tolerance
      *
-     * @param float|int $left          Left operand
-     * @param float|int $right         Right operand
+     * @param float|int|string $left          Left operand
+     * @param float|int|string $right         Right operand
      * @param null      $fallbackValue Value to return when the right operand is zero
      *
      * @return float|int|null
      */
     public static function divideSafely($left, $right, $fallbackValue = null)
     {
-        return $right === 0 || $right === null ? $fallbackValue : ($left / $right);
+        $right = self::parse($right);
+
+        if ($right === null || $right === 0) {
+            return $fallbackValue;
+        }
+
+        return $left / $right;
     }
 
     /**
