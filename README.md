@@ -1,4 +1,4 @@
-# php-gears
+    # php-gears
 Collection of useful functions
 
 - [Installation](#installation)
@@ -220,6 +220,13 @@ NumberType::spellout(123.45, 'ru'); // сто двадцать три целых
 NumberType::divideSafely(1, 0); // null
 NumberType::divideSafely(1, null); // null
 NumberType::divideSafely(1, 0, 'zero'); // 'zero'
+```
+
+##### Percent calculation
+```php
+NumberType::percentage(10, 100); // 10 
+NumberType::percentage(100, 100); // 100  
+NumberType::percentage(200, 100); // 200  
 ```
 
 ##### Unsign number

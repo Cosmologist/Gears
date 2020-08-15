@@ -173,7 +173,7 @@ class NumberType
      */
     public static function percentage($value, $baseValue)
     {
-        return ($value * 100) / $baseValue;
+        return self::divideSafely($value * 100, $baseValue);
     }
 
     /**
