@@ -197,6 +197,8 @@ class StringType
      *
      * @param string $data
      *
+     * @todo move to FileSystem
+     *
      * @return string|null
      */
     public static function guessMime(string $data): ?string
@@ -208,6 +210,8 @@ class StringType
      * Guess the suitable file-extension for data
      *
      * @param string $data
+     *
+     * @todo move to FileSystem
      *
      * @return string|null
      */
@@ -287,5 +291,27 @@ class StringType
     public static function humanize($text)
     {
         return ucfirst(strtolower(trim(preg_replace(['/([A-Z])/', '/[_\s]+/'], ['_$1', ' '], $text))));
+    }
+
+    /**
+     * Perform a regular expression match
+     *
+     * More convenient than built-in functions
+     * - The return value is always an array
+     * - Using return value instead of passing by reference is simpler and more straightforward
+     * - PREG_SET_ORDER is always on
+     *
+     * @todo auto preg_escape if needed
+     *
+     * @param string $string The input string
+     * @param string $pattern The pattern to search for, as a string
+     *
+     * @return array Array of all matches
+     */
+    public static function regexp(string $string, string $pattern): array
+    {
+        preg_match_all($pattern, $string, $matches, PREG_SET_ORDER);
+
+        return $matches;
     }
 }
