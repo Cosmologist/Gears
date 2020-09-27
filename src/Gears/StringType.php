@@ -310,6 +310,44 @@ class StringType
      */
     public static function regexp(string $string, string $pattern): array
     {
+        /**
+         * Checks if expression wrapped with delimiter (#....#, (....), /.../ etc)
+         *
+         * @param string $pattern
+         *
+         * @return bool
+         */
+        function hasDelimiters(string $pattern)
+        {
+            // Empty string has no delimiters
+            if ($pattern === '') {
+                return false;
+            }
+
+            // Read possible delimiter
+            $delimiter = $pattern[0];
+
+            // The pattern must contain at least two delimiters
+            if (mb_substr_count($pattern, $delimiter) === 1) {
+                return false;
+            }
+
+            // The last separator can be followed by modifiers
+            $modifiers = ArrayType::last(explode($delimiter, $pattern));
+
+            $pcreKnownModifiers = ['i', 'm', 's', 'x', 'e', 'A', 'D', 'S', 'U', 'X', 'J', 'u'];
+
+            if ($modifiers !== '' && !in_array((array) $modifiers, $pcreKnownModifiers, true)) {
+                return false;
+            }
+
+            return true;
+        }
+
+        if (!hasDelimiters($pattern)) {
+            $pattern = StringType::wrap($pattern, '#');
+        }
+
         preg_match_all($pattern, $string, $matches, PREG_SET_ORDER);
 
         return $matches;
