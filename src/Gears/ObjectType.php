@@ -11,6 +11,21 @@ use Symfony\Component\PropertyAccess\PropertyAccessorInterface;
 class ObjectType
 {
     /**
+     * Return the object identifier (integer object handle as string)
+     *
+     * @see spl_object_id
+     *
+     * @param $object
+     *
+     * @return string
+     */
+    public static function identifier($object): string
+    {
+        return (string) spl_object_id($object);
+    }
+    
+
+    /**
      * Returns the value at the end of the property path of the object graph.
      *
      * @see PropertyAccessorInterface::getValue()
@@ -26,6 +41,27 @@ class ObjectType
     }
 
     /**
+     * Reads value of internal object property (protected and private).
+     *
+     * Use with caution!
+     *
+     * @see https://ocramius.github.io/blog/accessing-private-php-class-members-without-reflection/
+     *
+     * @param object $object       Object
+     * @param string $propertyName Property name
+     *
+     * @return mixed
+     */
+    public static function getInternal($object, $propertyName)
+    {
+        $closure = function () use ($propertyName) {
+            return $this->$propertyName;
+        };
+
+        return $closure->call($object);
+    }
+
+    /**
      * Sets the value at the end of the property path of the object graph.
      *
      * @see PropertyAccessorInterface::setValue()
@@ -37,6 +73,28 @@ class ObjectType
     public static function set($object, $propertyPath, $value)
     {
         (new PropertyAccessor())->setValue($object, $propertyPath, $value);
+    }
+
+    /**
+     * Writes value to internal object property (protected and private).
+     *
+     * Use with caution!
+     *
+     * @see https://ocramius.github.io/blog/accessing-private-php-class-members-without-reflection/
+     *
+     * @param object $object       Object
+     * @param string $propertyName Property name
+     * @param mixed  $value        Value
+     *
+     * @return mixed
+     */
+    public static function setInternal($object, $propertyName, $value)
+    {
+        $closure = function () use ($propertyName, $value) {
+            $this->$propertyName = $value;
+        };
+
+        return $closure->call($object);
     }
 
     /**
@@ -71,15 +129,6 @@ class ObjectType
         }
 
         return null;
-    }
-
-    /**
-     * @deprecated
-     * @see self::toString
-     */
-    public static function getStringRepresentation($object)
-    {
-        return self::toString($object);
     }
 
     /**
@@ -125,48 +174,5 @@ class ObjectType
     public static function toStringAuto($object)
     {
         return get_class($object) . '@' . spl_object_id($object);
-    }
-
-    /**
-     * Reads value of internal object property (protected and private).
-     *
-     * Use with caution!
-     *
-     * @see https://ocramius.github.io/blog/accessing-private-php-class-members-without-reflection/
-     *
-     * @param object $object   Object
-     * @param string $property Property name
-     *
-     * @return mixed
-     */
-    public static function readInternalProperty($object, $property)
-    {
-        $closure = function () use ($property) {
-            return $this->$property;
-        };
-
-        return $closure->call($object);
-    }
-
-    /**
-     * Writes value to internal object property (protected and private).
-     *
-     * Use with caution!
-     *
-     * @see https://ocramius.github.io/blog/accessing-private-php-class-members-without-reflection/
-     *
-     * @param object $object   Object
-     * @param string $property Property name
-     * @param mixed  $value    Value
-     *
-     * @return mixed
-     */
-    public static function writeInternalProperty($object, $property, $value)
-    {
-        $closure = function () use ($property, $value) {
-            $this->$property = $value;
-        };
-
-        return $closure->call($object);
     }
 }
