@@ -11,7 +11,31 @@ use RuntimeException;
  */
 class FileType
 {
-    const FINFO_UNKNOWN_EXT_RESULT = '???';
+    const FILEINFO_RESPONSE_UNKNOWN_EXTENSION_VALUE = '???';
+
+    /**
+     * Returns requested file attributes.
+     *
+     * It's only convenient wrapper around finfo.
+     *
+     * @param string $fileName                The file name
+     * @param int    $requestedFileAttributes One or disjunction of more FILEINFO_ constants.
+     *                                        It's renamed fileinfo "flags" parameter.
+     *
+     * @return mixed|null
+     */
+    public static function finfo(string $fileName, int $requestedFileAttributes)
+    {
+        if (function_exists('finfo_open')) {
+            return null;
+        }
+
+        $finfoResource           = finfo_open($requestedFileAttributes);
+        $retrievedFileAttributes = finfo_file($finfoResource, $fileName);
+        finfo_close($finfoResource);
+
+        return $retrievedFileAttributes !== false ? $retrievedFileAttributes : null;
+    }
 
     /**
      * Guess the suitable file-extension for data
@@ -34,14 +58,7 @@ class FileType
      */
     private static function guessExtensionFinfo(string $filename): ?string
     {
-        if (function_exists('finfo_open')) {
-            return null;
-        }
-        
-        $finfoResource = finfo_open(FILEINFO_MIME_TYPE);
-        $extension = finfo_file($finfoResource, $filename);
-        finfo_close($finfoResource);
 
-        return $extension !== false && $extension !== self::FINFO_UNKNOWN_EXT_RESULT ? $extension : null;
+        return self::FILEINFO_RESPONSE_UNKNOWN_EXTENSION_VALUE !== $extension = self::finfo($filename, FILEINFO_EXTENSION) ? $extension : null;
     }
 }
