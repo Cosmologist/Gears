@@ -3,8 +3,6 @@
 namespace Cosmologist\Gears;
 
 use finfo;
-use Mimey\MimeTypes;
-use RuntimeException;
 
 /**
  * Collection of commonly used methods for working with files
@@ -38,27 +36,38 @@ class FileType
     }
 
     /**
-     * Guess the suitable file-extension for data
+     * Guess extension of the file with finfo
      *
-     * @param string $data
+     * @param string $fileName Name of a file to be checked.
      *
      * @return string|null
      */
-    public static function guessExtension(string $data): ?string
+    public static function guessExtension(string $fileName): ?string
     {
-        return self::guessExtensionFinfo($data) ?? self::guessExtensionMimey($data);
+        return self::guessExtensionFinfo($fileName) ?? self::guessExtensionMimey($fileName);
     }
 
     /**
-     * Guess extension for data with finfo
+     * Guess extension of the file with finfo
      *
-     * @param string $filename Name of a file to be checked.
+     * @param string $fileName Name of a file to be checked.
      *
      * @return string|null
      */
-    private static function guessExtensionFinfo(string $filename): ?string
+    private static function guessExtensionFinfo(string $fileName): ?string
     {
+        return (self::FILEINFO_RESPONSE_UNKNOWN_EXTENSION_VALUE !== $extension = self::finfo($fileName, FILEINFO_EXTENSION)) ? $extension : null;
+    }
 
-        return self::FILEINFO_RESPONSE_UNKNOWN_EXTENSION_VALUE !== $extension = self::finfo($filename, FILEINFO_EXTENSION) ? $extension : null;
+    /**
+     * Guess the mime-type of the file with finfo
+     *
+     * @param string $fileName Name of a file to be checked.
+     *
+     * @return string|null
+     */
+    public static function guessMime(string $fileName): ?string
+    {
+        return self::finfo($fileName, FILEINFO_MIME_TYPE);
     }
 }
