@@ -356,4 +356,72 @@ class StringType
 
         return $matches;
     }
+
+    /**
+     * ltrim() replacement supports UTF-8 chars in the charlist.
+     *
+     * Use these only if you are supplying the charlist optional arg and it contains
+     * UTF-8 characters. Otherwise trim will work normally on a UTF-8 string.
+     *
+     * @see https://github.com/fluxbb/utf8/blob/master/functions/trim.php
+     *
+     * @param string $str      The input string.
+     * @param string $charlist [optional] The stripped characters.
+     *
+     * @return string
+     */
+    public static function ltrim(string $str, string $charlist = '')
+    {
+        if (empty($charlist)) {
+            return ltrim($str);
+        }
+
+        // Quote charlist for use in a characterclass
+        $charlist = preg_replace('!([\\\\\\-\\]\\[/^])!', '\\\${1}', $charlist);
+
+        return preg_replace('/^[' . $charlist . ']+/u', '', $str);
+    }
+
+    /**
+     * rtrim() replacement supports UTF-8 chars in the charlist.
+     *
+     * Use these only if you are supplying the charlist optional arg and it contains
+     * UTF-8 characters. Otherwise trim will work normally on a UTF-8 string.
+     *
+     * @see https://github.com/fluxbb/utf8/blob/master/functions/trim.php
+     *
+     * @param string $str      The input string.
+     * @param string $charlist [optional] The stripped characters.
+     *
+     * @return string
+     */
+    public static function rtrim(string $str, string $charlist = '')
+    {
+        if (empty($charlist)) {
+            return ltrim($str);
+        }
+
+        // Quote charlist for use in a characterclass
+        $charlist = preg_replace('!([\\\\\\-\\]\\[/^])!', '\\\${1}', $charlist);
+
+        return preg_replace('/['.$charlist.']+$/u', '', $str);
+    }
+
+    /**
+     * trim() replacement supports UTF-8 chars in the charlist.
+     *
+     * Use these only if you are supplying the charlist optional arg and it contains
+     * UTF-8 characters. Otherwise trim will work normally on a UTF-8 string.
+     *
+     * @see https://github.com/fluxbb/utf8/blob/master/functions/trim.php
+     *
+     * @param string $str      The input string.
+     * @param string $charlist [optional] The stripped characters.
+     *
+     * @return string
+     */
+    public static function trim(string $str, string $charlist = '')
+    {
+        return self::ltrim(self::rtrim($str, $charlist), $charlist);
+    }
 }

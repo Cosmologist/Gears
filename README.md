@@ -1,4 +1,4 @@
-    # php-gears
+# php-gears
 Collection of useful functions
 
 - [Installation](#installation)
@@ -169,6 +169,13 @@ StringType::guessExtension('Foo bar baz'); // txt
 ##### Check if a string is a binary string
 ```php
 StringType::isBinary('Foo bar baz'); // false
+```
+
+##### ltrim()/rtrim()/trim() replacements supports UTF-8 chars in the charlist
+Use these only if you are supplying the charlist optional arg and it contains UTF-8 characters. Otherwise trim will work normally on a UTF-8 string.
+```php
+trim('«foo»', '»'); // "�foo"
+StringType::trim('«foo»', '»'); // "«foo"
 ```
 
 ## Number functions
