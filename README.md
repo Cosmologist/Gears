@@ -171,6 +171,18 @@ StringType::guessExtension('Foo bar baz'); // txt
 StringType::isBinary('Foo bar baz'); // false
 ```
 
+##### Convert string to CamelCase
+```php
+StringType::toCamelCase('string like this'); // 'StringLikeThis'
+StringType::toCamelCase('string_like_this'); // 'StringLikeThis'
+```
+
+##### Convert string to snake_case
+```php
+StringType::toSnakeCase('StringLikeThis'); // 'string_like_this'
+StringType::toSnakeCase('string Like this'); // 'string_like_this'
+```
+
 ##### ltrim()/rtrim()/trim() replacements supports UTF-8 chars in the charlist
 Use these only if you are supplying the charlist optional arg and it contains UTF-8 characters. Otherwise trim will work normally on a UTF-8 string.
 ```php

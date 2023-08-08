@@ -424,4 +424,39 @@ class StringType
     {
         return self::ltrim(self::rtrim($str, $charlist), $charlist);
     }
+
+    /**
+     * Convert string to CamelCase.
+     * Transform a "string_like_this" or "string like this" to a "StringLikeThis".
+     *
+     * @param string $value The input string
+     *
+     * @return string The input string
+     */
+    public static function toCamelCase($value)
+    {
+        return str_replace(' ', '', ucwords(str_replace('_', ' ', $value)));
+    }
+
+    /**
+     * Convert string to snake_case.
+     * Transform a "StringLikeThis" or "string Like this" to a "string_like_this".
+     *
+     * @param string $value The input string
+     *
+     * @return string The snake_case string
+     */
+    public static function toSnakeCase($value)
+    {
+         return preg_replace_callback(
+            '/(.)([A-Z])/',
+            function($matches) {
+                if ($matches[1] === '_') {
+                    return '_' . lcfirst($matches[2]);
+                }
+                return $matches[1] . '_' . lcfirst($matches[2]);
+            },
+            lcfirst(str_replace(' ', '_', $value))
+        );
+    }
 }
