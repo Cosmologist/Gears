@@ -242,20 +242,29 @@ NumberType::divideSafely(1, 0, 'zero'); // 'zero'
 ```
 
 ##### Percent calculation
+The first argument is a value for calculating the percentage.
+The second argument is a base value corresponding to 100%.
 ```php
 NumberType::percentage(10, 100); // 10 
 NumberType::percentage(100, 100); // 100  
 NumberType::percentage(200, 100); // 200  
 ```
 
-##### Unsign number
-A negative value will be converted to zero, the rest of the value will be returned unchanged.
+##### Unsign a number
+A negative value will be converted to zero, positive or zero value will be returned unchanged.
 ```php
 NumberType::unsign(-1); // 0
 NumberType::unsign(-0.99); // 0
 NumberType::unsign(0); // 0
 NumberType::unsign(0.99); // 0.99
 NumberType::unsign(1); // 1
+```
+
+##### Converts a number to string with sign.
+```php
+NumberType::toStringWithSign(-1); // "-1"
+NumberType::toStringWithSign(1); // "+1"
+NumberType::toStringWithSign(0); // "0"
 ```
 
 #### Callable functions

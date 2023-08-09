@@ -150,9 +150,9 @@ class NumberType
     }
 
     /**
-     * Unsign number.
+     * Unsign a number.
      *
-     * A negative value will be converted to zero, the rest of the value will be returned unchanged.
+     * A negative value will be converted to zero, positive or zero value will be returned unchanged.
      *
      * @param float|int $number
      *
@@ -187,5 +187,19 @@ class NumberType
     public static function percentageDelta($value, $baseValue)
     {
         return self::percentage($value - $baseValue, $baseValue);
+    }
+
+    /**
+     * Converts a number to string with sign.
+     *
+     * With plus for the positive number and with minus for the negative number.
+     *
+     * @param int|float $value Value
+     *
+     * @return string
+     */
+    public static function toStringWithSign($value)
+    {
+        return ($value > 0 ? '+' : $value < 0 ? '-' : '') . $value;
     }
 }
