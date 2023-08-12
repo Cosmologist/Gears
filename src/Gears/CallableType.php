@@ -91,6 +91,13 @@ class CallableType
      */
     public static function reflection(callable $callable): ReflectionFunctionAbstract
     {
-        return is_array($callable) ? new ReflectionMethod(...$callable) : new ReflectionFunction($callable);
+        if (is_array($callable)) {
+            return new ReflectionMethod(...$callable);
+        }
+        if (self::isCompositeFormat($callable)) {
+            return new ReflectionMethod($callable);
+        }
+
+        return new ReflectionFunction($callable);
     }
 }
