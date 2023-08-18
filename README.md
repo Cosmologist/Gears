@@ -192,6 +192,34 @@ StringType::trim('«foo»', '»'); // "«foo"
 
 ## Number functions
 
+#### Parse a float or integer value from the argument
+Remove all characters except digits, +-.,eE from the argument and returns result as the float value or NULL if the parser fails.
+```php
+NumberType::parse(" 123 "); // int(123)
+NumberType::parse(" 123.45 "); // float(123.45)
+NumberType::parse(" 123.00 "); // int(123)
+```
+
+#### Parse a float value from the argument
+Remove all characters except digits, +-.,eE from the argument and returns result as the float value or NULL if the parser fails.
+```php
+NumberType::parseFloat(" 123 "); // float(123)
+NumberType::parseFloat(" 123.45 "); // float(123.45)
+```
+
+#### Parse a integer value from the argument
+Remove all characters except digits, plus and minus sign and returns result as the integer value or NULL if the parser fails.
+```php
+NumberType::parseInteger(" 123 "); // int(123)
+NumberType::parseFloat(" 123.45 "); // int(12345)
+```
+
+#### Returns fractions of the float value
+```php
+NumberType::fractions(123.45); // float(0.45)
+NumberType::parseFloat(123); // float(0)
+```
+
 #### Checks if the value is odd
 ```php
 NumberType::odd(2); // false

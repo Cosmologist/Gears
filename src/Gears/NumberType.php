@@ -8,7 +8,11 @@ use NumberFormatter;
 class NumberType
 {
     /**
-     * Extract number from a string
+     * Parse a float or integer value from the argument.
+     *
+     * @see NumberType::parseFloat()
+     * @see NumberType::parseInteger()
+     * @see NumberType::fractions()
      *
      * @param string|int|float $value Value
      *
@@ -16,11 +20,17 @@ class NumberType
      */
     public static function parse($value)
     {
-        return self::parseInteger($value) ?? self::parseFloat($value);
+        if (null === $parsed = self::parseFloat($value)) {
+            return null;
+        }
+
+        return self::fractions($parsed) == 0 ? (int) $parsed : $parsed;
     }
 
     /**
-     * Extract number from a string
+     * Parse a float value from the argument.
+     *
+     * Remove all characters except digits, +-.,eE from the argument and returns result as the float value or NULL if the parser fails.
      *
      * @param string|int|float $value Value
      *
@@ -34,7 +44,9 @@ class NumberType
     }
 
     /**
-     * Extract number from a string
+     * Parse a integer value from the argument.
+     *
+     * Remove all characters except digits, plus and minus sign and returns result as the integer value or NULL if the parser fails.
      *
      * @param string|int|float $value Value
      *
@@ -45,6 +57,18 @@ class NumberType
         $result = filter_var($value, FILTER_SANITIZE_NUMBER_INT);
 
         return $result === false ? null : (int) $result;
+    }
+
+    /**
+     * Returns fractions of the float value.
+     *
+     * @param float $value The float value
+     *
+     * @return float
+     */
+    public static function fractions(float $value): float
+    {
+        return $value - (int) $value;
     }
 
     /**
