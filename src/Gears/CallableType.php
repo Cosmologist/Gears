@@ -49,13 +49,13 @@ class CallableType
     /**
      * Is composite expression
      *
-     * @param string $expression The callable expression
+     * @param string|callable $expression The callable expression
      *
      * @return bool
      */
-    protected static function isCompositeFormat(string $expression): bool
+    protected static function isCompositeFormat($expression): bool
     {
-        return StringType::contains($expression, self::SEPARATOR);
+        return is_string($expression) && StringType::contains($expression, self::SEPARATOR);
     }
 
     /**
