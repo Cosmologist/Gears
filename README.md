@@ -7,6 +7,7 @@ Collection of useful functions
 - [String functions](#string-functions)
 - [Number functions](#number-functions)
 - [Callable functions](#callable-functions)
+- [Class functions](#class-functions)
 
 ## Installation
 ```
@@ -300,4 +301,27 @@ Get a suitable reflection object for the callable
 ```php
 CallableType::reflection('is_null'); // Returns a ReflectionFunction instance
 CallableType::reflection([$foo, 'bar']); // Returns a ReflectionMethod instance
+```
+
+#### Class functions
+Get the class short name
+```php
+ClassType::shortName('Foo\Bar'); // "Bar"
+ClassType::shortName(Foo\Bar::class); // "Bar"
+ClassType::shortName(new Foo\Bar()); // "Bar"
+```
+
+Get the class and the parent classes
+```php
+namespace Foo;
+
+class Bar {};
+class Baz extends Foo {};
+...
+ClassType::selfAndParents('Foo\Bar'); // ["Foo\Bar"]
+ClassType::selfAndParents(Foo\Bar::class); // ["Foo\Bar"]
+ClassType::selfAndParents(new Foo\Bar()); // ["Foo\Bar"]
+ClassType::selfAndParents('Foo\Baz'); // ["Foo\Baz", "Foo\Bar"]
+ClassType::selfAndParents(Foo\Baz::class); // ["Foo\Baz", "Foo\Bar"]
+ClassType::selfAndParents(new Foo\Baz()); // ["Foo\Baz", "Foo\Bar"]
 ```
