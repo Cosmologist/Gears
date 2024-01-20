@@ -91,6 +91,54 @@ class ArrayType
     }
 
     /**
+     * Inserts an array after the key
+     *
+     * @param array $array
+     * @param mixed $key
+     * @param array $insert
+     *
+     * @return array
+     */
+    public static function insertAfter(array $array, $key, $insert): array
+    {
+        $keyIndex = array_search($key, array_keys($array), true);
+
+        if (false === $keyIndex || ($keyIndex + 1) === count($array) ) {
+            array_push($array, $insert);
+
+            return $array;
+        }
+
+        return array_slice($array, 0, $keyIndex + 1, true)
+            + $insert
+            + array_slice($array, $keyIndex + 1, null, true);
+    }
+
+    /**
+     * Inserts an array before the key
+     *
+     * @param array $array
+     * @param mixed $key
+     * @param array $insert
+     *
+     * @return array
+     */
+    public static function insertBefore(array $array, $key, $insert): array
+    {
+        $keyIndex = array_search($key, array_keys($array), true);
+
+        if (false === $keyIndex || 0 === $keyIndex) {
+            array_unshift($array, $insert);
+
+            return $array;
+        }
+
+        return array_slice($array, 0, $keyIndex, true)
+            + $insert
+            + array_slice($array, $keyIndex, null, true);
+    }
+
+    /**
      * Group an array by the specified column
      *
      * @param array $array  Array

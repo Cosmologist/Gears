@@ -50,6 +50,20 @@ ArrayType::get(['fruit' => 'apple', 'color' => 'red'], 'weight'); // null
 ArrayType::get(['fruit' => 'apple', 'color' => 'red'], 'weight', 15); // 15
 ```
 
+##### Inserts an array after the key
+```php
+ArrayType::insertAfter(['a' => 1, 'c' => 3], 'a', ['b' => 2]); // ['a' => 1, 'b' => 2, 'c' => 3]
+// If the key doesn't exist
+ArrayType::insertAfter(['a' => 1, 'b' => 2], 'c', ['foo' => 'bar']); // ['a' => 1, 'b' => 2, 'foo' => 'bar']
+```
+
+##### Inserts an array before the key
+```php
+ArrayType::insertBefore(['a' => 1, 'c' => 3], 'c', ['b' => 2]); // ['a' => 1, 'b' => 2, 'c' => 3]
+// If the key doesn't exist
+ArrayType::insertBefore(['a' => 1, 'b' => 2], 'c', ['foo' => 'bar']); // ['foo' => 'bar', 'a' => 1, 'b' => 2]
+```
+
 ##### Convert list of items to ranges
 ```php
 ArrayType::ranges([1, 3, 7, 9]); // [[1, 3], [3, 7], [7, 9]]
