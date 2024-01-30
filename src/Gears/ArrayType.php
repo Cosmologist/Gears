@@ -104,9 +104,7 @@ class ArrayType
         $keyIndex = array_search($key, array_keys($array), true);
 
         if (false === $keyIndex || ($keyIndex + 1) === count($array) ) {
-            array_push($array, $insert);
-
-            return $array;
+            return $array + $insert;
         }
 
         return array_slice($array, 0, $keyIndex + 1, true)
@@ -128,9 +126,7 @@ class ArrayType
         $keyIndex = array_search($key, array_keys($array), true);
 
         if (false === $keyIndex || 0 === $keyIndex) {
-            array_unshift($array, $insert);
-
-            return $array;
+            return $insert + $array;
         }
 
         return array_slice($array, 0, $keyIndex, true)
