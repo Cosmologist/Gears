@@ -84,4 +84,16 @@ class FileSystem
 
         file_put_contents($filename, $data);
     }
+
+    /**
+     * Path to the file with $name into the temporary directory
+     *
+     * @param string $name
+     *
+     * @return string
+     */
+    public static function temporary(string $name): string
+    {
+        return sys_get_temp_dir() . DIRECTORY_SEPARATOR . $name;
+    }
 }
