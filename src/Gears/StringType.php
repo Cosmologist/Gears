@@ -299,7 +299,6 @@ class StringType
      * More convenient than built-in functions
      * - The return value is always an array
      * - Using return value instead of passing by reference is simpler and more straightforward
-     * - Result does not contain unnecessary full pattern matches
      * - You can pass pattern without delimiters
      *
      * @todo auto preg_escape if needed
@@ -318,8 +317,7 @@ class StringType
          *
          * @return bool
          */
-        function hasDelimiters(string $pattern)
-        {
+        $hasDelimiter = function(string $pattern) {
             // Empty string has no delimiters
             if ($pattern === '') {
                 return false;
@@ -343,16 +341,14 @@ class StringType
             }
 
             return true;
-        }
+        };
 
-        if (!hasDelimiters($pattern)) {
+        if (!$hasDelimiter($pattern)) {
             $pattern = StringType::wrap($pattern, '#');
         }
 
         preg_match_all($pattern, $string, $matches, PREG_SET_ORDER);
 
-        // Remove full pattern matches
-        array_shift($matches);
 
         return $matches;
     }
