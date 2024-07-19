@@ -162,6 +162,14 @@ ObjectType::toClassName($objectOrClass): string;
 StringType::contains('Foo', 'Bar'); // false
 StringType::contains('FooBar', 'Bar'); // true
 ```
+##### Simple symmetric decryption of a string with a key (using libsodium)
+```php
+StringType::decrypt(StringType::encrypt('The sensitive string', 'qwerty123456'), 'qwerty123456'); // 'The sensitive string'
+```
+##### Simple symmetric encryption of a string with a key (using libsodium)
+```php
+StringType::encrypt('The sensitive string', 'qwerty123456');
+```
 ##### Replace first string occurrence in an another string
 ```php
 StringType::replaceFirst('name name name', 'name', 'title'); // 'title name name'

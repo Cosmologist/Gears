@@ -25,6 +25,53 @@ class StringType
     }
 
     /**
+     * Simple symmetric decryption of a string with a key (using libsodium)
+     *
+     * @param string $encrypted A base64-encoded encrypted string (via {@link StringType::encrypt()} to decrypt
+     * @param string $key       An encryption key
+     *
+     * @return string A decrypted original string
+     */
+    public static function decrypt(string $encrypted, string $key): string
+    {
+        $decoded    = base64_decode($encrypted);
+        $nonce      = mb_substr($decoded, 0, \Sodium\CRYPTO_SECRETBOX_NONCEBYTES, '8bit');
+        $ciphertext = mb_substr($decoded, \Sodium\CRYPTO_SECRETBOX_NONCEBYTES, null, '8bit');
+        $key        = $key . $str_pad('0', \Sodium\CRYPTO_SECRETBOX_KEYBYTES - mb_strlen($secret, '8bit'));
+
+        return \Sodium\crypto_secretbox_open(
+            $ciphertext,
+            $nonce,
+            $key
+        );
+    }
+
+    /**
+     * Simple symmetric encryption of a string with a key (using libsodium)
+     *
+     * @link StringType::encrypt()
+     *
+     * @param string $string A string to encrypt
+     * @param string $key    An encryption key
+     *
+     * @return string A base64-encoded encrypted string
+     */
+    public static function encrypt(string $string, string $key): string
+    {
+        $key   = $key . $str_pad('0', \Sodium\CRYPTO_SECRETBOX_KEYBYTES - mb_strlen($secret, '8bit'));
+        $nonce = \Sodium\randombytes_buf(\Sodium\CRYPTO_SECRETBOX_NONCEBYTES);
+
+        return base64_encode(
+            $nonce .
+            \Sodium\crypto_secretbox(
+                $string,
+                $nonce,
+                $key
+            )
+        );
+    }
+
+    /**
      * Search and return string before haystack string
      *
      * @param string $string        String
