@@ -224,6 +224,6 @@ class NumberType
      */
     public static function toStringWithSign($value)
     {
-        return ($value > 0 ? '+' : $value < 0 ? '-' : '') . $value;
+        return ($value > 0 ? '+' : ($value < 0 ? '-' : '')) . $value;
     }
 }
