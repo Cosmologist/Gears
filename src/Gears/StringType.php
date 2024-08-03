@@ -34,12 +34,13 @@ class StringType
      */
     public static function decrypt(string $encrypted, string $key): string
     {
+        $key        = mb_substr($key, 0, SODIUM_CRYPTO_SECRETBOX_KEYBYTES, '8bit');
+        $key       .= str_repeat('0', SODIUM_CRYPTO_SECRETBOX_KEYBYTES - mb_strlen($key, '8bit'));
         $decoded    = base64_decode($encrypted);
-        $nonce      = mb_substr($decoded, 0, \Sodium\CRYPTO_SECRETBOX_NONCEBYTES, '8bit');
-        $ciphertext = mb_substr($decoded, \Sodium\CRYPTO_SECRETBOX_NONCEBYTES, null, '8bit');
-        $key        = $key . $str_pad('0', \Sodium\CRYPTO_SECRETBOX_KEYBYTES - mb_strlen($secret, '8bit'));
+        $nonce      = mb_substr($decoded, 0, SODIUM_CRYPTO_SECRETBOX_NONCEBYTES, '8bit');
+        $ciphertext = mb_substr($decoded, SODIUM_CRYPTO_SECRETBOX_NONCEBYTES, null, '8bit');
 
-        return \Sodium\crypto_secretbox_open(
+        return sodium_crypto_secretbox_open(
             $ciphertext,
             $nonce,
             $key
@@ -49,21 +50,22 @@ class StringType
     /**
      * Simple symmetric encryption of a string with a key (using libsodium)
      *
-     * @link StringType::encrypt()
-     *
      * @param string $string A string to encrypt
      * @param string $key    An encryption key
      *
      * @return string A base64-encoded encrypted string
+     *
+     * @link StringType::encrypt()
      */
     public static function encrypt(string $string, string $key): string
     {
-        $key   = $key . $str_pad('0', \Sodium\CRYPTO_SECRETBOX_KEYBYTES - mb_strlen($secret, '8bit'));
-        $nonce = \Sodium\randombytes_buf(\Sodium\CRYPTO_SECRETBOX_NONCEBYTES);
+        $key   = mb_substr($key, 0, SODIUM_CRYPTO_SECRETBOX_KEYBYTES, '8bit');
+        $key  .= str_repeat('0', SODIUM_CRYPTO_SECRETBOX_KEYBYTES - mb_strlen($key, '8bit'));
+        $nonce = random_bytes(SODIUM_CRYPTO_SECRETBOX_NONCEBYTES);
 
         return base64_encode(
             $nonce .
-            \Sodium\crypto_secretbox(
+            sodium_crypto_secretbox(
                 $string,
                 $nonce,
                 $key
@@ -122,7 +124,7 @@ class StringType
      */
     public static function startsWith($haystack, $needles, $caseSensitive = true)
     {
-        foreach ((array) $needles as $needle) {
+        foreach ((array)$needles as $needle) {
             if (!is_string($needle) || $needle === '') {
                 continue;
             }
@@ -148,8 +150,8 @@ class StringType
      */
     public static function endsWith($haystack, $needles, $caseSensitive = true)
     {
-        foreach ((array) $needles as $needle) {
-            $needle    = (string) $needle;
+        foreach ((array)$needles as $needle) {
+            $needle    = (string)$needle;
             $substring = mb_substr($haystack, -mb_strlen($needle));
 
             if (!$caseSensitive) {
@@ -244,9 +246,9 @@ class StringType
      *
      * @param string $data
      *
+     * @return string|null
      * @todo move to FileSystem
      *
-     * @return string|null
      */
     public static function guessMime(string $data): ?string
     {
@@ -258,9 +260,9 @@ class StringType
      *
      * @param string $data
      *
+     * @return string|null
      * @todo move to FileSystem
      *
-     * @return string|null
      */
     public static function guessExtension(string $data): ?string
     {
@@ -312,12 +314,12 @@ class StringType
     /**
      * Check if a string is a binary string
      *
-     * @param string $string The string
+     * @param string $string       The string
      * @param bool   $isNullBinary Consider zero binary?
      *
      * @return bool
      */
-    public static function isBinary(string $string, $isNullBinary=false): bool
+    public static function isBinary(string $string, $isNullBinary = false): bool
     {
         $mime = self::guessMime($string);
 
@@ -348,12 +350,12 @@ class StringType
      * - Using return value instead of passing by reference is simpler and more straightforward
      * - You can pass pattern without delimiters
      *
-     * @todo auto preg_escape if needed
-     *
-     * @param string $string The input string
+     * @param string $string  The input string
      * @param string $pattern The pattern to search for, as a string
      *
      * @return array Array of all matches
+     * @todo auto preg_escape if needed
+     *
      */
     public static function regexp(string $string, string $pattern): array
     {
@@ -364,7 +366,7 @@ class StringType
          *
          * @return bool
          */
-        $hasDelimiter = function(string $pattern) {
+        $hasDelimiter = function (string $pattern) {
             // Empty string has no delimiters
             if ($pattern === '') {
                 return false;
@@ -383,7 +385,7 @@ class StringType
 
             $pcreKnownModifiers = ['i', 'm', 's', 'x', 'e', 'A', 'D', 'S', 'U', 'X', 'J', 'u'];
 
-            if ($modifiers !== '' && !in_array((array) $modifiers, $pcreKnownModifiers, true)) {
+            if ($modifiers !== '' && !in_array((array)$modifiers, $pcreKnownModifiers, true)) {
                 return false;
             }
 
@@ -447,7 +449,7 @@ class StringType
         // Quote charlist for use in a characterclass
         $charlist = preg_replace('!([\\\\\\-\\]\\[/^])!', '\\\${1}', $charlist);
 
-        return preg_replace('/['.$charlist.']+$/u', '', $str);
+        return preg_replace('/[' . $charlist . ']+$/u', '', $str);
     }
 
     /**
@@ -491,9 +493,9 @@ class StringType
      */
     public static function toSnakeCase($value)
     {
-         return preg_replace_callback(
+        return preg_replace_callback(
             '/(.)([A-Z])/',
-            function($matches) {
+            function ($matches) {
                 if ($matches[1] === '_') {
                     return '_' . lcfirst($matches[2]);
                 }
