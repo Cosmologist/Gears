@@ -35,11 +35,11 @@ class StringType
     public static function decrypt(string $encrypted, string $key): string
     {
         $decoded    = base64_decode($encrypted);
-        $nonce      = mb_substr($decoded, 0, \Sodium\CRYPTO_SECRETBOX_NONCEBYTES, '8bit');
-        $ciphertext = mb_substr($decoded, \Sodium\CRYPTO_SECRETBOX_NONCEBYTES, null, '8bit');
-        $key        = $key . $str_pad('0', \Sodium\CRYPTO_SECRETBOX_KEYBYTES - mb_strlen($secret, '8bit'));
+        $nonce      = mb_substr($decoded, 0, SODIUM_CRYPTO_SECRETBOX_NONCEBYTES, '8bit');
+        $ciphertext = mb_substr($decoded, SODIUM_CRYPTO_SECRETBOX_NONCEBYTES, null, '8bit');
+        $key        = $key . str_pad('0', SODIUM_CRYPTO_SECRETBOX_KEYBYTES - mb_strlen($secret, '8bit'));
 
-        return \Sodium\crypto_secretbox_open(
+        return sodium_crypto_secretbox_open(
             $ciphertext,
             $nonce,
             $key
@@ -58,12 +58,12 @@ class StringType
      */
     public static function encrypt(string $string, string $key): string
     {
-        $key   = $key . $str_pad('0', \Sodium\CRYPTO_SECRETBOX_KEYBYTES - mb_strlen($secret, '8bit'));
-        $nonce = \Sodium\randombytes_buf(\Sodium\CRYPTO_SECRETBOX_NONCEBYTES);
+        $key   = $key . str_pad('0', SODIUM_CRYPTO_SECRETBOX_KEYBYTES - mb_strlen($key, '8bit'));
+        $nonce = random_bytes(SODIUM_CRYPTO_SECRETBOX_NONCEBYTES);
 
         return base64_encode(
             $nonce .
-            \Sodium\crypto_secretbox(
+            sodium_crypto_secretbox(
                 $string,
                 $nonce,
                 $key
