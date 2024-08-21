@@ -157,23 +157,50 @@ ObjectType::toClassName($objectOrClass): string;
 ```
 
 ## String functions
+
 ##### Determine if a given string contains a given substring
 ```php
 StringType::contains('Foo', 'Bar'); // false
 StringType::contains('FooBar', 'Bar'); // true
 ```
+
 ##### Simple symmetric decryption of a string with a key (using libsodium)
 ```php
 StringType::decrypt(StringType::encrypt('The sensitive string', 'qwerty123456'), 'qwerty123456'); // 'The sensitive string'
 ```
+
 ##### Simple symmetric encryption of a string with a key (using libsodium)
 ```php
 StringType::encrypt('The sensitive string', 'qwerty123456');
 ```
-##### Replace first string occurrence in an another string
+
+##### Convenient way to perform a regular expression match
+Default behaviour like preg_match_all(..., ..., PREG_SET_ORDER)
+```php
+StringType::regexp('a1b2', '\S(\d)'); // [0 => [0 => 'a1', 1 => '1'], 1 => [0 => 'b2', 1 => '2']]
+```
+Exclude full matches from regular expression matches
+```php
+StringType::regexp('a1b2', '\S(\d)', true); // [0 => [0 => '1'], 1 => [0 => '2']]
+```
+Get only first set from regular expression matches (exclude full matches)
+```php
+StringType::regexp('a1b2', '(\S)(\d)', true, true); // [0 => 'a', 1 => '1']
+```
+Get only first match of each set from regular expression matches (exclude full matches)
+```php
+StringType::regexp('a1b2', '(\S)(\d)', true, false, true); // [0 => 'a', 1 => 'b']
+```
+Get only first match of the first set from regular expression matches as single scalar value
+```php
+StringType::regexp('a1b2', '(\S)(\d)', true, true, true); // 'a'
+```
+
+##### Replace first string occurrence in a string
 ```php
 StringType::replaceFirst('name name name', 'name', 'title'); // 'title name name'
 ```
+
 ##### Wrap string
 ```php
 StringType::wrap('target', '/'); // '/target/'

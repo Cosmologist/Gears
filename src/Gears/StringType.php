@@ -35,7 +35,7 @@ class StringType
     public static function decrypt(string $encrypted, string $key): string
     {
         $key        = mb_substr($key, 0, SODIUM_CRYPTO_SECRETBOX_KEYBYTES, '8bit');
-        $key       .= str_repeat('0', SODIUM_CRYPTO_SECRETBOX_KEYBYTES - mb_strlen($key, '8bit'));
+        $key        .= str_repeat('0', SODIUM_CRYPTO_SECRETBOX_KEYBYTES - mb_strlen($key, '8bit'));
         $decoded    = base64_decode($encrypted);
         $nonce      = mb_substr($decoded, 0, SODIUM_CRYPTO_SECRETBOX_NONCEBYTES, '8bit');
         $ciphertext = mb_substr($decoded, SODIUM_CRYPTO_SECRETBOX_NONCEBYTES, null, '8bit');
@@ -60,7 +60,7 @@ class StringType
     public static function encrypt(string $string, string $key): string
     {
         $key   = mb_substr($key, 0, SODIUM_CRYPTO_SECRETBOX_KEYBYTES, '8bit');
-        $key  .= str_repeat('0', SODIUM_CRYPTO_SECRETBOX_KEYBYTES - mb_strlen($key, '8bit'));
+        $key   .= str_repeat('0', SODIUM_CRYPTO_SECRETBOX_KEYBYTES - mb_strlen($key, '8bit'));
         $nonce = random_bytes(SODIUM_CRYPTO_SECRETBOX_NONCEBYTES);
 
         return base64_encode(
@@ -124,7 +124,7 @@ class StringType
      */
     public static function startsWith($haystack, $needles, $caseSensitive = true)
     {
-        foreach ((array)$needles as $needle) {
+        foreach ((array) $needles as $needle) {
             if (!is_string($needle) || $needle === '') {
                 continue;
             }
@@ -150,8 +150,8 @@ class StringType
      */
     public static function endsWith($haystack, $needles, $caseSensitive = true)
     {
-        foreach ((array)$needles as $needle) {
-            $needle    = (string)$needle;
+        foreach ((array) $needles as $needle) {
+            $needle    = (string) $needle;
             $substring = mb_substr($haystack, -mb_strlen($needle));
 
             if (!$caseSensitive) {
@@ -346,18 +346,40 @@ class StringType
      * Perform a regular expression match
      *
      * More convenient than built-in functions
-     * - The return value is always an array
      * - Using return value instead of passing by reference is simpler and more straightforward
      * - You can pass pattern without delimiters
+     * - You can select only first set or only first match of each result or only first match of first set (single scalar value) as return value
      *
-     * @param string $string  The input string
-     * @param string $pattern The pattern to search for, as a string
+     * <code>
+     * // Default behaviour like preg_match_all(..., ..., PREG_SET_ORDER)
+     * StringType::regexp('a1b2', '\S(\d)'); // [0 => [0 => 'a1', 1 => '1'], 1 => [0 => 'b2', 1 => '2']]
+
+     * // Exclude full matches from regular expression matches
+     * StringType::regexp('a1b2', '\S(\d)', true); // [0 => [0 => '1'], 1 => [0 => '2']]
      *
-     * @return array Array of all matches
+     * // Get only first set from regular expression matches (exclude full matches)
+     * StringType::regexp('a1b2', '(\S)(\d)', true, true); // [0 => 'a', 1 => '1']
+     *
+     * // Get only first match of each set from regular expression matches (exclude full matches)
+     * StringType::regexp('a1b2', '(\S)(\d)', true, false, true); // [0 => 'a', 1 => 'b']
+     *
+     * // Get only first match of the first set from regular expression matches as single scalar value
+     * StringType::regexp('a1b2', '(\S)(\d)', true, true, true); // 'a'
+     * </code>
+     *
+     * @param string $string           The input string
+     * @param string $pattern          The pattern to search for, as a string
+     * @param bool   $excludeFullMatch Exclude pattern full matches from the result
+     * @param bool   $firstSet         Only first set should be used for the result
+     * @param bool   $firstMatch       Only first match of each set should be used for the result
+     *                                 if $onlyFirstSet==true the first match of the first set will be returned
+     *                                 (Return value will hold a scalar value instead array value)
+     *
+     * @return array|scalar|null Array of the matches or single result value
+     *
      * @todo auto preg_escape if needed
-     *
      */
-    public static function regexp(string $string, string $pattern): array
+    public static function regexp(string $string, string $pattern, bool $excludeFullMatch = false, bool $firstSet = false, bool $firstMatch = false)
     {
         /**
          * Checks if expression wrapped with delimiter (#....#, (....), /.../ etc)
@@ -385,7 +407,7 @@ class StringType
 
             $pcreKnownModifiers = ['i', 'm', 's', 'x', 'e', 'A', 'D', 'S', 'U', 'X', 'J', 'u'];
 
-            if ($modifiers !== '' && !in_array((array)$modifiers, $pcreKnownModifiers, true)) {
+            if ($modifiers !== '' && !in_array((array) $modifiers, $pcreKnownModifiers, true)) {
                 return false;
             }
 
@@ -398,6 +420,26 @@ class StringType
 
         preg_match_all($pattern, $string, $matches, PREG_SET_ORDER);
 
+        if ($excludeFullMatch) {
+            $matches = array_map(function ($match) {
+                // Shifts first item (full match)
+                array_shift($match);
+
+                return $match;
+            }, $matches);
+        }
+        if ($firstSet) {
+            $matches = array_shift($matches) ?? [];
+        }
+        if ($firstMatch) {
+            if ($firstSet) {
+                $matches = array_shift($matches);
+            } else {
+                $matches = array_map(function ($match) {
+                    return array_shift($match);
+                }, $matches);
+            }
+        }
 
         return $matches;
     }
