@@ -132,19 +132,26 @@ class ObjectType
     }
 
     /**
-     * Returns the result of __toString method if presents or generate object string
+     * Returns the object string representation
      *
-     * @see self::toStringMagicMethod
-     * @see self::toStringAuto
+     * - Result of __toString method if presents
+     * - Value of case if object implement a BackedEnum interface
+     * - or generate string like "FQCN@spl_object_id"
      *
      * @param object $object Object
      *
      * @return string
+     *
+     * @see self::toStringMagicMethod
+     * @see self::toStringAuto
      */
     public static function toString($object)
     {
         if (null !== $objectString = self::toStringMagicMethod($object)) {
             return $objectString;
+        }
+        if ($object instanceof \BackedEnum) {
+            return $object->value;
         }
 
         return  self::toStringAuto($object);
