@@ -198,7 +198,7 @@ class ArrayType
      */
     public static function unsetValue($array, $value)
     {
-        $array = self::cast($array);
+        $array = self::toArray($array);
 
         if (($key = array_search($value, $array)) !== false) {
             unset($array[$key]);
@@ -232,16 +232,6 @@ class ArrayType
     }
 
     /**
-     * BC-stub, renamed to ArrayType::toArray
-     *
-     * @deprecated
-     */
-    public static function cast($value)
-    {
-        return self::toArray($value);
-    }
-
-    /**
      * Check if array is associative
      *
      * @param array $array Array
@@ -265,7 +255,7 @@ class ArrayType
      */
     public static function merge($array1, $array2)
     {
-        return array_merge(self::cast($array1), self::cast($array2));
+        return array_merge(self::toArray($array1), self::toArray($array2));
     }
 
     /**
@@ -286,7 +276,7 @@ class ArrayType
         $comparisonFunction = null,
         $reverse = false
     ) {
-        $array = self::cast($array);
+        $array = self::toArray($array);
 
         $sortFunction     = $preserveKeys ? 'uasort' : 'usort';
         $propertyAccessor = new PropertyAccessor();
@@ -334,7 +324,7 @@ class ArrayType
      */
     public static function unique($array, $propertyPath)
     {
-        $array = self::cast($array);
+        $array = self::toArray($array);
 
         $propertyAccessor = new PropertyAccessor();
         $uniqueValues     = [];
@@ -473,7 +463,7 @@ class ArrayType
      */
     public static function collect($array, $propertyPath)
     {
-        $array = self::cast($array);
+        $array = self::toArray($array);
 
         if (count($array) === 0) {
             return [];
@@ -562,7 +552,7 @@ class ArrayType
             };
         }
 
-        return array_filter(self::cast($array), $callback);
+        return array_filter(self::toArray($array), $callback);
     }
 
     /**
