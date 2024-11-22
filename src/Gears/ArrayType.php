@@ -103,7 +103,7 @@ class ArrayType
     {
         $keyIndex = array_search($key, array_keys($array), true);
 
-        if (false === $keyIndex || ($keyIndex + 1) === count($array) ) {
+        if (false === $keyIndex || ($keyIndex + 1) === count($array)) {
             return $array + $insert;
         }
 
@@ -275,7 +275,8 @@ class ArrayType
         $preserveKeys = false,
         $comparisonFunction = null,
         $reverse = false
-    ) {
+    )
+    {
         $array = self::toArray($array);
 
         $sortFunction     = $preserveKeys ? 'uasort' : 'usort';
@@ -723,5 +724,23 @@ class ArrayType
     {
         array_unshift($array, $element);
         return $array;
+    }
+
+    /**
+     * Get the array encoded in json
+     *
+     * If encoded value is false, true or null then returns empty array.
+     * JSON_THROW_ON_ERROR always enabled.
+     *
+     * @param string $json    The json string being decoded.
+     * @param int    $options Bitmask of JSON decode options
+     *
+     * @return array
+     */
+    public static function fromJson(string $json, int $options = 0)
+    {
+        $array = json_decode($json, true, 512, $options & JSON_THROW_ON_ERROR);
+
+        return is_array($array) ? $array : [];
     }
 }

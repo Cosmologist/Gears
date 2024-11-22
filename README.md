@@ -107,17 +107,11 @@ ArrayType::toArray($value);
 ArrayType::isCountable($arrayOrCountable): bool;
 ```
 
-## Json functions
-
-#### Decodes a JSON string, used exceptions instead errors.
+##### Get the array encoded in json
+If encoded value is false, true or null then returns empty array.  
+JSON_THROW_ON_ERROR always enabled.
 ```php
-try {
-    Json::decode($json);
-    // or
-    Json::decodeToArray($json);
-} catch (JsonParseException $e) {
-    throw $e;
-}
+ArrayType::fromJson($json): array;
 ```
 
 ## Object functions
