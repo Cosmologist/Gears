@@ -234,6 +234,32 @@ trim('«foo»', '»'); // "�foo"
 StringType::trim('«foo»', '»'); // "«foo"
 ```
 
+##### Split text into sentences
+```php
+StringType::sentences('Fry me a Beaver. Fry me a Beaver! Fry me a Beaver? Fry me Beaver no. 4?! Fry me many Beavers... End);
+```
+returns
+```php
+[
+  [0] => 'Fry me a Beaver.',
+  [1] => 'Fry me a Beaver!',
+  [2] => 'Fry me a Beaver?',
+  [3] => 'Fry me Beaver no. 4?!',
+  [4] => 'Fry me many Beavers...',
+  [5] => 'End'
+]
+```
+
+##### Split text into words
+```php
+StringType::words('Fry me many Beavers... End'); // ['Fry', 'me', 'many', 'Beavers', 'End']
+```
+
+##### Remove word from text
+```php
+StringType::unword('Remove word from text', 'word'); // 'Remove from text'
+```
+
 ## Number functions
 
 #### Parse a float or integer value from the argument
