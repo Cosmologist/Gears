@@ -394,3 +394,24 @@ ClassType::selfAndParents('Foo\Baz'); // ["Foo\Baz", "Foo\Bar"]
 ClassType::selfAndParents(Foo\Baz::class); // ["Foo\Baz", "Foo\Bar"]
 ClassType::selfAndParents(new Foo\Baz()); // ["Foo\Baz", "Foo\Bar"]
 ```
+
+Get the class and the parent classes
+```php
+namespace Foo;
+
+class Bar {};
+class Baz extends Foo {};
+...
+ClassType::selfAndParents('Foo\Bar'); // ["Foo\Bar"]
+ClassType::selfAndParents(Foo\Bar::class); // ["Foo\Bar"]
+ClassType::selfAndParents(new Foo\Bar()); // ["Foo\Bar"]
+ClassType::selfAndParents('Foo\Baz'); // ["Foo\Baz", "Foo\Bar"]
+ClassType::selfAndParents(Foo\Baz::class); // ["Foo\Baz", "Foo\Bar"]
+ClassType::selfAndParents(new Foo\Baz()); // ["Foo\Baz", "Foo\Bar"]
+```
+
+##### Get the corresponding basic enum case dynamically from variable
+Basic enumerations does not implement from() or tryFrom() methods, but it is possible to return the corresponding enum case using the constant() function.
+```php
+ClassType::enumCase(FooEnum::class, 'bar');
+```

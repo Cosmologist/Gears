@@ -39,4 +39,20 @@ class ClassType
 
         return array_merge([$selfClass], $parentsClasses);
     }
+
+    /**
+     * Get the corresponding basic enum case dynamically from variable
+     *
+     * Basic enumerations does not implement from() or tryFrom() methods,
+     * but it is possible to return the corresponding enum case using the constant() function.
+     *
+     * @param string $enumClass An enum FQCN
+     * @param string $caseName  An enum case name
+     *
+     * @return \UnitEnum
+     */
+    public static function enumCase(string $enumClass, string $caseName): \UnitEnum
+    {
+        return constant($enumClass . '::' . $caseName);
+    }
 }
