@@ -115,21 +115,25 @@ ArrayType::fromJson($json): array;
 ```
 
 ## Object functions
+
 ##### Reads the value at the end of the property path of the object graph
 ```php
 ObjectType::get($person, 'address.street');
 ```
 Uses Symfony PropertyAccessor
+
 ##### Sets the value at the end of the property path of the object graph
 ```php
 ObjectType::set($person, 'address.street', 'Abbey Road');
 ```
 Uses Symfony PropertyAccessor
+
 ##### Reads the value of internal object property (protected and private)
 Read [ocramius](https://ocramius.github.io/blog/accessing-private-php-class-members-without-reflection/)
 ```php
 ObjectType::readInternalProperty($object, $property);
 ```
+
 ##### Writes the value to internal object property (protected and private)
 Read [ocramius](https://ocramius.github.io/blog/accessing-private-php-class-members-without-reflection/)
 ```php
@@ -262,7 +266,7 @@ StringType::unword('Remove word from text', 'word'); // 'Remove from text'
 
 ## Number functions
 
-#### Parse a float or integer value from the argument
+##### Parse a float or integer value from the argument
 Remove all characters except digits, +-.,eE from the argument and returns result as the float value or NULL if the parser fails.
 ```php
 NumberType::parse(" 123 "); // int(123)
@@ -270,33 +274,33 @@ NumberType::parse(" 123.45 "); // float(123.45)
 NumberType::parse(" 123.00 "); // int(123)
 ```
 
-#### Parse a float value from the argument
+##### Parse a float value from the argument
 Remove all characters except digits, +-.,eE from the argument and returns result as the float value or NULL if the parser fails.
 ```php
 NumberType::parseFloat(" 123 "); // float(123)
 NumberType::parseFloat(" 123.45 "); // float(123.45)
 ```
 
-#### Parse a integer value from the argument
+##### Parse a integer value from the argument
 Remove all characters except digits, plus and minus sign and returns result as the integer value or NULL if the parser fails.
 ```php
 NumberType::parseInteger(" 123 "); // int(123)
 NumberType::parseFloat(" 123.45 "); // int(12345)
 ```
 
-#### Returns fractions of the float value
+##### Returns fractions of the float value
 ```php
 NumberType::fractions(123.45); // float(0.45)
 NumberType::parseFloat(123); // float(0)
 ```
 
-#### Checks if the value is odd
+##### Checks if the value is odd
 ```php
 NumberType::odd(2); // false
 NumberType::odd(3); // true
 ```
 
-#### Checks if the value is even
+##### Checks if the value is even
 ```php
 NumberType::even(2); // true
 NumberType::even(3); // false
@@ -365,22 +369,24 @@ NumberType::toStringWithSign(1); // "+1"
 NumberType::toStringWithSign(0); // "0"
 ```
 
-#### Callable functions
-Get a suitable reflection object for the callable
+## Callable functions
+
+##### Get a suitable reflection object for the callable
 ```php
 CallableType::reflection('is_null'); // Returns a ReflectionFunction instance
 CallableType::reflection([$foo, 'bar']); // Returns a ReflectionMethod instance
 ```
 
-#### Class functions
-Get the class short name
+## Class functions
+
+##### Get the class short name
 ```php
 ClassType::shortName('Foo\Bar'); // "Bar"
 ClassType::shortName(Foo\Bar::class); // "Bar"
 ClassType::shortName(new Foo\Bar()); // "Bar"
 ```
 
-Get the class and the parent classes
+##### Get the class and the parent classes
 ```php
 namespace Foo;
 
@@ -395,7 +401,7 @@ ClassType::selfAndParents(Foo\Baz::class); // ["Foo\Baz", "Foo\Bar"]
 ClassType::selfAndParents(new Foo\Baz()); // ["Foo\Baz", "Foo\Bar"]
 ```
 
-Get the class and the parent classes
+##### Get the class and the parent classes
 ```php
 namespace Foo;
 
