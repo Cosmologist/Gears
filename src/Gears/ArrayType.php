@@ -296,7 +296,13 @@ class ArrayType
                     $rightValue = null;
                 }
 
-                if ($comparisonFunction !== null) {
+                // Process null values explicitly,
+                // because some native comparison functions (e.g. strnatcmp) deprecate to support null arguments
+                if ($leftValue === null && $rightValue !== null) {
+                    $result = -1;
+                } elseif ($leftValue !== null && $rightValue === null) {
+                    $result = 1;
+                } elseif ($comparisonFunction !== null) {
                     $result = $comparisonFunction($leftValue, $rightValue);
                 } elseif ($leftValue === $rightValue) {
                     $result = 0;
@@ -304,11 +310,7 @@ class ArrayType
                     $result = ($leftValue < $rightValue) ? -1 : 1;
                 }
 
-                if ($reverse) {
-                    $result *= -1;
-                }
-
-                return $result;
+                return $reverse ? $result * -1 : $result;
             }
         );
 
