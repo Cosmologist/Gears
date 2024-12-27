@@ -98,6 +98,28 @@ class ObjectType
     }
 
     /**
+     * Calls the internal object method (protected and private) and returns result.
+     *
+     * Use with caution!
+     *
+     * @see https://ocramius.github.io/blog/accessing-private-php-class-members-without-reflection/
+     *
+     * @param $object
+     * @param $methodName
+     * @param ...$args
+     *
+     * @return mixed
+     */
+    public static function callInternal($object, $methodName, ...$args)
+    {
+        $closure = function () use ($methodName, $args) {
+            return call_user_func([$this, $methodName], ...$args);
+        };
+
+        return $closure->call($object);
+    }
+
+    /**
      * @param $object
      * @param $propertyPath
      *

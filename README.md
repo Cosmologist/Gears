@@ -131,13 +131,19 @@ Uses Symfony PropertyAccessor
 ##### Reads the value of internal object property (protected and private)
 Read [ocramius](https://ocramius.github.io/blog/accessing-private-php-class-members-without-reflection/)
 ```php
-ObjectType::readInternalProperty($object, $property);
+ObjectType::getInternal($object, $property);
 ```
 
 ##### Writes the value to internal object property (protected and private)
 Read [ocramius](https://ocramius.github.io/blog/accessing-private-php-class-members-without-reflection/)
 ```php
-ObjectType::writeInternalProperty($object, $property, $value);
+ObjectType::setInternal($object, $property, $value);
+```
+
+##### Calls the internal object method (protected and private) and returns result
+Read [ocramius](https://ocramius.github.io/blog/accessing-private-php-class-members-without-reflection/)
+```php
+ObjectType::callInternal($object, $method, $arg1, $arg2, $arg3, ...);
 ```
 
 ##### A string representation of the object
