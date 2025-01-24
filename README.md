@@ -74,23 +74,6 @@ ArrayType::ranges([1, 3, 7, 9]); // [[1, 3], [3, 7], [7, 9]]
 ArrayType::unsetValue(['a', 'b', 'c'], 'b'); // ['a', 'c']
 ```
 
-##### List walker
-Walks through the list and calls a callback for each item.
-```php
-ArrayType::each(iterable $list, callable $callback)
-```
-
-##### Recursive walker for list and descendants
-Walks through the list and calls a callback for each item and for each child item (recursively).
-```php
-ArrayType::eachDescendantOrSelf(iterable $list, callable $callback, string $childrenKey)
-```
-
-##### Collect children recursively
-Collects children recursively of each item in the list, as well as the item itself.
-```php
-ArrayType::descendantOrSelf(iterable $list, string $childrenKey): ArrayObject
-```
 
 ##### Cast to an array
 Behavior for different types:

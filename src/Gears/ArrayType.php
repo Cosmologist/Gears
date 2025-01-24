@@ -353,76 +353,6 @@ class ArrayType
     }
 
     /**
-     * List walker
-     *
-     * Walks through the list and calls a callback for each item.
-     *
-     * @param iterable $list                           The input list
-     * @param callable $callback                       The callback
-     *                                                 Arguments:
-     *                                                 - 1: Array item value
-     *                                                 - 2: Array item key/index
-     */
-    public static function each(iterable $list, callable $callback)
-    {
-        foreach ($list as $key => $value) {
-            $callback($value, $key);
-        }
-    }
-
-    /**
-     * Recursive walker for list and descendants (determined by key)
-     *
-     * Walks through the list and calls a callback for each item and for each child item (recursively).
-     *
-     * @param iterable $list                             The input array
-     * @param callable $callback                         The callback
-     *                                                   Arguments:
-     *                                                   - 1: Array item
-     *                                                   - 2: Array item key/index
-     * @param string   $childrenKey                      Name of the key referring to children
-     */
-    public static function eachDescendantOrSelf(iterable $list, callable $callback, string $childrenKey)
-    {
-        $recursionCallback = function ($current, $key) use ($callback, $childrenKey) {
-            $callback($current, $key);
-
-            if (CompositeType::has($current, $childrenKey)) {
-                self::eachDescendantOrSelf(CompositeType::get($current, $childrenKey), $callback, $childrenKey);
-            }
-        };
-
-        self::each($list, $recursionCallback);
-    }
-
-    /**
-     * Collect children recursively
-     *
-     * Collects children recursively of each item in the list, as well as the item itself
-     *
-     * @param iterable $list
-     * @param string   $childrenKey
-     *
-     * @return ArrayObject
-     * @see self::eachDescendantOrSelf
-     *
-     */
-    public static function descendantOrSelf(iterable $list, string $childrenKey): ArrayObject
-    {
-        $result = new ArrayObject();
-
-        self::eachDescendantOrSelf(
-            $list,
-            function ($item) use ($result) {
-                $result->append($item);
-            },
-            $childrenKey
-        );
-
-        return $result;
-    }
-
-    /**
      * Collects the items by path from an array
      *
      * ```php
@@ -628,14 +558,13 @@ class ArrayType
             if (array_key_exists($column, $row)) {
                 unset($array[$key][$column]);
             }
-
         }
 
         return $array;
     }
 
     /**
-     * Returs the first element from an array or iterable
+     * Returns the first element from an array or iterable
      *
      * @param array|iterable $array The input array.
      *
