@@ -196,7 +196,7 @@ class ArrayType
      *
      * @return array Array after the items removing
      */
-    public static function unsetValue($array, $value)
+    public static function unsetValue(array $array, $value)
     {
         $array = self::toArray($array);
 
@@ -212,10 +212,10 @@ class ArrayType
      *
      * Behavior for different types:
      *   - array - returns as is
-     *   - iterable - converts to a native array (`iterator_to_array()`)
+     *   - Traversable - converts to a native array (`iterator_to_array()`)
      *   - another - creates an array with argument ([value])
      *
-     * @param mixed $value
+     * @param array|Traversable|mixed $value
      *
      * @return array
      */
@@ -238,7 +238,7 @@ class ArrayType
      *
      * @return bool
      */
-    public static function checkAssoc($array)
+    public static function checkAssoc(array $array)
     {
         return (bool) count(array_filter(array_keys($array), 'is_string'));
     }
@@ -512,8 +512,8 @@ class ArrayType
      * @param bool  $sample [optional] Defaults to false
      *
      * @return float|bool The standard deviation or false on error.
+     *                    
      * @see http://php.net/manual/ru/function.stats-standard-deviation.php#114473
-     *
      * @see http://php.net/manual/en/function.stats-standard-deviation.php
      */
     public static function deviation(array $a, $sample = false)
@@ -552,7 +552,7 @@ class ArrayType
      *
      * @return array
      */
-    public static function unsetColumn($array, $column)
+    public static function unsetColumn(array $array, $column)
     {
         foreach ($array as $key => $row) {
             if (array_key_exists($column, $row)) {
@@ -566,11 +566,11 @@ class ArrayType
     /**
      * Returns the first element from an array or iterable
      *
-     * @param array|iterable $array The input array.
+     * @param iterable $array The input array.
      *
      * @return mixed|null
      */
-    public static function first($array)
+    public static function first(iterable $array)
     {
         foreach ($array as $item) {
             return $item;
@@ -586,7 +586,7 @@ class ArrayType
      *
      * @return mixed|null
      */
-    public static function last($array)
+    public static function last(array $array)
     {
         if (count($array) === 0) {
             return null;
@@ -605,7 +605,7 @@ class ArrayType
      *
      * @return array
      */
-    public static function index($array, $path)
+    public static function index(array $array, $path)
     {
         return array_combine(self::collect($array, $path), $array);
     }
@@ -654,6 +654,7 @@ class ArrayType
     public static function unshift(array $array, $element)
     {
         array_unshift($array, $element);
+
         return $array;
     }
 
