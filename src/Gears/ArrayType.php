@@ -302,10 +302,10 @@ class ArrayType
                     $result = -1;
                 } elseif ($leftValue !== null && $rightValue === null) {
                     $result = 1;
-                } elseif ($comparisonFunction !== null) {
-                    $result = $comparisonFunction($leftValue, $rightValue);
                 } elseif ($leftValue === $rightValue) {
                     $result = 0;
+                } elseif ($comparisonFunction !== null) {
+                    $result = $comparisonFunction($leftValue, $rightValue);
                 } else {
                     $result = ($leftValue < $rightValue) ? -1 : 1;
                 }
