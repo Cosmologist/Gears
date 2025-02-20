@@ -16,6 +16,14 @@ composer require cosmologist/gears
 
 ## Array functions
 
+##### Get an item from the array by key
+```php
+ArrayType::get(['fruit' => 'apple', 'color' => 'red'], 'fruit'); // 'apple'
+ArrayType::get(['fruit' => 'apple', 'color' => 'red'], 'weight'); // null
+ArrayType::get(['fruit' => 'apple', 'color' => 'red'], 'weight', 15); // 15
+ArrayType::get(['apple', 'red'], -1); // 'red'
+```
+
 ##### Push element onto the end of array and returns the modified array
 ```php
 $a = [1,2];
@@ -41,13 +49,6 @@ ArrayType::checkAssoc(['foo' => 'bar']); // true
 ##### Check if a value exists in an array
 ```php
 ArrayType::contains(array $list, mixed $item);
-```
-
-##### Get an item from the array by key
-```php
-ArrayType::get(['fruit' => 'apple', 'color' => 'red'], 'fruit'); // apple
-ArrayType::get(['fruit' => 'apple', 'color' => 'red'], 'weight'); // null
-ArrayType::get(['fruit' => 'apple', 'color' => 'red'], 'weight', 15); // 15
 ```
 
 ##### Inserts an array after the key

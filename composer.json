@@ -1,21 +1,20 @@
 {
-    "name": "cosmologist/gears",
-    "type": "library",
-    "description": "Collection of useful functions",
-    "license": "MIT",
+  "name": "cosmologist/gears",
+  "type": "library",
+  "description": "Collection of useful functions",
+  "license": "MIT",
 
-    "require": {
-        "php": ">=5.3.0",
-        "symfony/property-access": "^2.8||^3.0"
-    },
+  "require": {
+  },
 
-    "suggest": {
-        "ralouphie/mimey": "^2.1"
-    },
+  "suggest": {
+    "symfony/property-access": "*",
+    "ralouphie/mimey": "^2.1"
+  },
 
-    "autoload": {
-        "psr-4": {
-            "Cosmologist\\": "src/"
-        }
+  "autoload": {
+    "psr-4": {
+      "Cosmologist\\": "src/"
     }
+  }
 }

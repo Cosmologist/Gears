@@ -18,46 +18,24 @@ class ArrayType
      * Checks if the given key or index exists in the array.
      *
      * Supports negative indexes.
-     *
-     * @param array $array
-     * @param mixed $key
-     *
-     * @return bool
      */
-    public static function has(array $array, $key): bool
+    public static function has(array $array, string|int $key): bool
     {
         return array_key_exists(self::getRealIndex($key, $array), $array);
     }
 
     /**
-     * Gets an item from the array.
-     *
-     * Return default value if key does not exist.
-     * Supports negative indexes.
-     *
-     * @param array $array
-     * @param mixed $key
-     * @param mixed $default
-     *
-     * @return mixed
+     * Gets an item from the array by key or index (supports negative index too).
      */
-    public static function get(array $array, $key, $default = null)
+    public static function get(array $array, int|string $key, mixed $default = null): mixed
     {
         return $array[self::getRealIndex($key, $array)] ?? $default;
     }
 
     /**
      * Adds a value to an array with a specific key.
-     *
-     * Supports negative indexes.
-     *
-     * @param array $array
-     * @param mixed $key
-     * @param mixed $value
-     *
-     * @return array The input array with new item
      */
-    public static function set(array $array, $key, $value): array
+    public static function set(array $array, string|int $key, mixed $value): array
     {
         $array[self::getRealIndex($key, $array)] = $value;
 
@@ -66,26 +44,16 @@ class ArrayType
 
     /**
      * Returns the real index if the passed index is negative or returns the original passed index.
-     *
-     * @param mixed           $index
-     * @param array|Countable $array
-     *
-     * @return int
      */
-    public static function getRealIndex($index, $array)
+    private static function getRealIndex(string|int $index, Countable|array $array): int
     {
         return is_int($index) && ($index < 0) ? count($array) + $index : $index;
     }
 
     /**
-     * Checks if a value exists in an array
-     *
-     * @param array $array
-     * @param       $value
-     *
-     * @return bool
+     * Checks if a value exists in an array.
      */
-    public static function contains(array $array, $value): bool
+    public static function contains(array $array, mixed $value): bool
     {
         return in_array($value, $array);
     }
