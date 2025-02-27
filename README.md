@@ -1,13 +1,16 @@
 # php-gears
-Collection of useful functions
+Collection of useful PHP functions/classes/utils. 
 
 - [Installation](#installation)
-- [Array functions](#array-functions)
-- [Object functions](#object-functions)
-- [String functions](#string-functions)
-- [Number functions](#number-functions)
-- [Callable functions](#callable-functions)
-- [Class functions](#class-functions)
+- Common
+  - [Array functions](#array-functions)
+  - [Object functions](#object-functions)
+  - [String functions](#string-functions)
+  - [Number functions](#number-functions)
+  - [Callable functions](#callable-functions)
+  - [Class functions](#class-functions)
+- Symfony
+  - [Form utils](#symfony-form-utils)
 
 ## Installation
 ```
@@ -410,4 +413,27 @@ ClassType::selfAndParents(new Foo\Baz()); // ["Foo\Baz", "Foo\Bar"]
 Basic enumerations does not implement from() or tryFrom() methods, but it is possible to return the corresponding enum case using the constant() function.
 ```php
 ClassType::enumCase(FooEnum::class, 'bar');
+```
+
+## Symfony Form utils
+
+##### Convert domain model constraint violation to the form constraint violation
+It's maybe useful when you validate your model from form on the domain layer and want to map violations to the form.
+```php
+use Cosmologist\Bundle\SymfonyCommonBundle\Form\FormUtils;
+use Symfony\Component\Form\Extension\Validator\ViolationMapper\ViolationMapper;
+use Symfony\Component\Validator\Exception\ValidationFailedException;
+
+if ($form->isSubmitted()) {
+     try {
+         return $this->handler->create($form->getData());
+     } catch (ValidationFailedException $exception) {
+         $violationMapper = new ViolationMapper();
+         foreach ($exception->getViolations() as $domainViolation) {
+             $violationMapper->mapViolation(FormUtils::convertDomainViolationToFormViolation($domainViolation), $form);
+         }
+     }
+}
+
+return $form->createView();
 ```
