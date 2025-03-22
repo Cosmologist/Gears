@@ -242,73 +242,43 @@ class StringType
     }
 
     /**
-     * Guess the mime-type of data
+     * Guess the MIME-type of the string data.
      *
-     * @param string $data
-     *
-     * @return string|null
-     * @todo move to FileSystem
-     *
+     * <code>
+     * StringType::guessMime('foo bar'); // "text/plain"
+     * StringType::guessMime(file_get_content("foo.jpg")); // "image/jpeg"
+     * </code>
      */
-    public static function guessMime(string $data): ?string
+    public static function guessMime(string $string): ?string
     {
-        return (new finfo(FILEINFO_MIME_TYPE))->buffer($data) ?? null;
+        return (new finfo(FILEINFO_MIME_TYPE))->buffer($string) ?? null;
     }
 
     /**
-     * Guess the suitable file-extension for data
+     * Guess the file extension from the string data.
      *
-     * @param string $data
-     *
-     * @return string|null
-     * @todo move to FileSystem
-     *
+     * <code>
+     * StringType::guessExtension('foo bar'); // "txt"
+     * StringType::guessExtension(file_get_content("foo.jpg")); // "jpeg"
+     * * </code>
      */
-    public static function guessExtension(string $data): ?string
+    public static function guessExtension(string $string): ?string
     {
-        return self::guessExtensionFinfo($data) ?? self::guessExtensionMimey($data);
-    }
+        $extension = null;
 
-    /**
-     * Guess extension for data with finfo
-     *
-     * @param string $data
-     *
-     * @return string|null
-     */
-    private static function guessExtensionFinfo(string $data): ?string
-    {
-        if (!class_exists('finfo')) {
-            return null;
+        if (class_exists(MimeTypes::class)) {
+            $extension = (new MimeTypes())->getExtension(self::guessMime($string));
         }
 
-        $result = (new finfo(FILEINFO_EXTENSION))->buffer($data);
+        if (null === $extension) {
+            $extension = (new finfo(FILEINFO_EXTENSION))->buffer($string);
 
-        if (is_string($result) && $result !== '???') {
-            return ArrayType::first(explode('|', $result));
+            if (is_string($extension) && $extension !== '???') {
+                $extension = ArrayType::first(explode('/', $extension));
+            }
         }
 
-        return null;
-    }
-
-    /**
-     * Guess extension for data with ralouphie/mimey library
-     *
-     * @param string $data
-     *
-     * @return string|null
-     */
-    private static function guessExtensionMimey(string $data): ?string
-    {
-        if (!class_exists('Mimey\\MimeTypes')) {
-            return null;
-        }
-
-        if (null === $mime = self::guessMime($data)) {
-            return null;
-        }
-
-        return (new MimeTypes())->getExtension($mime);
+        return $extension;
     }
 
     /**

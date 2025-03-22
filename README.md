@@ -197,14 +197,16 @@ StringType::replaceFirst('name name name', 'name', 'title'); // 'title name name
 StringType::wrap('target', '/'); // '/target/'
 ```
 
-##### Guess the type of string
+##### Guess the MIME-type of the string data
 ```php
-StringType::guessMime(file_get_contents('/foo/bar.baz'));
+StringType::guessMime('foo bar'); // "text/plain"
+StringType::guessMime(file_get_content("foo.jpg")); // "image/jpeg"
 ```
 
-##### Guess the suitable file-extension for string
+##### Guess the file extension from the string data.
 ```php
-StringType::guessExtension('Foo bar baz'); // txt
+StringType::guessExtension('foo bar'); // "txt"
+StringType::guessExtension(file_get_content("foo.jpg")); // "jpeg"
 ```
 
 ##### Check if a string is a binary string
