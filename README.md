@@ -10,7 +10,7 @@ Collection of useful PHP functions/classes/utils.
   - [Callable functions](#callable-functions)
   - [Class functions](#class-functions)
 - Symfony
-  - [Form utils](#symfony-form-utils)
+  - [Form utils](#symfony-forms-utils)
 
 ## Installation
 ```
@@ -417,12 +417,12 @@ Basic enumerations does not implement from() or tryFrom() methods, but it is pos
 ClassType::enumCase(FooEnum::class, 'bar');
 ```
 
-## Symfony Form utils
+## Symfony Forms utils
 
 ##### Convert domain model constraint violation to the form constraint violation
 It's maybe useful when you validate your model from form on the domain layer and want to map violations to the form.
 ```php
-use Cosmologist\Bundle\SymfonyCommonBundle\Form\FormUtils;
+use Cosmologist\Gears\Symfony\Form\FormUtils;
 use Symfony\Component\Form\Extension\Validator\ViolationMapper\ViolationMapper;
 use Symfony\Component\Validator\Exception\ValidationFailedException;
 
@@ -439,3 +439,32 @@ if ($form->isSubmitted()) {
 
 return $form->createView();
 ```
+
+##### Trait with a method implementing DataMapperInterface::mapDataToForms with default behavior
+This is convenient for mapping of form data to a model via _DataMapperInterface::mapFormsToData()_,
+for example, to create a model via a constructor,
+in this case, the mapping of model data to a form via _DataMapperInterface::mapDataToForms()_ will remain unchanged,
+and you cannot not define it, since it is required by the _DataMapperInterface_.
+```php
+use Cosmologist\Gears\Symfony\Form\DataFormsMapperDefaultTrait;
+
+class TransactionFormType extends AbstractType implements DataMapperInterface
+{
+    use DataFormsMapperDefaultTrait;
+
+    #[Override]
+    public function buildForm(FormBuilderInterface $builder, array $options): void
+    {
+        $builder
+            ->add('name', TextType::class)
+            ->setDataMapper($this);
+    }
+
+    #[Override]
+    public function mapFormsToData(Traversable $forms, mixed &$viewData): void
+    {
+        $forms = iterator_to_array($forms);
+        $viewData = new Contact($forms['name']->getData());
+    }
+```
+

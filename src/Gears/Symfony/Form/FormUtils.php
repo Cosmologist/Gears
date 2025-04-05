@@ -1,6 +1,6 @@
 <?php
 
-namespace Cosmologist\Gears\src\Gears\Symfony;
+namespace Cosmologist\Gears\Symfony\Form;
 
 use Symfony\Component\Validator\ConstraintViolation;
 
@@ -12,7 +12,7 @@ class FormUtils
      * It's maybe useful when you validate your model from form on the domain layer and want to map violations to the form.
      *
      * <code>
-     * use Cosmologist\Bundle\SymfonyCommonBundle\Form\FormUtils;
+     * use Cosmologist\Gears\Symfony\Form\FormUtils;
      * use Symfony\Component\Form\Extension\Validator\ViolationMapper\ViolationMapper;
      * use Symfony\Component\Validator\Exception\ValidationFailedException;
      *
@@ -37,7 +37,7 @@ class FormUtils
             $domainViolation->getMessageTemplate(),
             $domainViolation->getParameters(),
             $domainViolation->getRoot(),
-            'data.' . $domainViolation->getPropertyPath(),
+            empty($domainViolation->getPropertyPath()) ? null : 'data.' . $domainViolation->getPropertyPath(),
             $domainViolation->getInvalidValue(),
             $domainViolation->getPlural(),
             $domainViolation->getCode(),
