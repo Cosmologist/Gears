@@ -11,6 +11,7 @@ Collection of useful PHP functions/classes/utils.
   - [Class functions](#class-functions)
 - Symfony
   - [Form utils](#symfony-forms-utils)
+  - [Validator utils](#symfony-validator-utils)
 
 ## Installation
 ```
@@ -468,3 +469,13 @@ class TransactionFormType extends AbstractType implements DataMapperInterface
     }
 ```
 
+## Symfony Validator utils
+
+##### Simple and convenient way instance of ValidationFailedException with single ConstraintViolation
+```php
+use Cosmologist\Gears\Symfony\Validator\ValidationFailedException;
+
+ValidationFailedException::violate($foo, "Foo with invalid bar");
+ValidationFailedException::violate($foo, "Foo with invalid {{ bar }}", compact('bar'));
+ValidationFailedException::violate($foo, "Foo with invalid bar", propertyPath: 'bar');
+```
