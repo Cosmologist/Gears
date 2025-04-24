@@ -134,11 +134,37 @@ Read [ocramius](https://ocramius.github.io/blog/accessing-private-php-class-memb
 ObjectType::callInternal($object, $method, $arg1, $arg2, $arg3, ...);
 ```
 
-##### A string representation of the object
-Returns the result of `__toString` or null if the method is not defined.  
+##### Get a string representation of the object or enum 
+- Result of __toString method if presents
+- String value of case for the BackedEnum
+- Name of case for the UnitEnum
+- or generated string like "FQCN@spl_object_id"
+
 PHP default behavior: if the method is not defined, an error (`Object of class X could not be converted to string`) is triggered.
 ```php
-ObjectType::toString($instance);
+namespace Foo;
+
+class Bar {
+}
+class BarMagicMethod {
+    public function __toString(): string {
+        return 'Bar';
+    }
+}
+enum BazUnitEnum {
+    case APPLE;
+} 
+enum BazStringBackedEnum: string {
+    case APPLE = 'apple';
+}
+enum BazIntBackedEnum: int {
+    case APPLE = 1;
+}
+
+ObjectType::toString(new Foo); // 'Foo/Bar@1069'
+ObjectType::toString(new FooMagicMethod); // 'Foo'
+ObjectType::toString(BazUnitEnum::APPLE); // 'APPLE'
+ObjectType::toString(BazStringBackedEnum::APPLE); // '1'
 ```
 
 ##### Cast an object or a FQCN to FQCN
