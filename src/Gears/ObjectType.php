@@ -107,11 +107,11 @@ class ObjectType
      */
     public static function toClassName(object|string $target): ?string
     {
-        if (is_object($data)) {
-            return $data::class;
+        if (is_object($target)) {
+            return $target::class;
         }
-        if (class_exists($data)) {
-            return $data;
+        if (class_exists($target)) {
+            return $target;
         }
 
         return null;

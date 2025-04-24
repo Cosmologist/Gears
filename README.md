@@ -401,11 +401,11 @@ CallableType::reflection([$foo, 'bar']); // Returns a ReflectionMethod instance
 
 ## Class functions
 
-##### Get the class short name
+##### Get the class or an object class short name
 ```php
-ClassType::shortName('Foo\Bar'); // "Bar"
-ClassType::shortName(Foo\Bar::class); // "Bar"
-ClassType::shortName(new Foo\Bar()); // "Bar"
+ClassType::short('Foo\Bar'); // "Bar"
+ClassType::short(Foo\Bar::class); // "Bar"
+ClassType::short(new Foo\Bar()); // "Bar"
 ```
 
 ##### Get the class and the parent classes

@@ -10,38 +10,27 @@ use ReflectionClass;
 class ClassType
 {
     /**
-     * Get the class short name
-     *
-     * @param string|object $class An object (class instance) or a string (class name).
-     *
-     * @return string The class short name.
+     * Get the class or an object class short name.
      */
-    public static function shortName($class): string
+    public static function short(object|string $objectOrClass): string
     {
-        return (new ReflectionClass($class))->getShortName();
+        return (new ReflectionClass($objectOrClass))->getShortName();
     }
 
     /**
-     * Get the class and the parent classes
-     *
-     * @param string|object $class An object (class instance) or a string (class name).
-     *
-     * @return array
+     * Get the class and the parent classes.
      */
-    public static function selfAndParents($class): array
+    public static function selfAndParents(string $class): array
     {
-        if (null === $selfClass = ObjectType::toClassName($class)) {
-            return [];
-        }
-        if (false === $parentsClasses = class_parents($selfClass)) {
-            return [$selfClass];
+        if (false === $parentsClasses = class_parents($class)) {
+            return [$class];
         }
 
-        return array_merge([$selfClass], $parentsClasses);
+        return array_merge([$class], $parentsClasses);
     }
 
     /**
-     * Get the corresponding basic enum case dynamically from variable
+     * Get the corresponding basic enum case dynamically from variable.
      *
      * Basic enumerations does not implement from() or tryFrom() methods,
      * but it is possible to return the corresponding enum case using the constant() function.
