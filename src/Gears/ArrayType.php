@@ -2,7 +2,6 @@
 
 namespace Cosmologist\Gears;
 
-use ArrayObject;
 use Countable;
 use Symfony\Component\ExpressionLanguage\ExpressionLanguage;
 use Symfony\Component\PropertyAccess\Exception\AccessException;
@@ -15,7 +14,15 @@ use Traversable;
 class ArrayType
 {
     /**
-     * Checks if the given key or index exists in the array.
+     * Returns the real index if the passed index is negative or returns the original passed index
+     */
+    private static function getRealIndex(string|int $index, Countable|array $array): int|string
+    {
+        return is_int($index) && ($index < 0) ? count($array) + $index : $index;
+    }
+
+    /**
+     * Checks if the given key or index exists in the array
      *
      * Supports negative indexes.
      */
@@ -25,7 +32,7 @@ class ArrayType
     }
 
     /**
-     * Gets an item from the array by key or index (supports negative index too).
+     * Gets an item from the array by key or index (supports negative index too)
      */
     public static function get(array $array, int|string $key, mixed $default = null): mixed
     {
@@ -33,7 +40,7 @@ class ArrayType
     }
 
     /**
-     * Adds a value to an array with a specific key.
+     * Adds a value to an array with a specific key
      */
     public static function set(array $array, string|int $key, mixed $value): array
     {
@@ -43,15 +50,23 @@ class ArrayType
     }
 
     /**
-     * Returns the real index if the passed index is negative or returns the original passed index.
+     * Adds a value to an array with a specific key only if key not presents in an array
+     *
+     * It's more intuitive variant to <code>$array += [$key => $value];</code>
+     *
+     * <code>
+     * $array = ['fruit' => 'apple'];
+     * ArrayType::touch($array, 'color', 'red']); // ['fruit' => 'apple', 'color' => 'red'];
+     * ArrayType::touch($array, 'fruit', 'banana']); // ['fruit' => 'apple'];
+     * </code>
      */
-    private static function getRealIndex(string|int $index, Countable|array $array): int
+    public static function touch(array $array, string|int $key, mixed $value): array
     {
-        return is_int($index) && ($index < 0) ? count($array) + $index : $index;
+        return self::has($array, $key) ? $array : self::set($array, $key, $value);
     }
 
     /**
-     * Checks if a value exists in an array.
+     * Checks if a value exists in an array
      */
     public static function contains(array $array, mixed $value): bool
     {
@@ -60,14 +75,8 @@ class ArrayType
 
     /**
      * Inserts an array after the key
-     *
-     * @param array $array
-     * @param mixed $key
-     * @param array $insert
-     *
-     * @return array
      */
-    public static function insertAfter(array $array, $key, $insert): array
+    public static function insertAfter(array $array, mixed $key, array $insert): array
     {
         $keyIndex = array_search($key, array_keys($array), true);
 
@@ -82,14 +91,8 @@ class ArrayType
 
     /**
      * Inserts an array before the key
-     *
-     * @param array $array
-     * @param mixed $key
-     * @param array $insert
-     *
-     * @return array
      */
-    public static function insertBefore(array $array, $key, $insert): array
+    public static function insertBefore(array $array, mixed $key, array $insert): array
     {
         $keyIndex = array_search($key, array_keys($array), true);
 
@@ -104,19 +107,14 @@ class ArrayType
 
     /**
      * Group an array by the specified column
-     *
-     * @param array $array  Array
-     * @param mixed $column Group column
-     *
-     * @return array Grouped array
      */
-    public static function group($array, $column)
+    public static function group(array $array, mixed $byColumn): array
     {
         $result = [];
 
         foreach ($array as $item) {
-            if (array_key_exists($column, $item)) {
-                $result[$item[$column]][] = $item;
+            if (array_key_exists($byColumn, $item)) {
+                $result[$item[$byColumn]][] = $item;
             }
         }
 
@@ -127,12 +125,8 @@ class ArrayType
      * Create ranges from list
      *
      * Example: [1, 3, 7, 9] => [[1, 3], [3, 7], [7, 9]]
-     *
-     * @param array $list
-     *
-     * @return array
      */
-    public static function ranges(array $list)
+    public static function ranges(array $list): array
     {
         $ranges = [];
 
@@ -155,19 +149,12 @@ class ArrayType
     }
 
     /**
-     * Unset array item by value
+     * Unset array items with specified value
      *
      * @see http://stackoverflow.com/a/7225113/663322
-     *
-     * @param array $array Array
-     * @param mixed $value Value
-     *
-     * @return array Array after the items removing
      */
-    public static function unsetValue(array $array, $value)
+    public static function unsetValue(array $array, mixed $value): array
     {
-        $array = self::toArray($array);
-
         if (($key = array_search($value, $array)) !== false) {
             unset($array[$key]);
         }
@@ -182,12 +169,8 @@ class ArrayType
      *   - array - returns as is
      *   - Traversable - converts to a native array (`iterator_to_array()`)
      *   - another - creates an array with argument ([value])
-     *
-     * @param array|Traversable|mixed $value
-     *
-     * @return array
      */
-    public static function toArray($value)
+    public static function toArray(mixed $value): array
     {
         if (is_array($value)) {
             return $value;
@@ -201,49 +184,37 @@ class ArrayType
 
     /**
      * Check if array is associative
-     *
-     * @param array $array Array
-     *
-     * @return bool
      */
-    public static function checkAssoc(array $array)
+    public static function checkAssoc(array $array): bool
     {
         return (bool) count(array_filter(array_keys($array), 'is_string'));
     }
 
     /**
-     * Merge arrays
-     *
      * Merge arrays like array_merge, but supports Traversable objects too
-     *
-     * @param array|Traversable $array1
-     * @param array|Traversable $array2
-     *
-     * @return array The resulting array
      */
-    public static function merge($array1, $array2)
+    public static function merge(iterable $array1, iterable $array2): array
     {
         return array_merge(self::toArray($array1), self::toArray($array2));
     }
 
     /**
-     * Sort the array by contents
+     * Sort an array
      *
-     * @param array  $array              The array to sort
-     * @param string $propertyPath       The path to the sort element in the collection
-     * @param bool   $preserveKeys       Preserve array keys or not?
-     * @param string $comparisonFunction The comparison function name (strcmp, strnatcmp etc.)
-     * @param bool   $reverse            Reverse sorted result (DESC if true, ASC is false)
+     * @param array    $array              The array to sort
+     * @param string   $path               The path to the sort element in the collection
+     * @param bool     $preserveKeys       Preserve array keys or not?
+     * @param callable $comparisonFunction The comparison function name (strcmp, strnatcmp etc.)
+     * @param bool     $reverse            Reverse sorted result (DESC if true, ASC is false)
      *
      * @return array Sorted array
      */
     public static function sort(
-        $array,
-        $propertyPath,
-        $preserveKeys = false,
-        $comparisonFunction = null,
-        $reverse = false
-    )
+        iterable  $array,
+        string    $path,
+        bool      $preserveKeys = false,
+        ?callable $comparisonFunction = null,
+        bool      $reverse = false): array
     {
         $array = self::toArray($array);
 
@@ -252,14 +223,14 @@ class ArrayType
 
         $sortFunction(
             $array,
-            function ($left, $right) use ($propertyAccessor, $propertyPath, $comparisonFunction, $reverse) {
+            function ($left, $right) use ($propertyAccessor, $path, $comparisonFunction, $reverse) {
                 try {
-                    $leftValue = $propertyAccessor->getValue($left, $propertyPath);
+                    $leftValue = $propertyAccessor->getValue($left, $path);
                 } catch (AccessException $e) {
                     $leftValue = null;
                 }
                 try {
-                    $rightValue = $propertyAccessor->getValue($right, $propertyPath);
+                    $rightValue = $propertyAccessor->getValue($right, $path);
                 } catch (AccessException $e) {
                     $rightValue = null;
                 }
@@ -286,14 +257,9 @@ class ArrayType
     }
 
     /**
-     * Remove the items with duplicates values from an array
-     *
-     * @param array  $array        The input array
-     * @param string $propertyPath The path to the unique element in the collection
-     *
-     * @return array
+     * Remove the items with duplicates values by a path from an array
      */
-    public static function unique($array, $propertyPath)
+    public static function unique(iterable $array, string $path): array
     {
         $array = self::toArray($array);
 
@@ -302,9 +268,9 @@ class ArrayType
 
         return array_filter(
             $array,
-            function ($item) use ($propertyAccessor, $propertyPath, &$uniqueValues) {
+            function ($item) use ($propertyAccessor, $path, &$uniqueValues) {
                 try {
-                    $value = $propertyAccessor->getValue($item, $propertyPath);
+                    $value = $propertyAccessor->getValue($item, $path);
                 } catch (AccessException $e) {
                     $value = null;
                 }
@@ -356,13 +322,11 @@ class ArrayType
      *
      * @see https://symfony.com/doc/current/components/property_access.html
      *
-     * @param array        $array        The input array
-     * @param string|array $propertyPath The path to the item for collection or array of paths (@see Symfony
-     *                                   PropertyAccess syntax)
-     *
-     * @return array
+     * @param iterable $array            The input array
+     * @param string[] $path             The path to the item for collection or array of paths.
+     *                                   (see Symfony PropertyAccess syntax)
      */
-    public static function collect($array, $propertyPath)
+    public static function collect(iterable $array, string ...$path): array
     {
         $array = self::toArray($array);
 
@@ -370,14 +334,13 @@ class ArrayType
             return [];
         }
 
-        $propertyPath     = (array) $propertyPath;
         $propertyAccessor = new PropertyAccessor();
 
         $result = array_map(
-            function ($item) use ($propertyAccessor, $propertyPath) {
+            function ($item) use ($propertyAccessor, $path) {
                 try {
                     $result = [];
-                    foreach ($propertyPath as $key => $path) {
+                    foreach ($path as $key => $path) {
                         $result[$key] = $propertyAccessor->getValue($item, $path);
                     }
 
@@ -389,38 +352,29 @@ class ArrayType
             $array
         );
 
-        if (count($propertyPath) === 1) {
-            return array_column($result, key($propertyPath));
+        if (count($path) === 1) {
+            return array_column($result, key($path));
         }
 
         return $result;
     }
 
     /**
-     * Map data to the object
-     *
-     * @param array         $data   Data
-     * @param string|object $target FQCN or object
-     *
-     * @return object
+     * Map an array to the object
      */
-    public static function map($data, $target)
+    public static function map(iterable $array, object $object): object
     {
-        if (is_string($target)) {
-            $target = new $target;
-        }
-
         $propertyAccessor = new PropertyAccessor();
 
-        foreach ($data as $key => $value) {
-            $propertyAccessor->setValue($target, $key, $value);
+        foreach ($array as $key => $value) {
+            $propertyAccessor->setValue($object, $key, $value);
         }
 
-        return $target;
+        return $object;
     }
 
     /**
-     * Filters the items.
+     * Filters the items
      *
      * @param array                   $array                The input array
      * @param string|callable|null    $expressionOrFunction The function or ExpressionLanguage expression for filter callback.
@@ -428,14 +382,15 @@ class ArrayType
      *                                                      If the callback or expression evaluation result returns true, the current value from array is returned into
      *                                                      the result array. Array keys are preserved.
      *                                                      Use "item" keyword in the expression for access to iterated array item.
-     * @param bool                    $invert
      * @param ExpressionLanguage|null $expressionLanguage   Pre-configured ExpressionLanguage instance
-     * @param array                   $vars                 The parameters used in the expression and to be passed to the evaluator
-     *                                                      As an associative array
-     *
-     * @return array
+     * @param array                   $vars                 The parameters used in the expression and to be passed to the evaluator.
+     *                                                      As an associative array.
      */
-    public static function filter($array, $expressionOrFunction = null, $invert = false, ExpressionLanguage $expressionLanguage = null, array $vars = [])
+    public static function filter(array                $array,
+                                  string|callable|null $expressionOrFunction = null,
+                                  bool                 $invert = false,
+                                  ?ExpressionLanguage  $expressionLanguage = null,
+                                  array                $vars = []): array
     {
         if ($expressionOrFunction === null) {
             return array_filter($array);
@@ -458,69 +413,43 @@ class ArrayType
 
     /**
      * Calculate the average of values in an array
-     *
-     * @param array $array The input array
-     *
-     * @return float|int
      */
-    public static function average($array)
+    public static function average($array): float|int
     {
         return array_sum($array) / count($array);
     }
 
     /**
-     * Returns the standard deviation
+     * Calculate the standard deviation of values in an array
      *
-     * This user-land implementation follows the implementation quite strictly;
-     * it does not attempt to improve the code or algorithm in any way. It will
-     * raise a warning if you have fewer than 2 values in your array, just like
-     * the extension does (although as an E_USER_WARNING, not E_WARNING).
+     * <code>
+     * ArrayType::deviation([1, 2, 1]); // float(0.4714045207910317)
+     * </code>
      *
-     * @param array $a
-     * @param bool  $sample [optional] Defaults to false
-     *
-     * @return float|bool The standard deviation or false on error.
-     *                    
-     * @see http://php.net/manual/ru/function.stats-standard-deviation.php#114473
-     * @see http://php.net/manual/en/function.stats-standard-deviation.php
+     * @see http://php.net/manual/en/function.stats-standard-deviation.php#114473
      */
-    public static function deviation(array $a, $sample = false)
+    public static function deviation(array $array): ?float
     {
-        $n = count($a);
+        $n = count($array);
+
         if ($n === 0) {
-            trigger_error("The array has zero elements", E_USER_WARNING);
-
-            return false;
+            return null;
         }
-        if ($sample && $n === 1) {
-            trigger_error("The array has only 1 element", E_USER_WARNING);
 
-            return false;
-        }
-        $mean  = array_sum($a) / $n;
+        $mean  = array_sum($array) / $n;
         $carry = 0.0;
-        foreach ($a as $val) {
+        foreach ($array as $val) {
             $d     = ((double) $val) - $mean;
             $carry += $d * $d;
-        };
-        if ($sample) {
-            --$n;
         }
 
         return sqrt($carry / $n);
     }
 
     /**
-     * Remove a specified column from in the input array
-     *
-     * @param array $array  The input array.
-     * @param mixed $column The column of values to return.
-     *                      This value may be the integer key of the column you wish to retrieve,
-     *                      or it may be the string key name for an associative array
-     *
-     * @return array
+     * Remove a specified column from a two-dimensional array
      */
-    public static function unsetColumn(array $array, $column)
+    public static function unsetColumn(array $array, int|string $column): array
     {
         foreach ($array as $key => $row) {
             if (array_key_exists($column, $row)) {
@@ -533,12 +462,8 @@ class ArrayType
 
     /**
      * Returns the first element from an array or iterable
-     *
-     * @param iterable $array The input array.
-     *
-     * @return mixed|null
      */
-    public static function first(iterable $array)
+    public static function first(iterable $array): mixed
     {
         foreach ($array as $item) {
             return $item;
@@ -549,12 +474,8 @@ class ArrayType
 
     /**
      * Get the last element of an array
-     *
-     * @param array $array The input array.
-     *
-     * @return mixed|null
      */
-    public static function last(array $array)
+    public static function last(array $array): mixed
     {
         if (count($array) === 0) {
             return null;
@@ -564,47 +485,26 @@ class ArrayType
     }
 
     /**
-     * Creates array by using the value by the path as keys and the item as value.
+     * Creates array by using the value by the path as keys and the item as value
      *
      * @see https://symfony.com/doc/current/components/property_access.html
      *
      * @param array  $array The input array
      * @param string $path  The array column or property path
-     *
-     * @return array
      */
-    public static function index(array $array, $path)
+    public static function index(array $array, string $path): array
     {
         return array_combine(self::collect($array, $path), $array);
     }
 
     /**
-     * Verify that the contents of a variable is a countable value
-     *
-     * @use If PHP >= 7.3.0 use is_countable function
-     *
-     * @param mixed $arrayOrCountable
-     *
-     * @return bool
-     */
-    public static function isCountable($arrayOrCountable): bool
-    {
-        return is_array($arrayOrCountable) || ($arrayOrCountable instanceof Countable);
-    }
-
-    /**
      * Push element onto the end of array and returns the modified array
      *
-     * This is a wrapper around array_push, the difference in the return value - this function returns a modified array
-     *
-     * @param array $array
-     * @param mixed $element
-     *
-     * @return array
+     * This is a wrapper around array_push, the difference in the return value - this function returns a modified array.
      */
-    public static function push(array $array, $element)
+    public static function push(array $array, ...$values): array
     {
-        array_push($array, $element);
+        array_push($array, ...$values);
 
         return $array;
     }
@@ -612,16 +512,11 @@ class ArrayType
     /**
      * Prepend element to the beginning of an array and returns the modified array
      *
-     * This is a wrapper around array_unshift, the difference in the return value - this function returns a modified array
-     *
-     * @param array $array
-     * @param mixed $element
-     *
-     * @return array
+     * This is a wrapper around array_unshift, the difference in the return value - this function returns a modified array.
      */
-    public static function unshift(array $array, $element)
+    public static function unshift(array $array, ...$values): array
     {
-        array_unshift($array, $element);
+        array_unshift($array, ...$values);
 
         return $array;
     }
@@ -629,15 +524,13 @@ class ArrayType
     /**
      * Get the array encoded in json
      *
-     * If encoded value is false, true or null then returns empty array.
-     * JSON_THROW_ON_ERROR always enabled.
+     * - If encoded value is false, true or null then returns empty array
+     * - JSON_THROW_ON_ERROR always enabled
      *
-     * @param string $json    The json string being decoded.
+     * @param string $json    The json string being decoded
      * @param int    $options Bitmask of JSON decode options
-     *
-     * @return array
      */
-    public static function fromJson(string $json, int $options = 0)
+    public static function fromJson(string $json, int $options = 0): array
     {
         $array = json_decode($json, true, 512, $options & JSON_THROW_ON_ERROR);
 

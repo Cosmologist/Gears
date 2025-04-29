@@ -28,11 +28,20 @@ ArrayType::get(['fruit' => 'apple', 'color' => 'red'], 'weight', 15); // 15
 ArrayType::get(['apple', 'red'], -1); // 'red'
 ```
 
+##### Adds a value to an array with a specific key only if key not presents in an array
+It's more intuitive variant to `<code>$array += [$key => $value];`
+```php
+$array = ['fruit' => 'apple'];
+ArrayType::touch($array, 'color', 'red']); // ['fruit' => 'apple', 'color' => 'red'];
+ArrayType::touch($array, 'fruit', 'banana']); // ['fruit' => 'apple'];
+```
+
 ##### Push element onto the end of array and returns the modified array
 ```php
 $a = [1,2];
 ArrayType::push($a, 3); // [1,2,3]
 ```
+
 ##### Prepend element to the beginning of an array and returns the modified array
 ```php
 $a = [2,3];
@@ -79,6 +88,11 @@ ArrayType::ranges([1, 3, 7, 9]); // [[1, 3], [3, 7], [7, 9]]
 ArrayType::unsetValue(['a', 'b', 'c'], 'b'); // ['a', 'c']
 ```
 
+##### Calculate the standard deviation of values in an array
+```php
+ArrayType::deviation([1, 2, 1]); // float(0.4714045207910317)
+```
+
 
 ##### Cast to an array
 Behavior for different types:
@@ -89,11 +103,6 @@ Behavior for different types:
 ArrayType::toArray($value);
 ```
 
-##### Verify that the contents of a variable is a countable value
-> If PHP >= 7.3.0 use `is_countable` function
-```php
-ArrayType::isCountable($arrayOrCountable): bool;
-```
 
 ##### Get the array encoded in json
 If encoded value is false, true or null then returns empty array.  
