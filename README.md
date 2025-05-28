@@ -11,6 +11,7 @@ Collection of useful PHP functions/classes/utils.
   - [Class functions](#class-functions)
 - Symfony
   - [Form utils](#symfony-forms-utils)
+  - [PropertyAccess utils](#symfony-propertyaccess-utils)
   - [Validator utils](#symfony-validator-utils)
 
 ## Installation
@@ -113,31 +114,41 @@ ArrayType::fromJson($json): array;
 
 ## Object functions
 
-##### Reads the value at the end of the property path of the object graph
+##### Read the value at the end of the property path of the object graph
 ```php
 ObjectType::get($person, 'address.street');
 ```
 Uses Symfony PropertyAccessor
 
-##### Sets the value at the end of the property path of the object graph
-```php
-ObjectType::set($person, 'address.street', 'Abbey Road');
-```
-Uses Symfony PropertyAccessor
-
-##### Reads the value of internal object property (protected and private)
+##### Read the value of internal object property (protected and private)
 Read [ocramius](https://ocramius.github.io/blog/accessing-private-php-class-members-without-reflection/)
 ```php
 ObjectType::getInternal($object, $property);
 ```
 
-##### Writes the value to internal object property (protected and private)
+##### Get the values of the property path of the object recursively
+Read [ocramius](https://ocramius.github.io/blog/accessing-private-php-class-members-without-reflection/)
+```php
+$grandfather = new Person(name: 'grandfather');
+$dad = new Person(name: 'dad', parent: $grandfather);
+$i = new Person(name: 'i', parent: $dad);
+
+ObjectType::getRecursive($i, 'parent'); // [Person(dad), Person(grandfather)]
+```
+
+##### Set the value at the end of the property path of the object graph
+```php
+ObjectType::set($person, 'address.street', 'Abbey Road');
+```
+Uses Symfony PropertyAccessor
+
+##### Write the value to internal object property (protected and private)
 Read [ocramius](https://ocramius.github.io/blog/accessing-private-php-class-members-without-reflection/)
 ```php
 ObjectType::setInternal($object, $property, $value);
 ```
 
-##### Calls the internal object method (protected and private) and returns result
+##### Call the internal object method (protected and private) and returns result
 Read [ocramius](https://ocramius.github.io/blog/accessing-private-php-class-members-without-reflection/)
 ```php
 ObjectType::callInternal($object, $method, $arg1, $arg2, $arg3, ...);
@@ -502,6 +513,19 @@ class TransactionFormType extends AbstractType implements DataMapperInterface
         $forms = iterator_to_array($forms);
         $viewData = new Contact($forms['name']->getData());
     }
+```
+
+## Symfony PropertyAccess utils
+
+##### Get the values of the property path of the object or of the array recursively
+```php
+use Cosmologist\Gears\Symfony\PropertyAccessor\RecursivePropertyAccessor;
+
+$grandfather = new Person(name: 'grandfather');
+$dad = new Person(name: 'dad', parent: $grandfather);
+$i = new Person(name: 'i', parent: $dad);
+
+(new RecursivePropertyAccessor())->getValue($i, 'parent'); // [Person(dad), Person(grandfather)]
 ```
 
 ## Symfony Validator utils

@@ -2,6 +2,7 @@
 
 namespace Cosmologist\Gears;
 
+use Cosmologist\Gears\Symfony\PropertyAccessor\RecursivePropertyAccessor;
 use Symfony\Component\PropertyAccess\PropertyAccessor;
 use Symfony\Component\PropertyAccess\PropertyAccessorInterface;
 
@@ -44,6 +45,24 @@ class ObjectType
         };
 
         return $closure->call($object);
+    }
+
+    /**
+     * Get the values of the property path of the object recursively
+     *
+     *  <code>
+     *  $grandfather = new Person(name: 'grandfather');
+     *  $dad = new Person(name: 'dad', parent: $grandfather);
+     *  $i = new Person(name: 'i', parent: $dad);
+     *
+     *  ObjectType::getRecursive($i, 'parent'); // [Person(dad), Person(grandfather)]
+     *  </code>
+     *
+     * @see RecursivePropertyAccessor::getValue()
+     */
+    public static function getRecursive(object $object, string $path): array
+    {
+        return (new RecursivePropertyAccessor())->getValue($object, $path);
     }
 
     /**
