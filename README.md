@@ -11,6 +11,7 @@ Collection of useful PHP functions/classes/utils.
   - [Class functions](#class-functions)
 - Symfony
   - [Form utils](#symfony-forms-utils)
+  - [Framework utils](#symfony-framework-utils)
   - [PropertyAccess utils](#symfony-propertyaccess-utils)
   - [Validator utils](#symfony-validator-utils)
 
@@ -513,6 +514,32 @@ class TransactionFormType extends AbstractType implements DataMapperInterface
         $forms = iterator_to_array($forms);
         $viewData = new Contact($forms['name']->getData());
     }
+```
+## Symfony Framework utils
+
+##### Конфигурируйте Symfony-приложение как бандл - используя Container Extension и файлы конфигурации
+```php
+namespace App;
+
+use App\DependencyInjection\AppExtension;
+use Cosmologist\Gears\Symfony\Framework\AppExtension\AppExtensionKernelInterface;
+use Cosmologist\Gears\Symfony\Framework\AppExtension\RegisterAppExtensionKernelTrait;
+use Override;
+use Symfony\Bundle\FrameworkBundle\Kernel\MicroKernelTrait;
+use Symfony\Component\DependencyInjection\Extension\ExtensionInterface;
+use Symfony\Component\HttpKernel\Kernel as BaseKernel;
+
+class Kernel extends BaseKernel implements AppExtensionKernelInterface
+{
+    use MicroKernelTrait;
+    use RegisterAppExtensionKernelTrait;
+
+    #[Override]
+    public function getAppExtension(): ExtensionInterface
+    {
+        return new AppExtension();
+    }
+}
 ```
 
 ## Symfony PropertyAccess utils
