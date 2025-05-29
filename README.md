@@ -1,5 +1,4 @@
-# php-gears
-Collection of useful PHP functions/classes/utils. 
+# PHP-Gears - handy helper library for PHP and Symfony
 
 - [Installation](#installation)
 - Common
