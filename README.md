@@ -516,7 +516,7 @@ class TransactionFormType extends AbstractType implements DataMapperInterface
 ```
 ## Symfony Framework utils
 
-##### Конфигурируйте Symfony-приложение как бандл - используя Container Extension и файлы конфигурации
+##### Configure your Symfony application as a bundle using service container extension and configuration files
 ```php
 namespace App;
 

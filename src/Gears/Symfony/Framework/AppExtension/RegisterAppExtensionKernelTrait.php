@@ -12,15 +12,15 @@ use Symfony\Component\DependencyInjection\Extension\ExtensionInterface;
 use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
 
 /**
- * Конфигурируйте Symfony-приложение как бандл - используя Container Extension и файлы конфигурации.
+ * Configure your Symfony application as a bundle using service container extension and configuration files
  *
- * Как использовать:
- * 1. Реализуйте Extension, например, в src/DependencyInjection/AppExtension.php.
- * 2. Подключите этот трейт к вашему ядру (src/Kernel.php).
- * 3. Подключите к ядру интерфейс AppExtensionKernelInterface.
- * 4. Реализуйте в ядре метод getAppExtension() этого интерфейса, который вернет инстанц AppExtension.
+ * How to Use:
+ * 1. Implement Extension, for example, in `src/DependencyInjection/AppExtension.php`.
+ * 2. Include this trait in your kernel (`src/Kernel.php`).
+ * 3. Implement the `AppExtensionKernelInterface` in your kernel.
+ * 4. Implement the `getAppExtension()` method in your kernel, which returns an instance of `AppExtension`.
  *
- * Пример:
+ * Example:
  * <code>
  * namespace App;
  *
@@ -45,45 +45,44 @@ use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
  * }
  * </code>
  *
- * <h5>A. Важные моменты работы Dependency Injection в Symfony</h5>
- * 1. При сборке контейнера вызывается {@link MicroKernelTrait::configureContainer()}, который загружает config/packages/*, config/services*, etc.
- *    a. Для namespace конфигурации (корневого элемент конфигурации) в ядре должен быть зарегистрирован одноименный extension,
- *       иначе будет ошибка, смотри, например {@link YamlFileLoader::validate()}.
- * 2. Прогоняются системные CompilerPass'ы, основным является {@link MergeExtensionConfigurationPass}.
- *    a. MergeExtensionConfigurationPass перебирает все зарегистрированные extension.
- *       - Для каждого создает временный контейнер (чтобы изолировать extension между собой).
- *       - Передает управление в extension через {@link ExtensionInterface::load()}, который наполняет временный контейнер.
- *       - Временный контейнер вмерживается в основной.
- *    b. Сервисы уровня приложения, загруженные в пункте 1, вмерживаются в основной контейнер.
- *       Это нужно, чтобы они имели приоритет (можно было переопределить сервис из бандла на уровне приложения).
+ * <h5>A. How to Symfony process the service container extensions</h5>
+ * 1. When building the container, {@link MicroKernelTrait::configureContainer()} is called, which loads `config/packages/*`, `config/services*`, etc.
+ *    a. For the configuration namespace (root element of the configuration) in the kernel, a similarly named extension must be registered;
+ *       otherwise, an error will occur, see, for example, {@link YamlFileLoader::validate()}.
+ * 2. System CompilerPasses are executed, with the main one being {@link MergeExtensionConfigurationPass}.
+ *    a. `MergeExtensionConfigurationPass` iterates over all registered extensions.
+ *       - For each, it creates a temporary container (to isolate extensions from each other).
+ *       - It delegates control to the extension via {@link ExtensionInterface::load()}, which populates the temporary container.
+ *       - The temporary container is merged into the main container.
+ *    b. Application-level services loaded in step 1 are merged into the main container.
+ *       This ensures they have priority (you can override bundle services at the application level).
  *
- * <h5>Проблема 1</h5>
- * Если просто зарегистрировать AppExtension, через {@link ContainerBuilder::registerExtension()},
- * то он не будет видеть сервисы уровня приложения (смотри пункт A.2.a), то есть ```$container->getDefinition('App\Service')``` выбросит исключение,
- * a cервисы уровня приложения будут всегда переписывать сервисы объявленные в extension (смотри пункт A.2.b).
- * Единственное исключение если вы не используете autowiring в config/services.yaml, тогда да - возможность определять новые сервисы в AppExtension будет.
+ * <h5>Problem 1</h5>
+ * If you simply register `AppExtension` via {@link ContainerBuilder::registerExtension()},
+ * it will not see application-level services (see point A.2.a), so `$container->getDefinition('App\Service')` will throw an exception,
+ * and application-level services will always override services declared in the extension (see point A.2.b).
+ * The only exception is if you do not use autowiring in `config/services.yaml`; then you can define new services in `AppExtension`.
  *
- * <h6>Используемое решение</h6>
- * Передать управление в AppExtension при сборке контейнера и передать в него основной контейнер, а не временный, смотри {@link RegisterAppExtensionKernelTrait::prepareContainer()}.
- * Благодаря этому AppExtension видит сервисы уровня приложения и изменения, которые он внесет в контейнер не затрутся.
+ * <h6>Solution Used</h6>
+ * Pass control to `AppExtension` during container building and pass the main container to it, not a temporary one, see {@link RegisterAppExtensionKernelTrait::prepareContainer()}.
+ * This way, `AppExtension` can see application-level services, and changes it makes to the container will not be overwritten.
  *
- * <h5>Проблема 2</h5>
- * Если не регистрировать AppExtension, через {@link ContainerBuilder::registerExtension()},
- * то при загрузке конфигурации для AppExtension будет исключение о отсутствии зарегистрированного extension для namespace конфигурации (смотри пункт A.1.a).
+ * <h5>Problem 2</h5>
+ * If you do not register `AppExtension` via {@link ContainerBuilder::registerExtension()},
+ * there will be an exception about the absence of a registered extension for the configuration namespace when loading the configuration for `AppExtension` (see point A.1.a).
  *
- * <h6>Используемое решение</h6>
- * Регистрируется пустой extension, смотри {@link RegisterAppExtensionKernelTrait::prepareContainer()}, который ничего не делает,
- * лишь имеет соответствующий алиас, одноименный namespace конфигурации.
- * Благодаря ему, соответсвующая конфигурация проходит проверку описанную выше, и доступна через ```$container->getExtensionConfig($appExtension->getAlias())```,
- * откуда ее и достаем передавая управление в AppExtension в методе {@link RegisterAppExtensionKernelTrait::buildContainer()}.
+ * <h6>Solution Used</h6>
+ * Register a dummy extension, see {@link RegisterAppExtensionKernelTrait::prepareContainer()}, which does nothing but has the corresponding alias, the same as the configuration namespace.
+ * This ensures that the corresponding configuration passes the validation described above and is accessible via `$container->getExtensionConfig($appExtension->getAlias())`,
+ * from where it is retrieved and passed to `AppExtension` in the {@link RegisterAppExtensionKernelTrait::buildContainer()} method.
  *
- * <i>Да-да-да, решение c extension-заглушкой не очень эстетичное.</i>
+ * <i>Yes, yes, yes, the solution with a dummy extension is not very elegant.</i>
  */
 trait RegisterAppExtensionKernelTrait
 {
     /**
-     * Здесь регистрируем в контейнере extension-заглушку для того,
-     * чтобы конфигурация extension попадала в контейнер и не приводила к ошибке.
+     * Here, we register a dummy extension in the container
+     * so that the extension configuration gets into the container and does not cause an error.
      */
     #[Override]
     protected function prepareContainer(ContainerBuilder $container): void
@@ -109,7 +108,7 @@ trait RegisterAppExtensionKernelTrait
     }
 
     /**
-     * Здесь запускаем AppExtension
+     * Here, we launch `AppExtension`.
      */
     #[Override]
     protected function buildContainer(): ContainerBuilder
@@ -122,12 +121,12 @@ trait RegisterAppExtensionKernelTrait
     }
 
     /**
-     * Проверяем что ядро, куда подключен trait, реализует AppExtensionKernelInterface
+     * Validate that the kernel, to which the trait is applied, implements `AppExtensionKernelInterface`.
      */
     private function validate(): void
     {
         if (!$this instanceof AppExtensionKernelInterface) {
-            throw new RuntimeException(sprintf('Kernel should implement "%s" for apply "%s"', AppExtensionKernelInterface::class, __TRAIT__));
+            throw new RuntimeException(sprintf('Kernel should implement "%s" to apply "%s"', AppExtensionKernelInterface::class, __TRAIT__));
         }
     }
 }
