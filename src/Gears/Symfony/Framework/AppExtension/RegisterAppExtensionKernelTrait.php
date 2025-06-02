@@ -5,6 +5,7 @@ namespace Cosmologist\Gears\Symfony\Framework\AppExtension;
 use Override;
 use RuntimeException;
 use Symfony\Bundle\FrameworkBundle\Kernel\MicroKernelTrait;
+use Symfony\Component\DependencyInjection\Compiler\MergeExtensionConfigurationParameterBag;
 use Symfony\Component\DependencyInjection\Compiler\MergeExtensionConfigurationPass;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Extension\Extension;
@@ -113,9 +114,19 @@ trait RegisterAppExtensionKernelTrait
     #[Override]
     protected function buildContainer(): ContainerBuilder
     {
-        $container    = parent::buildContainer();
-        $appExtension = $this->getAppExtension();
-        $appExtension->load($container->getExtensionConfig($appExtension->getAlias()), $container);
+        $container = parent::buildContainer();
+
+        /**
+         * {@link MergeExtensionConfigurationPass} emulation
+         */
+        $appExtension          = $this->getAppExtension();
+        $appExtensionAlias     = $appExtension->getAlias();
+        // Resolve parameters placeholders in the extension configuration
+        $appExtensionConfigRaw = $container->getExtensionConfig($appExtensionAlias);
+        $configResolver        = new MergeExtensionConfigurationParameterBag($container->getParameterBag());
+        $appExtensionConfigResolved = $configResolver->resolveValue($appExtensionConfigRaw);
+
+        $appExtension->load($appExtensionConfigResolved, $container);
 
         return $container;
     }
