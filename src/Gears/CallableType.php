@@ -2,100 +2,100 @@
 
 namespace Cosmologist\Gears;
 
+use Closure;
 use ReflectionFunction;
-use ReflectionFunctionAbstract;
 use ReflectionMethod;
 
 class CallableType
 {
-    protected const SEPARATOR = '::';
-
     /**
-     * Extracts a class name from callable expression
+     * Determine if a callable a closure
      *
-     * Example:
-     * ```php
-     * self::extractClassFromExpression('Foo\Bar::baz');
-     * // Result is: 'Foo\Bar'
-     * ```
-     *
-     * @param string $expression
-     *
-     * @return string
+     * <code>
+     * CallableType::reflection(fn($foo) => $foo); // bool(true)
+     * CallableType::reflection('foo'); // bool(false)
+     * CallableType::reflection([$foo, 'bar']); // bool(false)
+     * CallableType::reflection('Foo\Bar::baz'); // bool(false)
+     * </code>
      */
-    protected static function extractClassFromExpression(string $expression): string
+    public static function isClosure(callable $callable): bool
     {
-        return StringType::strBefore($expression, self::SEPARATOR);
+        return $callable instanceof Closure;
     }
 
     /**
-     * Extracts a method name from callable expression
+     * Determine if a callable a function
      *
-     * Example:
-     * ```php
-     * self::extractClassFromExpression('Foo\Bar::baz');
-     * // Result is: 'baz'
-     * ```
-     *
-     * @param string $expression
-     *
-     * @return string
+     * <code>
+     * CallableType::isFunction(fn($foo) => $foo); // bool(false)
+     * CallableType::isFunction('foo'); // bool(true)
+     * CallableType::isFunction([$foo, 'bar']); // bool(false)
+     * CallableType::isFunction('Foo\Bar::baz'); // bool(false)
+     * </code>
      */
-    protected static function extractMethodFromExpression(string $expression): string
+    public static function isFunction(callable $callable): bool
     {
-        return StringType::strAfter($expression, self::SEPARATOR);
+        return is_string($callable) && !StringType::contains($callable, '::');
     }
 
     /**
-     * Is composite expression
+     * Determine if a callable a method
      *
-     * @param string|callable $expression The callable expression
-     *
-     * @return bool
+     * <code>
+     * CallableType::isMethod(fn($foo) => $foo); // bool(false)
+     * CallableType::isMethod('foo'); // bool(false)
+     * CallableType::isMethod([$foo, 'bar']); // bool(true)
+     * CallableType::isMethod('Foo\Bar::baz'); // bool(true)
+     * </code>
      */
-    protected static function isCompositeFormat($expression): bool
+    public static function isMethod(callable $callable): bool
     {
-        return is_string($expression) && StringType::contains($expression, self::SEPARATOR);
-    }
-
-    /**
-     * Is function expression
-     *
-     * @param string $expression The callable expression
-     *
-     * @return bool
-     */
-    public static function isFunctionFormat(string $expression): bool
-    {
-        return !self::isCompositeFormat($expression);
-    }
-
-    /**
-     * Validate callable expression
-     *
-     * @param string $expression The callable expression
-     *
-     * @return bool
-     */
-    public static function validate(string $expression): bool
-    {
-        return is_callable($expression) && (!self::isCompositeFormat($expression) || (new ReflectionMethod(self::extractClassFromExpression($expression), self::extractMethodFromExpression($expression)))->isStatic()) ;
-    }
-
-    /**
-     * Get a suitable reflection object for the callable
-     *
-     * @param callable $callable
-     *
-     * @return ReflectionFunctionAbstract|ReflectionFunction|ReflectionMethod
-     */
-    public static function reflection(callable $callable): ReflectionFunctionAbstract
-    {
-        if (is_array($callable)) {
-            return new ReflectionMethod(...$callable);
+        if (self::isClosure($callable)) {
+            return false;
         }
-        if (self::isCompositeFormat($callable)) {
-            return new ReflectionMethod($callable);
+        if (self::isFunction($callable)) {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Determine if a callable a static method
+     *
+     * <code>
+     * CallableType::isStaticMethod(fn($foo) => $foo); // bool(false)
+     * CallableType::isStaticMethod('foo'); // bool(false)
+     * CallableType::isStaticMethod([$foo, 'bar']); // bool(false)
+     * CallableType::isStaticMethod('Foo\Bar::baz'); // bool(true)
+     * </code>
+     */
+    public static function isStaticMethod(callable $callable): bool
+    {
+        if (!self::isMethod($callable)) {
+            return false;
+        }
+        if (is_array($callable) && is_object($callable[0])) {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Get suitable reflection implementation for the callable
+     *
+     * <code>
+     * CallableType::reflection(fn($foo) => $foo); // object(ReflectionFunction)
+     * CallableType::reflection('foo'); // object(ReflectionFunction)
+     * CallableType::reflection([$foo, 'bar']); // object(ReflectionMethod)
+     * CallableType::reflection('Foo\Bar::baz'); // object(ReflectionMethod)
+     * </code>
+     */
+    public static function reflection(callable $callable): ReflectionFunction|ReflectionMethod
+    {
+        if (self::isMethod($callable)) {
+            return is_array($callable) ? new ReflectionMethod($callable[0], $callable[1]) : new ReflectionMethod($callable);
         }
 
         return new ReflectionFunction($callable);

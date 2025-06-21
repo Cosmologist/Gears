@@ -413,10 +413,44 @@ NumberType::toStringWithSign(0); // "0"
 
 ## Callable functions
 
-##### Get a suitable reflection object for the callable
+##### Determine if a callable a closure
 ```php
-CallableType::reflection('is_null'); // Returns a ReflectionFunction instance
-CallableType::reflection([$foo, 'bar']); // Returns a ReflectionMethod instance
+CallableType::isClosure(fn($foo) => $foo); // bool(true)
+CallableType::isClosure('foo'); // bool(false)
+CallableType::isClosure([$foo, 'bar']); // bool(false)
+CallableType::isClosure('Foo\Bar::baz'); // bool(false)
+```
+
+##### Determine if a callable a function
+```php
+CallableType::isFunction(fn($foo) => $foo); // bool(false)
+CallableType::isFunction('foo'); // bool(true)
+CallableType::isFunction([$foo, 'bar']); // bool(false)
+CallableType::isFunction('Foo\Bar::baz'); // bool(false)
+```
+
+##### Determine if a callable a method
+```php
+CallableType::isMethod(fn($foo) => $foo); // bool(false)
+CallableType::isMethod('foo'); // bool(false)
+CallableType::isMethod([$foo, 'bar']); // bool(true)
+CallableType::isMethod('Foo\Bar::baz'); // bool(true)
+```
+
+##### Determine if a callable a static method
+```php
+CallableType::isStaticMethod(fn($foo) => $foo); // bool(false)
+CallableType::isStaticMethod('foo'); // bool(false)
+CallableType::isStaticMethod([$foo, 'bar']); // bool(false)
+CallableType::isStaticMethod('Foo\Bar::baz'); // bool(true)
+```
+
+##### Get suitable reflection implementation for the callable
+```php
+CallableType::reflection(fn($foo) => $foo); // object(ReflectionFunction)
+CallableType::reflection('foo'); // object(ReflectionFunction)
+CallableType::reflection([$foo, 'bar']); // object(ReflectionMethod)
+CallableType::reflection('Foo\Bar::baz'); // object(ReflectionMethod)
 ```
 
 ## Class functions

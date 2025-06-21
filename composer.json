@@ -1,7 +1,7 @@
 {
   "name": "cosmologist/gears",
   "type": "library",
-  "description": "Collection of useful functions",
+  "description": "PHP-Gears - handy helper library for PHP and Symfony",
   "license": "MIT",
 
   "require": {
