@@ -9,6 +9,7 @@
   - [Callable functions](#callable-functions)
   - [Class functions](#class-functions)
 - Symfony
+  - [ExpressionLanguage utils](#symfony-expressionlanguage-utils)
   - [Form utils](#symfony-forms-utils)
   - [Framework utils](#symfony-framework-utils)
   - [PropertyAccess utils](#symfony-propertyaccess-utils)
@@ -496,6 +497,33 @@ ClassType::selfAndParents(new Foo\Baz()); // ["Foo\Baz", "Foo\Bar"]
 Basic enumerations does not implement from() or tryFrom() methods, but it is possible to return the corresponding enum case using the constant() function.
 ```php
 ClassType::enumCase(FooEnum::class, 'bar');
+```
+
+## Symfony ExpressionLanguage utils
+
+##### Create an ExpressionFunction from a callable
+```php
+ExpressionFunctionUtils::fromCallable('Foo\Bar::baz'); // object(ExpressionFunction)
+```
+
+For example, this can be useful for injecting simple objects (for instance, ValueObject) into a Symfony service container
+```php
+class AppExtension extends Extension
+{
+    #[Override]
+    public function load(array $configs, ContainerBuilder $container)
+    {
+        $container->addExpressionLanguageProvider(new class implements ExpressionFunctionProviderInterface {
+            public function getFunctions(): array {
+                return [ExpressionFunctionUtils::fromCallable([WalletIdentifier::class, 'create'], 'walletId')];
+            }
+        });
+
+        $container
+            ->getDefinition(OrderService::class)
+            ->setArgument('$wallet', expr('walletId(13)'));
+    }
+}
 ```
 
 ## Symfony Forms utils
