@@ -26,7 +26,7 @@ class ExpressionFunctionUtils
      * ExpressionFunctionUtils::fromCallable('Foo\Bar::baz'); // object(ExpressionFunction)
      * </code>
      *
-     * For example, this can be useful for injecting simple objects (for instance, ValueObject) into a Symfony service container
+     * For example, this can be useful for injecting simple objects (like ValueObject) into a Symfony service container
      * <code>
      * class AppExtension extends Extension
      * {

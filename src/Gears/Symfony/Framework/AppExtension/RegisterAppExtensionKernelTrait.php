@@ -13,7 +13,7 @@ use Symfony\Component\DependencyInjection\Extension\ExtensionInterface;
 use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
 
 /**
- * Configure your Symfony application as a bundle using service container extension and configuration files
+ * Configure your Symfony application as a bundle using service container extension and configuration
  *
  * How to Use:
  * 1. Implement Extension, for example, in `src/DependencyInjection/AppExtension.php`.

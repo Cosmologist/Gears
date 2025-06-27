@@ -242,7 +242,47 @@ class StringType
     }
 
     /**
-     * Guess the MIME-type of the string data.
+     * Guess the file extensions from the string data
+     *
+     * <code>
+     * StringType::guessExtensions('foo bar'); // ['txt']
+     * StringType::guessExtensions(file_get_content('foo.jpg')); // ['jpeg', 'jpg', 'jpe', 'jfif']
+     * </code>
+     *
+     * @return string[]
+     */
+    public static function guessExtensions(string $string): array
+    {
+        if (class_exists(MimeTypes::class)) {
+            if (null !== $extension = (new MimeTypes())->getExtension(self::guessMime($string))) {
+                return [$raw];
+            }
+        }
+
+        $raw = (new finfo(FILEINFO_EXTENSION))->buffer($string);
+
+        if (is_string($raw) && $raw !== '???') {
+            return explode('/', $raw);
+        }
+
+        return [];
+    }
+
+    /**
+     * Guess the file extension from the string data
+     *
+     * <code>
+     * StringType::guessExtension('foo bar'); // 'txt'
+     * StringType::guessExtension(file_get_content('foo.jpg')); // 'jpeg'
+     * </code>
+     */
+    public static function guessExtension(string $string): ?string
+    {
+        return ArrayType::first(self::guessExtensions($string));
+    }
+
+    /**
+     * Guess the MIME-type of the string data
      *
      * <code>
      * StringType::guessMime('foo bar'); // "text/plain"
@@ -252,33 +292,6 @@ class StringType
     public static function guessMime(string $string): ?string
     {
         return (new finfo(FILEINFO_MIME_TYPE))->buffer($string) ?? null;
-    }
-
-    /**
-     * Guess the file extension from the string data.
-     *
-     * <code>
-     * StringType::guessExtension('foo bar'); // "txt"
-     * StringType::guessExtension(file_get_content("foo.jpg")); // "jpeg"
-     * * </code>
-     */
-    public static function guessExtension(string $string): ?string
-    {
-        $extension = null;
-
-        if (class_exists(MimeTypes::class)) {
-            $extension = (new MimeTypes())->getExtension(self::guessMime($string));
-        }
-
-        if (null === $extension) {
-            $extension = (new finfo(FILEINFO_EXTENSION))->buffer($string);
-
-            if (is_string($extension) && $extension !== '???') {
-                $extension = ArrayType::first(explode('/', $extension));
-            }
-        }
-
-        return $extension;
     }
 
     /**

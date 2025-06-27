@@ -3,11 +3,12 @@
 - [Installation](#installation)
 - Common
   - [Array functions](#array-functions)
-  - [Object functions](#object-functions)
-  - [String functions](#string-functions)
-  - [Number functions](#number-functions)
   - [Callable functions](#callable-functions)
   - [Class functions](#class-functions)
+  - [File functions](#file-functions)
+  - [Number functions](#number-functions)
+  - [Object functions](#object-functions)
+  - [String functions](#string-functions)
 - Symfony
   - [ExpressionLanguage utils](#symfony-expressionlanguage-utils)
   - [Form utils](#symfony-forms-utils)
@@ -112,6 +113,254 @@ JSON_THROW_ON_ERROR always enabled.
 ```php
 ArrayType::fromJson($json): array;
 ```
+
+## Callable functions
+
+##### Determine if a callable a closure
+```php
+CallableType::isClosure(fn($foo) => $foo); // bool(true)
+CallableType::isClosure('foo'); // bool(false)
+CallableType::isClosure([$foo, 'bar']); // bool(false)
+CallableType::isClosure('Foo\Bar::baz'); // bool(false)
+```
+
+##### Determine if a callable a function
+```php
+CallableType::isFunction(fn($foo) => $foo); // bool(false)
+CallableType::isFunction('foo'); // bool(true)
+CallableType::isFunction([$foo, 'bar']); // bool(false)
+CallableType::isFunction('Foo\Bar::baz'); // bool(false)
+```
+
+##### Determine if a callable a method
+```php
+CallableType::isMethod(fn($foo) => $foo); // bool(false)
+CallableType::isMethod('foo'); // bool(false)
+CallableType::isMethod([$foo, 'bar']); // bool(true)
+CallableType::isMethod('Foo\Bar::baz'); // bool(true)
+```
+
+##### Determine if a callable a static method
+```php
+CallableType::isStaticMethod(fn($foo) => $foo); // bool(false)
+CallableType::isStaticMethod('foo'); // bool(false)
+CallableType::isStaticMethod([$foo, 'bar']); // bool(false)
+CallableType::isStaticMethod('Foo\Bar::baz'); // bool(true)
+```
+
+##### Get suitable reflection implementation for the callable
+```php
+CallableType::reflection(fn($foo) => $foo); // object(ReflectionFunction)
+CallableType::reflection('foo'); // object(ReflectionFunction)
+CallableType::reflection([$foo, 'bar']); // object(ReflectionMethod)
+CallableType::reflection('Foo\Bar::baz'); // object(ReflectionMethod)
+```
+
+## Class functions
+
+##### Get the class or an object class short name
+```php
+ClassType::short('Foo\Bar'); // "Bar"
+ClassType::short(Foo\Bar::class); // "Bar"
+ClassType::short(new Foo\Bar()); // "Bar"
+```
+
+##### Get the class and the parent classes
+```php
+namespace Foo;
+
+class Bar {};
+class Baz extends Foo {};
+...
+ClassType::selfAndParents('Foo\Bar'); // ["Foo\Bar"]
+ClassType::selfAndParents(Foo\Bar::class); // ["Foo\Bar"]
+ClassType::selfAndParents(new Foo\Bar()); // ["Foo\Bar"]
+ClassType::selfAndParents('Foo\Baz'); // ["Foo\Baz", "Foo\Bar"]
+ClassType::selfAndParents(Foo\Baz::class); // ["Foo\Baz", "Foo\Bar"]
+ClassType::selfAndParents(new Foo\Baz()); // ["Foo\Baz", "Foo\Bar"]
+```
+
+##### Get the class and the parent classes
+```php
+namespace Foo;
+
+class Bar {};
+class Baz extends Foo {};
+...
+ClassType::selfAndParents('Foo\Bar'); // ["Foo\Bar"]
+ClassType::selfAndParents(Foo\Bar::class); // ["Foo\Bar"]
+ClassType::selfAndParents(new Foo\Bar()); // ["Foo\Bar"]
+ClassType::selfAndParents('Foo\Baz'); // ["Foo\Baz", "Foo\Bar"]
+ClassType::selfAndParents(Foo\Baz::class); // ["Foo\Baz", "Foo\Bar"]
+ClassType::selfAndParents(new Foo\Baz()); // ["Foo\Baz", "Foo\Bar"]
+```
+
+##### Get the corresponding basic enum case dynamically from variable
+Basic enumerations does not implement from() or tryFrom() methods, but it is possible to return the corresponding enum case using the constant() function.
+```php
+ClassType::enumCase(FooEnum::class, 'bar');
+```
+
+## File functions
+
+##### Get the extension of a file name
+```php
+FileType::extension('/foo/bar.baz'); // 'baz'
+FileType::extension('/foo/bar'); // ''
+```
+
+##### Write a string to a file and create the file directory recursively if it does not exist
+```php
+FileType::put('/foo/bar.txt', 'baz');
+```
+
+##### Get the path to the file with $name inside the system temporary directory
+```php
+FileType::temporary('foo.txt'); // '/tmp/foo.txt'
+```
+
+##### Determine if the path an absolute path
+```php
+FileType::isAbsolutePath('C:/foo'); true
+FileType::isAbsolutePath('C:\\bar'); true
+FileType::isAbsolutePath('foo/bar'); false
+FileType::isAbsolutePath('/foo/bar'); true
+FileType::isAbsolutePath('\\foo\\bar'); true
+```
+
+##### Join the paths into one and fix the directory separators
+```php
+FileType::joinPaths('a/', '/b/', '\\c', 'd'); // Return a/b/c/d
+```
+
+##### Fix the directory separators (remove duplicates and replace with the current system directory separator)
+```php
+FileType::fixPath('/foo//bar\baz'); '/foo/bar/baz'
+```
+
+##### Guess the file extensions of the file
+```php
+FileType::guessExtensions('/foo/bar.txt'); // ['txt']
+FileType::guessExtensions('/foo/bar.jpg'); // ['jpeg', 'jpg', 'jpe', 'jfif']
+```
+
+##### Guess the file extension of the file
+```php
+FileType::guessExtension('/foo/bar.txt'); // 'txt'
+FileType::guessExtension('/foo/bar.jpg'); // 'jpeg'
+```
+
+##### Guess the mime-type of the file
+```php
+FileType::guessMime('/foo/bar.txt'); // 'text/plain'
+FileType::guessMime('/foo/bar.jpg'); // 'image/jpeg'
+```
+
+## Number functions
+
+##### Parse a float or integer value from the argument
+Remove all characters except digits, +-.,eE from the argument and returns result as the float value or NULL if the parser fails.
+```php
+NumberType::parse(" 123 "); // int(123)
+NumberType::parse(" 123.45 "); // float(123.45)
+NumberType::parse(" 123.00 "); // int(123)
+```
+
+##### Parse a float value from the argument
+Remove all characters except digits, +-.,eE from the argument and returns result as the float value or NULL if the parser fails.
+```php
+NumberType::parseFloat(" 123 "); // float(123)
+NumberType::parseFloat(" 123.45 "); // float(123.45)
+```
+
+##### Parse a integer value from the argument
+Remove all characters except digits, plus and minus sign and returns result as the integer value or NULL if the parser fails.
+```php
+NumberType::parseInteger(" 123 "); // int(123)
+NumberType::parseFloat(" 123.45 "); // int(12345)
+```
+
+##### Returns fractions of the float value
+```php
+NumberType::fractions(123.45); // float(0.45)
+NumberType::parseFloat(123); // float(0)
+```
+
+##### Checks if the value is odd
+```php
+NumberType::odd(2); // false
+NumberType::odd(3); // true
+```
+
+##### Checks if the value is even
+```php
+NumberType::even(2); // true
+NumberType::even(3); // false
+```
+
+##### Round to nearest multiple
+```php
+NumberType::roundStep(50, 5); // 50
+NumberType::roundStep(52, 5); // 50
+NumberType::roundStep(53, 5); // 55
+```
+
+##### Round down to nearest multiple
+```php
+NumberType::floorStep(50, 5); // 50
+NumberType::floorStep(52, 5); // 50
+NumberType::floorStep(53, 5); // 50
+```
+
+##### Round up to nearest multiple
+```php
+NumberType::ceilStep(50, 5); // 50
+NumberType::ceilStep(52, 5); // 55
+NumberType::ceilStep(53, 5); // 55
+```
+
+##### Spell out
+```php
+// Current locale used
+NumberType::spellout(123.45); // one hundred twenty-three point four five
+
+// Specific locale used
+NumberType::spellout(123.45, 'ru'); // сто двадцать три целых сорок пять сотых
+```
+
+##### Division with zero tolerance
+```php
+NumberType::divideSafely(1, 0); // null
+NumberType::divideSafely(1, null); // null
+NumberType::divideSafely(1, 0, 'zero'); // 'zero'
+```
+
+##### Percent calculation
+The first argument is a value for calculating the percentage.
+The second argument is a base value corresponding to 100%.
+```php
+NumberType::percentage(10, 100); // 10 
+NumberType::percentage(100, 100); // 100  
+NumberType::percentage(200, 100); // 200  
+```
+
+##### Unsign a number
+A negative value will be converted to zero, positive or zero value will be returned unchanged.
+```php
+NumberType::unsign(-1); // 0
+NumberType::unsign(-0.99); // 0
+NumberType::unsign(0); // 0
+NumberType::unsign(0.99); // 0.99
+NumberType::unsign(1); // 1
+```
+
+##### Converts a number to string with sign.
+```php
+NumberType::toStringWithSign(-1); // "-1"
+NumberType::toStringWithSign(1); // "+1"
+NumberType::toStringWithSign(0); // "0"
+```
+
 
 ## Object functions
 
@@ -307,198 +556,6 @@ StringType::words('Fry me many Beavers... End'); // ['Fry', 'me', 'many', 'Beave
 StringType::unword('Remove word from text', 'word'); // 'Remove from text'
 ```
 
-## Number functions
-
-##### Parse a float or integer value from the argument
-Remove all characters except digits, +-.,eE from the argument and returns result as the float value or NULL if the parser fails.
-```php
-NumberType::parse(" 123 "); // int(123)
-NumberType::parse(" 123.45 "); // float(123.45)
-NumberType::parse(" 123.00 "); // int(123)
-```
-
-##### Parse a float value from the argument
-Remove all characters except digits, +-.,eE from the argument and returns result as the float value or NULL if the parser fails.
-```php
-NumberType::parseFloat(" 123 "); // float(123)
-NumberType::parseFloat(" 123.45 "); // float(123.45)
-```
-
-##### Parse a integer value from the argument
-Remove all characters except digits, plus and minus sign and returns result as the integer value or NULL if the parser fails.
-```php
-NumberType::parseInteger(" 123 "); // int(123)
-NumberType::parseFloat(" 123.45 "); // int(12345)
-```
-
-##### Returns fractions of the float value
-```php
-NumberType::fractions(123.45); // float(0.45)
-NumberType::parseFloat(123); // float(0)
-```
-
-##### Checks if the value is odd
-```php
-NumberType::odd(2); // false
-NumberType::odd(3); // true
-```
-
-##### Checks if the value is even
-```php
-NumberType::even(2); // true
-NumberType::even(3); // false
-```
-
-##### Round to nearest multiple
-```php
-NumberType::roundStep(50, 5); // 50
-NumberType::roundStep(52, 5); // 50
-NumberType::roundStep(53, 5); // 55
-```
-
-##### Round down to nearest multiple
-```php
-NumberType::floorStep(50, 5); // 50
-NumberType::floorStep(52, 5); // 50
-NumberType::floorStep(53, 5); // 50
-```
-
-##### Round up to nearest multiple
-```php
-NumberType::ceilStep(50, 5); // 50
-NumberType::ceilStep(52, 5); // 55
-NumberType::ceilStep(53, 5); // 55
-```
-
-##### Spell out
-```php
-// Current locale used
-NumberType::spellout(123.45); // one hundred twenty-three point four five
-
-// Specific locale used
-NumberType::spellout(123.45, 'ru'); // сто двадцать три целых сорок пять сотых
-```
-
-##### Division with zero tolerance
-```php
-NumberType::divideSafely(1, 0); // null
-NumberType::divideSafely(1, null); // null
-NumberType::divideSafely(1, 0, 'zero'); // 'zero'
-```
-
-##### Percent calculation
-The first argument is a value for calculating the percentage.
-The second argument is a base value corresponding to 100%.
-```php
-NumberType::percentage(10, 100); // 10 
-NumberType::percentage(100, 100); // 100  
-NumberType::percentage(200, 100); // 200  
-```
-
-##### Unsign a number
-A negative value will be converted to zero, positive or zero value will be returned unchanged.
-```php
-NumberType::unsign(-1); // 0
-NumberType::unsign(-0.99); // 0
-NumberType::unsign(0); // 0
-NumberType::unsign(0.99); // 0.99
-NumberType::unsign(1); // 1
-```
-
-##### Converts a number to string with sign.
-```php
-NumberType::toStringWithSign(-1); // "-1"
-NumberType::toStringWithSign(1); // "+1"
-NumberType::toStringWithSign(0); // "0"
-```
-
-## Callable functions
-
-##### Determine if a callable a closure
-```php
-CallableType::isClosure(fn($foo) => $foo); // bool(true)
-CallableType::isClosure('foo'); // bool(false)
-CallableType::isClosure([$foo, 'bar']); // bool(false)
-CallableType::isClosure('Foo\Bar::baz'); // bool(false)
-```
-
-##### Determine if a callable a function
-```php
-CallableType::isFunction(fn($foo) => $foo); // bool(false)
-CallableType::isFunction('foo'); // bool(true)
-CallableType::isFunction([$foo, 'bar']); // bool(false)
-CallableType::isFunction('Foo\Bar::baz'); // bool(false)
-```
-
-##### Determine if a callable a method
-```php
-CallableType::isMethod(fn($foo) => $foo); // bool(false)
-CallableType::isMethod('foo'); // bool(false)
-CallableType::isMethod([$foo, 'bar']); // bool(true)
-CallableType::isMethod('Foo\Bar::baz'); // bool(true)
-```
-
-##### Determine if a callable a static method
-```php
-CallableType::isStaticMethod(fn($foo) => $foo); // bool(false)
-CallableType::isStaticMethod('foo'); // bool(false)
-CallableType::isStaticMethod([$foo, 'bar']); // bool(false)
-CallableType::isStaticMethod('Foo\Bar::baz'); // bool(true)
-```
-
-##### Get suitable reflection implementation for the callable
-```php
-CallableType::reflection(fn($foo) => $foo); // object(ReflectionFunction)
-CallableType::reflection('foo'); // object(ReflectionFunction)
-CallableType::reflection([$foo, 'bar']); // object(ReflectionMethod)
-CallableType::reflection('Foo\Bar::baz'); // object(ReflectionMethod)
-```
-
-## Class functions
-
-##### Get the class or an object class short name
-```php
-ClassType::short('Foo\Bar'); // "Bar"
-ClassType::short(Foo\Bar::class); // "Bar"
-ClassType::short(new Foo\Bar()); // "Bar"
-```
-
-##### Get the class and the parent classes
-```php
-namespace Foo;
-
-class Bar {};
-class Baz extends Foo {};
-...
-ClassType::selfAndParents('Foo\Bar'); // ["Foo\Bar"]
-ClassType::selfAndParents(Foo\Bar::class); // ["Foo\Bar"]
-ClassType::selfAndParents(new Foo\Bar()); // ["Foo\Bar"]
-ClassType::selfAndParents('Foo\Baz'); // ["Foo\Baz", "Foo\Bar"]
-ClassType::selfAndParents(Foo\Baz::class); // ["Foo\Baz", "Foo\Bar"]
-ClassType::selfAndParents(new Foo\Baz()); // ["Foo\Baz", "Foo\Bar"]
-```
-
-##### Get the class and the parent classes
-```php
-namespace Foo;
-
-class Bar {};
-class Baz extends Foo {};
-...
-ClassType::selfAndParents('Foo\Bar'); // ["Foo\Bar"]
-ClassType::selfAndParents(Foo\Bar::class); // ["Foo\Bar"]
-ClassType::selfAndParents(new Foo\Bar()); // ["Foo\Bar"]
-ClassType::selfAndParents('Foo\Baz'); // ["Foo\Baz", "Foo\Bar"]
-ClassType::selfAndParents(Foo\Baz::class); // ["Foo\Baz", "Foo\Bar"]
-ClassType::selfAndParents(new Foo\Baz()); // ["Foo\Baz", "Foo\Bar"]
-```
-
-##### Get the corresponding basic enum case dynamically from variable
-Basic enumerations does not implement from() or tryFrom() methods, but it is possible to return the corresponding enum case using the constant() function.
-```php
-ClassType::enumCase(FooEnum::class, 'bar');
-```
-
 ## Symfony ExpressionLanguage utils
 
 ##### Create an ExpressionFunction from a callable
@@ -506,7 +563,7 @@ ClassType::enumCase(FooEnum::class, 'bar');
 ExpressionFunctionUtils::fromCallable('Foo\Bar::baz'); // object(ExpressionFunction)
 ```
 
-For example, this can be useful for injecting simple objects (for instance, ValueObject) into a Symfony service container
+For example, this can be useful for injecting simple objects (like ValueObject) into a Symfony service container
 ```php
 class AppExtension extends Extension
 {
@@ -578,7 +635,7 @@ class TransactionFormType extends AbstractType implements DataMapperInterface
 ```
 ## Symfony Framework utils
 
-##### Configure your Symfony application as a bundle using service container extension and configuration files
+##### Configure your Symfony application as a bundle using service container extension and configuration
 ```php
 namespace App;
 
