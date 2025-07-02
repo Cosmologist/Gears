@@ -13,6 +13,7 @@
   - [ExpressionLanguage utils](#symfony-expressionlanguage-utils)
   - [Form utils](#symfony-forms-utils)
   - [Framework utils](#symfony-framework-utils)
+  - [Messenger utils](#symfony-messenger-utils)
   - [PropertyAccess utils](#symfony-propertyaccess-utils)
   - [Validator utils](#symfony-validator-utils)
 
@@ -658,6 +659,46 @@ class Kernel extends BaseKernel implements AppExtensionKernelInterface
         return new AppExtension();
     }
 }
+```
+
+## Symfony Messenger utils
+
+##### Symfony Messenger transport to redispatch messages on kernel.terminate event
+
+It's a convenient way to speed up your app response to clients by scheduling hard tasks after the server response,
+thanks to the kernel.terminate event.
+
+Firstly, you should enable this transport:
+```php
+# config/services.yaml
+services:
+    _defaults:
+        autoconfigure: true
+
+    Cosmologist\Gears\Symfony\Messenger\Transport\KernelTerminate\KernelTerminateTransportFactory:
+```
+```php
+# config/packages/messenger.yaml
+framework:
+    messenger:
+        transports:
+            terminate: symfony-kernel-terminate://
+```
+
+Then, you should define a rule to route messages to this transport:
+```php
+# config/packages/messenger.yaml
+framework:
+    messenger:
+        routing:
+            App\Event\FooEvent: terminate
+```
+
+and
+```php
+$this->messenger->dispatch(new App\Event\FooEvent('bar'));
+// or
+$this->messengerBus->dispatch(new App\Event\FooEvent('bar'));
 ```
 
 ## Symfony PropertyAccess utils
