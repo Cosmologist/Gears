@@ -587,6 +587,16 @@ $doctrineUtils->getClassMetadata(new App\Controller\FooController())); // null
 $doctrineUtils->getClassMetadata(App\Controller\FooController::class); // null
 ```
 
+##### Get real class of a persistent object (resolve a proxy class)
+```php
+$doctrineUtils->getRealClass(Proxies\__CG__\App\Entity\User::class); // 'App\Entity\User'
+$doctrineUtils->getRealClass(new Proxies\__CG__\App\Entity\User()); // 'App\Entity\User'
+$doctrineUtils->getRealClass(App\Entity\User::class); // 'App\Entity\User'
+$doctrineUtils->getRealClass(new App\Entity\User()); // 'App\Entity\User'
+$doctrineUtils->getRealClass(new App\Controller\FooController()); // null
+$doctrineUtils->getRealClass(App\Controller\FooController::class); // null
+```
+
 ## Symfony ExpressionLanguage utils
 
 ##### Create an ExpressionFunction from a callable
