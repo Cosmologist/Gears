@@ -9,6 +9,7 @@
   - [Number functions](#number-functions)
   - [Object functions](#object-functions)
   - [String functions](#string-functions)
+- [Doctrine Utils](#doctrine-utils)
 - Symfony
   - [ExpressionLanguage utils](#symfony-expressionlanguage-utils)
   - [Form utils](#symfony-forms-utils)
@@ -555,6 +556,35 @@ StringType::words('Fry me many Beavers... End'); // ['Fry', 'me', 'many', 'Beave
 ##### Remove word from text
 ```php
 StringType::unword('Remove word from text', 'word'); // 'Remove from text'
+```
+
+## Doctrine utils
+
+### DoctrineUtils activation
+Manually instance a DoctrineUtils
+```php
+public function __construct(private Doctrine\Persistence\ManagerRegistry $doctrine)
+{
+    $doctrineUtils = new Cosmologist\Gears\Doctrine\DoctrineUtils($doctrine);
+}
+```
+
+Register DoctrineUtils as a service with Symfony DI
+```yaml
+# config/services.yaml
+services:
+    _defaults:
+        autowire: true
+
+    Cosmologist\Gears\Doctrine\DoctrineUtils:
+```
+
+##### Get metadata for a persistent object or a persistent object class
+```php
+$doctrineUtils->getClassMetadata(new App\Entity\User()); // object(ClassMetadata)
+$doctrineUtils->getClassMetadata(App\Entity\User::class); // object(ClassMetadata)
+$doctrineUtils->getClassMetadata(new App\Controller\FooController())); // null
+$doctrineUtils->getClassMetadata(App\Controller\FooController::class); // null
 ```
 
 ## Symfony ExpressionLanguage utils
