@@ -703,6 +703,27 @@ class Kernel extends BaseKernel implements AppExtensionKernelInterface
 
 ## Symfony Messenger utils
 
+##### Assert that a symfony messenger command (a command bus message) execution will throw an exception
+```php
+class FooTest extends KernelTestCase
+{
+    use MessengerTestUtilsTrait;
+    
+    protected function setUp(): void
+    {
+        self::bootKernel();
+        
+        // A MessengerTestUtilsTrait needs your command bus
+        $this->commandBus = $this->getContainer()->get('command.bus');;
+    }
+    
+    public function testBar() {
+        $this->assertCommandShouldFail(new FooCommand);
+        $this->assertCommandShouldFail(new FooCommand, BarException::class);
+    }
+}
+```
+
 ##### Symfony Messenger transport to redispatch messages on kernel.terminate event
 
 It's a convenient way to speed up your app response to clients by scheduling hard tasks after the server response,
