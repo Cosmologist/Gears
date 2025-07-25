@@ -736,21 +736,25 @@ services:
 
     Cosmologist\Gears\Symfony\Messenger\Transport\KernelTerminate\KernelTerminateTransportFactory:
 ```
+
+Configure a messenger:
 ```php
 # config/packages/messenger.yaml
 framework:
     messenger:
+    
         transports:
             terminate: symfony-kernel-terminate://
-```
 
-Then, you should define a rule to route messages to this transport:
-```php
-# config/packages/messenger.yaml
-framework:
-    messenger:
         routing:
             App\Event\FooEvent: terminate
+
+# Use "sync://" transport instead "symfony-kernel-terminate://" for tests
+when@test:
+  framework:
+    messenger:
+      transports:
+        terminate: sync://
 ```
 
 and

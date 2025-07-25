@@ -27,21 +27,25 @@ use Symfony\Component\Messenger\Transport\TransportInterface;
  *
  *     Cosmologist\Gears\Symfony\Messenger\Transport\KernelTerminate\KernelTerminateTransportFactory:
  * </code>
- * <code>
- * # config/packages/messenger.yaml
- * framework:
- *     messenger:
- *         transports:
- *             terminate: symfony-kernel-terminate://
- * </code>
  *
- * Then, you should define a rule to route messages to this transport:
+ * Configure a messenger:
  * <code>
  * # config/packages/messenger.yaml
  * framework:
+ *   messenger:
+ *
+ *     transports:
+ *       terminate: symfony-kernel-terminate://
+ *
+ *     routing:
+ *       App\Event\FooEvent: terminate
+ *
+ * # Use "sync://" transport instead "symfony-kernel-terminate://" for tests
+ * when\@test:
+ *   framework:
  *     messenger:
- *         routing:
- *             App\Event\FooEvent: terminate
+ *       transports:
+ *         terminate: sync://
  * </code>
  *
  * and
