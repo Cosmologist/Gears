@@ -595,6 +595,64 @@ $doctrineUtils->getRealClass(new App\Controller\FooController()); // null
 $doctrineUtils->getRealClass(App\Controller\FooController::class); // null
 ```
 
+### Check if an object, or an object class persistent (managed by the Doctrine)
+```php
+$doctrineUtils->isManaged(new MyEntity()); // true
+$doctrineUtils->isManaged(new stdClass()); // false
+```
+
+### Get an identifier field name of the Doctrine object
+```php
+$doctrineUtils->getSingleIdentifierField(new MyEntityWithSingleIdentifier(id: 1000)); // 'id'
+$doctrineUtils->getSingleIdentifierField(new MyEntityWithMultipleIdentifiers()); // \Assert\InvalidArgumentException
+$doctrineUtils->getSingleIdentifierField(new stdClass); // \Assert\InvalidArgumentException
+```
+
+### Get an identifier value of the Doctrine object
+```php
+$doctrineUtils->getSingleIdentifierValue(new MyEntityWithSingleIdentifier(id: 1000)); // 1000
+$doctrineUtils->getSingleIdentifierValue(new MyEntityWithMultipleIdentifiers()); // \Assert\InvalidArgumentException
+$doctrineUtils->getSingleIdentifierValue(new stdClass); // \Assert\InvalidArgumentException
+```
+
+### Merge multiple Doctrine\Common\Collections\Criteria into a new one
+```php
+use Doctrine\Common\Collections\Criteria;
+use Doctrine\Common\Collections\Expr;
+
+DoctrineUtils::mergeCriteria(
+    new Criteria(new Expr\Comparison('status', Expr\Comparison::EQ, 'new')),
+    new Criteria(new Expr\Comparison('type', Expr\Comparison::NEQ, 'foo'))
+);
+```
+
+### Add a join to a QueryBuilder with support of the nested join (e.g. "contact.user.type")
+```php
+$qb = $entityManager->getRepository(Company::class)->createQueryBuilder('company');
+DoctrineUtils::join($qb, 'contact.user.type');
+// equivalent to
+$qb
+  ->join('company.contact', 'contact')
+  ->join('contact.user', 'user')
+  ->join('user.type', 'type');
+```
+
+### Add a join to a QueryBuilder once and returns an alias of join
+```php
+$qb = $entityManager->getRepository(Company::class)->createQueryBuilder('contact');
+
+// Adds a join and returns an alias of added join
+DoctrineUtils::joinOnce($qb, 'contact.user', 'u1'); // "u1"
+
+// If a join with specified parameters exists then only returns an alias of existed join
+DoctrineUtils::joinOnce($qb, 'contact.user', 'u2'); // "u1"
+```
+
+### Get a target class name of a given association path recursively (e.g. "contact.user")
+```php
+$doctrineUtils->getAssociationTargetClassRecursive('AppBundle/Entity/Company', 'contact.user'); // 'AppBundle/Entity/User'
+```
+
 ## Symfony ExpressionLanguage utils
 
 ### Create an ExpressionFunction from a callable
