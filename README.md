@@ -16,6 +16,7 @@
   - [Framework utils](#symfony-framework-utils)
   - [Messenger utils](#symfony-messenger-utils)
   - [PropertyAccess utils](#symfony-propertyaccess-utils)
+  - [Security utils](#symfony-security-utils)
   - [Validator utils](#symfony-validator-utils)
 
 ## Installation
@@ -786,7 +787,7 @@ It's a convenient way to speed up your app response to clients by scheduling har
 thanks to the kernel.terminate event.
 
 Firstly, you should enable this transport:
-```php
+```yaml
 # config/services.yaml
 services:
     _defaults:
@@ -796,7 +797,7 @@ services:
 ```
 
 Configure a messenger:
-```php
+```yaml
 # config/packages/messenger.yaml
 framework:
     messenger:
@@ -833,6 +834,33 @@ $dad = new Person(name: 'dad', parent: $grandfather);
 $i = new Person(name: 'i', parent: $dad);
 
 (new RecursivePropertyAccessor())->getValue($i, 'parent'); // [Person(dad), Person(grandfather)]
+```
+
+## Symfony Security utils
+
+### A SuperUserRoleVoter brings a ROLE_SUPER_USER, which effectively bypasses any, and all security checks
+
+#### Enable the ROLE_SUPER_USER
+```yaml
+# config/services.yaml
+services:
+    _defaults:
+        autowire: true
+        autoconfigure: true
+        
+    Cosmologist\Gears\Symfony\Security\Voter\SuperUserRoleVoter:
+```
+
+#### Check if ROLE_SUPER_USER granted (e.g. inside a controller)
+```php
+class FooController extends AbstractController
+{
+    public function barAction(): Response
+    {
+        $this->denyAccessUnlessGranted(SuperUserRoleVoter::ROLE_SUPER_USER);
+        ...
+    }
+}
 ```
 
 ## Symfony Validator utils
