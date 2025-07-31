@@ -1,0 +1,116 @@
+{#
+  Source: https://github.com/Cosmologist/Gears
+  Updated by: Cosmologist https://github.com/Gears
+
+  Source: http://dev.dbl-a.com/symfony-2-0/symfony2-and-twig-pagination/
+  Updated by: Simon Schick <simonsimcity@gmail.com>
+
+  Usage:
+  {% include '@Gears/pagination.html.twig' with { page: current_page, count: items_total, limit: items_per_page } %}
+
+  Parameters:
+    * page (int) : The current page you are in
+    * limit (int): Number of records to display per page
+    * count (int): Total count of records
+    * currentFilters (array)(optional) : associative array that contains route-arguments
+
+    Before use, you should register `@Gears` as Twig namespace
+    ```yaml
+    # config/packages/twig.yaml
+    twig:
+        paths:
+            '%kernel.project_dir%/vendor/cosmologist/gears/src/Gears/Symfony/Pagination/Resources/views': Gears
+```
+#}
+
+{% import _self as pagination %}
+
+{% macro item(text, page, variables) %}
+    {% set path = path(variables.paginationPath, variables.currentFilters|merge({page: page})) %}
+
+    <li class="page-item">
+        <a href="{{ path }}" class="page-link">{{ text | raw }}</a>
+    </li>
+{% endmacro %}
+
+{% macro itemDisabled(text) %}
+    <li class="page-item disabled">
+        <span class="page-link">{{ text }}</span>
+    </li>
+{% endmacro %}
+
+{% macro itemActive(page) %}
+    <li class="page-item active">
+        <span class="page-link">{{ page }}</span>
+    </li>
+{% endmacro %}
+
+{% if limit is defined and limit != null and page is defined and page != null %}
+    {% if currentFilters is not defined %}
+        {% set currentFilters = app.request.attributes.get('_route_params') | merge(app.request.query.all()) %}
+    {% endif %}
+    {# paginationPath (string) : the route name to use for links #}
+    {% set paginationPath = app.request.get('_route') %}
+    {# showAlwaysFirstAndLast (bool) : Always show first and last link (just disabled) #}
+    {% set showAlwaysFirstAndLast = false %}
+    {# lastPage (int) : represents the total number of existing pages #}
+    {% set lastPage = (count / limit) | ceil %}
+
+    {% if lastPage > 1 %}
+
+        {# the number of first and last pages to be displayed #}
+        {% set extremePagesLimit = 2 %}
+
+        {# the number of pages that are displayed around the active page #}
+        {% set nearbyPagesLimit = 2 %}
+
+        <ul class="pagination">
+            {% if page > 1 %}
+                {{ pagination.item('&laquo;', page-1, _context) }}
+
+                {% for i in range(1, extremePagesLimit) %}
+                    {% if ( i < page - nearbyPagesLimit ) %}
+                        {{ pagination.item(i, i, _context) }}
+                    {% endif %}
+                {% endfor %}
+
+                {% if extremePagesLimit + 1 < page - nearbyPagesLimit %}
+                    {{ pagination.itemDisabled('...') }}
+                {% endif %}
+
+                {% for i in range(page-nearbyPagesLimit, page-1) %}
+                    {% if ( i > 0 ) %}
+                        {{ pagination.item(i, i, _context) }}
+                    {% endif %}
+                {% endfor %}
+            {% elseif showAlwaysFirstAndLast %}
+                {{ pagination.itemDisabled('&laquo;') }}
+            {% endif %}
+
+            {{ pagination.itemActive(page) }}
+
+            {% if page < lastPage %}
+                {% for i in range(page+1, page + nearbyPagesLimit) %}
+                    {% if ( i <= lastPage ) %}
+                        {{ pagination.item(i, i, _context) }}
+                    {% endif %}
+                {% endfor %}
+
+                {% if  (lastPage - extremePagesLimit) > (page + nearbyPagesLimit) %}
+                    {{ pagination.itemDisabled('...') }}
+                {% endif %}
+
+                {% for i in range(lastPage - extremePagesLimit+1, lastPage) %}
+                    {% if ( i > page + nearbyPagesLimit ) %}
+                        {{ pagination.item(i, i, _context) }}
+                    {% endif %}
+                {% endfor %}
+
+                {{ pagination.item('&raquo;', page+1, _context) }}
+            {% elseif showAlwaysFirstAndLast %}
+                {{ pagination.itemDisabled('&raquo;') }}
+            {% endif %}
+        </ul>
+    {% endif %}
+
+{% endif %}

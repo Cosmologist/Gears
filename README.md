@@ -15,6 +15,7 @@
   - [Form utils](#symfony-forms-utils)
   - [Framework utils](#symfony-framework-utils)
   - [Messenger utils](#symfony-messenger-utils)
+  - [Pagination utils](#symfony-pagination-utils)
   - [PropertyAccess utils](#symfony-propertyaccess-utils)
   - [Security utils](#symfony-security-utils)
   - [Validator utils](#symfony-validator-utils)
@@ -821,6 +822,26 @@ and
 $this->messenger->dispatch(new App\Event\FooEvent('bar'));
 // or
 $this->messengerBus->dispatch(new App\Event\FooEvent('bar'));
+```
+
+## Symfony Pagination utils
+
+### Twig-based pagination (Bootstrap friendly)
+```twig
+{% include '@Gears/pagination.html.twig' with { page: current_page, count: items_total, limit: items_per_page } %}
+
+{# Parameters:
+   * page (int) : The current page you are in
+   * limit (int): Number of records to display per page
+   * count (int): Total count of records
+   * currentFilters (array)(optional) : associative array that contains route-arguments #}
+```
+Before use, you should register `@Gears` as Twig namespace
+```yaml
+# config/packages/twig.yaml
+twig:
+    paths:
+      '%kernel.project_dir%/vendor/cosmologist/gears/src/Gears/Symfony/Pagination/Resources/views': Gears
 ```
 
 ## Symfony PropertyAccess utils
