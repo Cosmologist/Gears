@@ -18,6 +18,7 @@
   - [Pagination utils](#symfony-pagination-utils)
   - [PropertyAccess utils](#symfony-propertyaccess-utils)
   - [Security utils](#symfony-security-utils)
+  - [Test utils](#symfony-test-utils)
   - [Validator utils](#symfony-validator-utils)
 
 ## Installation
@@ -879,6 +880,23 @@ class FooController extends AbstractController
     public function barAction(): Response
     {
         $this->denyAccessUnlessGranted(SuperUserRoleVoter::ROLE_SUPER_USER);
+        ...
+    }
+}
+```
+
+## Symfony Test utils
+
+### Add a specified HTTP-header to the kernel-browser request
+```php
+use Cosmologist\Gears\Symfony\Test\TestUtils;
+
+class FooTest extends WebTestCase
+{
+    protected function testBar(): void
+    {
+        $browser = self::createClient();
+        TestUtils::addHeader($browser, 'User-Agent', 'Symfony KernelBrowser');
         ...
     }
 }
