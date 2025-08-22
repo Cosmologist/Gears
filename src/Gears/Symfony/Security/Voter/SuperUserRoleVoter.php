@@ -2,16 +2,8 @@
 
 namespace Cosmologist\Gears\Symfony\Security\Voter;
 
-use Commerce\App\Money\Repository\TransactionRepository;
-use Commerce\App\Money\Repository\WalletRepository;
-use Commerce\Bundle\AdminBundle\View\Factory\ViewFactory;
-use Commerce\Bundle\AdminBundle\View\Renderer\TwigRenderer;
-use Commerce\Bundle\PlatformBundle\Repository\GoodsRepository;
-use Commerce\Bundle\PlatformBundle\Repository\WholesaleRepository;
 use Deprecated;
 use Override;
-use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Authorization\Voter\VoterInterface;
 

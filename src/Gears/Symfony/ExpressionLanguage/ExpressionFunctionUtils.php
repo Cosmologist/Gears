@@ -2,20 +2,11 @@
 
 namespace Cosmologist\Gears\Symfony\ExpressionLanguage;
 
-use Closure;
-use Commerce\App\Controller\OrderController;
-use Commerce\App\DependencyInjection\Configuration;
-use Commerce\App\Money\Identifier\WalletIdentifier;
 use Cosmologist\Gears\CallableType;
-use Override;
 use ReflectionFunction;
 use ReflectionMethod;
 use RuntimeException;
-use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\ExpressionLanguage\ExpressionFunction;
-use Symfony\Component\ExpressionLanguage\ExpressionFunctionProviderInterface;
-use Symfony\Component\HttpKernel\DependencyInjection\Extension;
-use function Symfony\Component\DependencyInjection\Loader\Configurator\expr;
 
 class ExpressionFunctionUtils
 {
