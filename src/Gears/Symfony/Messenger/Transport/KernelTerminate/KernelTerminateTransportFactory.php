@@ -5,6 +5,7 @@ namespace Cosmologist\Gears\Symfony\Messenger\Transport\KernelTerminate;
 use Override;
 use Psr\Container\ContainerInterface;
 use SensitiveParameter;
+use Symfony\Component\Console\ConsoleEvents;
 use Symfony\Component\DependencyInjection\Attribute\AutowireLocator;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpKernel\KernelEvents;
@@ -30,7 +31,12 @@ readonly class KernelTerminateTransportFactory implements TransportFactoryInterf
     {
         $transport = new KernelTerminateTransport($this->busLocator);
 
-        $this->eventDispatcher->addListener(KernelEvents::TERMINATE, array($transport, 'onKernelTerminate'));
+        $this->eventDispatcher->addListener(KernelEvents::TERMINATE, array($transport, 'onTerminate'));
+        /*
+         * When run an application from the CLI, the `kernel.terminate` event not generated,
+         * in this case the events handled on the `console.terminate` event.
+         */
+        $this->eventDispatcher->addListener(ConsoleEvents::TERMINATE, array($transport, 'onTerminate'));
 
         return $transport;
     }

@@ -785,8 +785,8 @@ class FooTest extends KernelTestCase
 
 ### Symfony Messenger transport to redispatch messages on kernel.terminate event
 
-It's a convenient way to speed up your app response to clients by scheduling hard tasks after the server response,
-thanks to the kernel.terminate event.
+It a convenient way to speed up your app response to clients by scheduling hard tasks after the server response, thanks to the `kernel.terminate` event.  
+When run an application from the CLI, the `kernel.terminate` event not generated, in this case the events handled on the `console.terminate` event.
 
 Firstly, you should enable this transport:
 ```yaml
