@@ -119,41 +119,97 @@ class StringType
     }
 
     /**
-     * Search and return string before haystack string
+     * Find the substring before the first (or last) occurrence of a given needle
      *
-     * @param string $string        String
-     * @param string $before        Before haystack
-     * @param bool   $caseSensitive Case-sensitive search?
+     * This function extracts the part of the haystack string that appears before the specified needle.
+     * It supports case-sensitive and case-insensitive searches, allows searching from the end of the string,
+     * and handles multibyte characters correctly by default.
      *
-     * @return false|string String before haystack string or false
+     * <code>
+     * // Returns 'Hello ' (before 'World' in a case-sensitive search)
+     * StringType::strBefore('Hello World', 'World');
+     *
+     * // Returns null because 'world' is not found with case-sensitive search
+     * StringType::strBefore('Hello World', 'world');
+     *
+     * // Returns 'Hello ' due to case-insensitive search
+     * StringType::strBefore('Hello World', 'world', searchCaseSensitive: false);
+     *
+     * // Returns 'Hello Wor' (before last 'l', searching from the end)
+     * StringType::strBefore('Hello World', 'l', searchFromEnd: true);
+     *
+     * // Returns 'Привет ' (correctly handles Cyrillic characters)
+     * StringType::strBefore('Привет Мир', 'Мир');
+     *
+     * // Returns null when needle is not found
+     * StringType::strBefore('Test', 'xyz');
+     * </code>
+     *
+     * @param string $haystack            The input string to search within.
+     * @param string $needle              The substring to search for.
+     * @param bool   $searchCaseSensitive Whether the search should be case-sensitive. Default is true.
+     * @param bool   $searchFromEnd       If true, searches for the last occurrence of the needle. Default is false.
+     * @param bool   $multibyteEncoding   If true, treats the string as multibyte (UTF-8). Default is true.
+     *
+     * @return ?string The substring before the needle, or null if needle is not found or result is empty.
      */
-    public static function strBefore($string, $before, $caseSensitive = true)
+    public static function strBefore(string $haystack, string $needle, bool $searchCaseSensitive = true, bool $searchFromEnd = false, bool $multibyteEncoding = true): ?string
     {
-        $pos = $caseSensitive ? mb_strpos($string, $before) : mb_stripos($string, $before);
-        if ($pos !== false) {
-            return mb_substr($string, 0, $pos);
+        if (null === $position = self::position($haystack, $needle, $searchCaseSensitive, $searchFromEnd, $multibyteEncoding)) {
+            return null;
         }
 
-        return false;
+        $encoding  = $multibyteEncoding ? mb_internal_encoding() : '8bit';
+        $substring = mb_substr($string, 0, $position, $encoding);
+
+        return $substring === '' ? null : $substring;
     }
 
     /**
-     * Search(case-sensitive) and return string after haystack string
+     * Find the substring after the first (or last) occurrence of a given needle
      *
-     * @param string $string        String
-     * @param string $after         After haystack
-     * @param bool   $caseSensitive Case-sensitive search?
+     * This function extracts the portion of the haystack string that comes after the specified needle.
+     * It supports case-sensitive and case-insensitive searches, allows searching from the end of the string,
+     * and properly handles multibyte characters by default.
      *
-     * @return string|false String after haystack string or false
+     * <code>
+     * // Returns 'World' (after 'Hello ' in a case-sensitive search)
+     * StringType::strAfter('Hello World', 'Hello ');
+     *
+     * // Returns null because 'hello ' is not found when case-sensitive
+     * StringType::strAfter('Hello World', 'hello ');
+     *
+     * // Returns 'World' due to case-insensitive search
+     * StringType::strAfter('Hello World', 'hello ', searchCaseSensitive: false);
+     *
+     * // Returns 'd' (after the last occurrence of 'l', searching from the end)
+     * StringType::strAfter('Hello World', 'l', searchFromEnd: true);
+     *
+     * // Returns 'Мир' (correctly handles multibyte UTF-8 characters)
+     * StringType::strAfter('Привет Мир', 'Привет ');
+     *
+     * // Returns null when needle is at the end and nothing follows
+     * StringType::strAfter('Test', 'st');
+     * </code>
+     *
+     * @param string $haystack            The input string to search within.
+     * @param string $needle              The substring to search for.
+     * @param bool   $searchCaseSensitive Whether the search should be case-sensitive. Default is true.
+     * @param bool   $searchFromEnd       If true, searches for the last occurrence of the needle. Default is false.
+     * @param bool   $multibyteEncoding   If true, treats the string as multibyte (UTF-8). Default is true.
+     *
+     * @return ?string The substring after the needle, or null if needle is not found or result is empty.
      */
-    public static function strAfter($string, $after, $caseSensitive = true)
+    public static function strAfter(string $haystack, string $needle, bool $searchCaseSensitive = true, bool $searchFromEnd = false, bool $multibyteEncoding = true): ?string
     {
-        $pos = $caseSensitive ? mb_strpos($string, $after) : mb_stripos($string, $after);
-        if ($pos !== false) {
-            return mb_substr($string, $pos + mb_strlen($after));
+        if (null === $position = self::position($haystack, $needle, $searchCaseSensitive, $searchFromEnd, $multibyteEncoding)) {
+            return null;
         }
 
-        return false;
+        $encoding  = $multibyteEncoding ? mb_internal_encoding() : '8bit';
+        $substring = mb_substr($haystack, $position + mb_strlen($needle, $encoding), encoding: $encoding);
+
+        return $substring === '' ? null : $substring;
     }
 
     /**
@@ -253,11 +309,9 @@ class StringType
      *
      * @return string
      */
-    public static function implode(string $glue, ...$strings)
+    public static function implode(string $glue, string ...$strings)
     {
-        $strings = array_filter($strings);
-
-        return implode($glue, $strings);
+        return implode($glue, array_filter($strings));
     }
 
     /**

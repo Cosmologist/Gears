@@ -514,6 +514,52 @@ $pos = StringType::position('test', 'x'); // returns null
 $pos = StringType::position('simple text', 'text', multibyteEncoding: false); // returns 6
 ```
 
+### Find the substring before the first (or last) occurrence of a given needle
+This function extracts the part of the haystack string that appears before the specified needle.  
+It supports case-sensitive and case-insensitive searches, allows searching from the end of the string, and handles multibyte characters correctly by default.
+```php
+// Returns 'Hello ' (before 'World' in a case-sensitive search)
+StringType::strBefore('Hello World', 'World');
+
+// Returns null because 'world' is not found with case-sensitive search
+StringType::strBefore('Hello World', 'world');
+
+// Returns 'Hello ' due to case-insensitive search
+StringType::strBefore('Hello World', 'world', searchCaseSensitive: false);
+
+// Returns 'Hello Wor' (before last 'l', searching from the end)
+StringType::strBefore('Hello World', 'l', searchFromEnd: true);
+
+// Returns 'Привет ' (correctly handles Cyrillic characters)
+StringType::strBefore('Привет Мир', 'Мир');
+
+// Returns null when needle is not found
+StringType::strBefore('Test', 'xyz');
+```
+
+### Find the substring after the first (or last) occurrence of a given needle
+This function extracts the portion of the haystack string that comes after the specified needle.
+It supports case-sensitive and case-insensitive searches, allows searching from the end of the string, and properly handles multibyte characters by default.
+```php
+// Returns 'World' (after 'Hello ' in a case-sensitive search)
+StringType::strAfter('Hello World', 'Hello ');
+
+// Returns null because 'hello ' is not found when case-sensitive
+StringType::strAfter('Hello World', 'hello ');
+
+// Returns 'World' due to case-insensitive search
+StringType::strAfter('Hello World', 'hello ', searchCaseSensitive: false);
+
+// Returns 'd' (after the last occurrence of 'l', searching from the end)
+StringType::strAfter('Hello World', 'l', searchFromEnd: true);
+
+// Returns 'Мир' (correctly handles multibyte UTF-8 characters)
+StringType::strAfter('Привет Мир', 'Привет ');
+
+// Returns null when needle is at the end and nothing follows
+StringType::strAfter('Test', 'st');
+```
+
 ### Wrap string
 ```php
 StringType::wrap('target', '/'); // '/target/'
