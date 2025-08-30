@@ -492,6 +492,28 @@ StringType::regexp('a1b2', '(\S)(\d)', true, true, true); // 'a'
 StringType::replaceFirst('name name name', 'name', 'title'); // 'title name name'
 ```
 
+### Find the position of a substring within a string with support for case sensitivity, reverse search, and multibyte encodings
+This method improves upon PHP's native string position functions (like strpos, stripos, etc.) by eliminating common pitfalls:
+- it returns null instead of false when the substring is not found — preventing type confusion
+- supports multibyte and 8-bit encodings
+
+```php
+// Basic search in a UTF-8 string
+$pos = StringType::position('Hello 世界', '世'); // returns 6
+
+// Case-insensitive search
+$pos = StringType::position('Hello World', 'WORLD', searchCaseSensitive: false); // returns 6
+
+// Find last occurrence of substring
+$pos = StringType::position('abcbc', 'bc', searchFromEnd: true); // returns 3
+
+// Returns null when substring is not found (not false)
+$pos = StringType::position('test', 'x'); // returns null
+
+// Disable multibyte mode for ASCII-only strings
+$pos = StringType::position('simple text', 'text', multibyteEncoding: false); // returns 6
+```
+
 ### Wrap string
 ```php
 StringType::wrap('target', '/'); // '/target/'

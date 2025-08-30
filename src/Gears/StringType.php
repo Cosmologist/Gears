@@ -74,6 +74,51 @@ class StringType
     }
 
     /**
+     * Find the position of a substring within a string with support for case sensitivity, reverse search, and multibyte encodings
+     *
+     * This method improves upon PHP's native string position functions (like strpos, stripos, etc.) by eliminating common pitfalls:
+     * - it returns null instead of false when the substring is not found — preventing type confusion
+     * - supports multibyte and 8-bit encodings
+     *
+     * Examples
+     * <code>
+     * // Basic search in a UTF-8 string
+     * $pos = StringType::position('Hello 世界', '世'); // returns 6
+     *
+     * // Case-insensitive search
+     * $pos = StringType::position('Hello World', 'WORLD', searchCaseSensitive: false); // returns 6
+     *
+     * // Find last occurrence of substring
+     * $pos = StringType::position('abcbc', 'bc', searchFromEnd: true); // returns 3
+     *
+     * // Returns null when substring is not found (not false)
+     * $pos = StringType::position('test', 'x'); // returns null
+     *
+     * // Disable multibyte mode for ASCII-only strings
+     * $pos = StringType::position('simple text', 'text', multibyteEncoding: false); // returns 6
+     * </code>
+     *
+     * @param string $haystack            The string to search in.
+     * @param string $needle              The substring to search for.
+     * @param bool   $searchCaseSensitive Whether the search should be case-sensitive. Default: true.
+     * @param bool   $searchFromEnd       If true, searches from the end of the string (last match). Default: false.
+     * @param bool   $multibyteEncoding   If true, uses multibyte-safe functions with current internal encoding. Default: true.
+     *
+     * @return int|null The position of the match, or null if the substring is not found.
+     */
+    public static function position(string $haystack, string $needle, bool $searchCaseSensitive = true, bool $searchFromEnd = false, bool $multibyteEncoding = true): ?int
+    {
+        $encoding = $multibyteEncoding ? mb_internal_encoding() : '8bit';
+
+        $position = $searchCaseSensitive
+            ? ($searchFromEnd ? mb_strrpos($haystack, $needle, encoding: $encoding) : mb_strpos($haystack, $needle, encoding: $encoding))
+            : ($searchFromEnd ? mb_strripos($haystack, $needle, encoding: $encoding) : mb_stripos($haystack, $needle, encoding: $encoding))
+        ;
+
+        return $position === false ? null : $position;
+    }
+
+    /**
      * Search and return string before haystack string
      *
      * @param string $string        String
