@@ -160,7 +160,7 @@ class StringType
         }
 
         $encoding  = $multibyteEncoding ? mb_internal_encoding() : '8bit';
-        $substring = mb_substr($string, 0, $position, $encoding);
+        $substring = mb_substr($haystack, 0, $position, $encoding);
 
         return $substring === '' ? null : $substring;
     }
