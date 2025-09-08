@@ -72,6 +72,40 @@ ArrayType::checkAssoc(['foo' => 'bar']); // true
 ArrayType::contains(array $list, mixed $item);
 ```
 
+### Get the first item from an iterable that optionally matches a given condition
+Unlike array_shift() or reset(), this function safely handles any iterable  and allows filtering via a callback.
+
+```php
+// Get the first item of any iterable
+ArrayType::first([1, 2, 3]); // returns 1
+
+// Find first even number
+ArrayType::first([1, 3, 4, 6], fn($x) => $x % 2 === 0); // returns 4
+
+// Use named argument for optional parameter
+ArrayType::first([1, 2, 3], condition: fn($x) => $x > 1); // returns 2
+
+// Returns null if no match or empty
+ArrayType::first([], condition: fn($x) => $x > 0); // returns null
+```
+
+### Get the last item from an iterable that optionally matches a given condition.
+Unlike end() or array_pop(), this function works with any iterable and supports filtering via a callback.
+
+```php
+// Get the last item of any iterable
+ArrayType::last([1, 2, 3]); // returns 3
+
+// Find last even number
+ArrayType::last([1, 4, 3, 6], fn($x) => $x % 2 === 0); // returns 6
+
+// Use named argument for optional parameter
+ArrayType::last([1, 2, 3], condition: fn($x) => $x < 3); // returns 2
+
+// Returns null if no match or empty
+ArrayType::last([], condition: fn($x) => $x > 0); // returns null
+```
+
 ### Inserts an array after the key
 ```php
 ArrayType::insertAfter(['a' => 1, 'c' => 3], 'a', ['b' => 2]); // ['a' => 1, 'b' => 2, 'c' => 3]

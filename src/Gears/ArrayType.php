@@ -74,6 +74,74 @@ class ArrayType
     }
 
     /**
+     * Get the first item from an iterable that optionally matches a given condition.
+     *
+     * Unlike array_shift() or reset(), this function safely handles any iterable
+     * and allows filtering via a callback.
+     *
+     * <code>
+     * // Get the first item of any iterable
+     * ArrayType::first([1, 2, 3]); // returns 1
+     *
+     * // Find first even number
+     * ArrayType::first([1, 3, 4, 6], fn($x) => $x % 2 === 0); // returns 4
+     *
+     * // Use named argument for optional parameter
+     * ArrayType::first([1, 2, 3], condition: fn($x) => $x > 1); // returns 2
+     *
+     * // Returns null if no match or empty
+     * ArrayType::first([], condition: fn($x) => $x > 0); // returns null
+     * </code>
+     *
+     * @param iterable  $array     The iterable to search through.
+     * @param ?callable $condition Optional callback that takes an item and returns true to accept it.
+     *
+     * @return mixed The first matching item, or null if none found or iterable is empty.
+     */
+    public static function first(iterable $array, ?callable $condition = null): mixed
+    {
+        foreach ($array as $item) {
+            if ($condition === null) {
+                return $item;
+            }
+            if ($condition($item) === true) {
+                return $item;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Get the last item from an iterable that optionally matches a given condition.
+     *
+     * Unlike end() or array_pop(), this function works with any iterable and supports filtering via a callback.
+     *
+     * ```
+     * // Get the last item of any iterable
+     * ArrayType::last([1, 2, 3]); // returns 3
+     *
+     * // Find last even number
+     * ArrayType::last([1, 4, 3, 6], fn($x) => $x % 2 === 0); // returns 6
+     *
+     * // Use named argument for optional parameter
+     * ArrayType::last([1, 2, 3], condition: fn($x) => $x < 3); // returns 2
+     *
+     * // Returns null if no match or empty
+     * ArrayType::last([], condition: fn($x) => $x > 0); // returns null
+     * ```
+     *
+     * @param iterable  $array     The iterable to search through.
+     * @param ?callable $condition Optional callback that takes an item and returns true to accept it.
+     *
+     * @return mixed The last matching item, or null if none found or iterable is empty.
+     */
+    public static function last(iterable $array, ?callable $condition = null): mixed
+    {
+        return self::first(array_reverse(iterator_to_array($array)), $condition);
+    }
+
+    /**
      * Inserts an array after the key
      */
     public static function insertAfter(array $array, mixed $key, array $insert): array
@@ -458,30 +526,6 @@ class ArrayType
         }
 
         return $array;
-    }
-
-    /**
-     * Returns the first element from an array or iterable
-     */
-    public static function first(iterable $array): mixed
-    {
-        foreach ($array as $item) {
-            return $item;
-        }
-
-        return null;
-    }
-
-    /**
-     * Get the last element of an array
-     */
-    public static function last(array $array): mixed
-    {
-        if (count($array) === 0) {
-            return null;
-        }
-
-        return end($array);
     }
 
     /**
