@@ -217,6 +217,20 @@ ClassType::selfAndParents(Foo\Baz::class); // ["Foo\Baz", "Foo\Bar"]
 ClassType::selfAndParents(new Foo\Baz()); // ["Foo\Baz", "Foo\Bar"]
 ```
 
+### Retrieve a list of parent classes (and optionally interfaces) for a given class or object.
+This function extends PHP's built-in class_parents() by optionally including the class itself and implemented interfaces.
+
+```php
+namespace Foo;
+
+class Bar {};
+class Baz extends Bar implements Stringable {};
+
+ClassType::parents(Baz::class) // [Baz::class, Bar::class]
+ClassType::parents(Baz::class, withSelf: false) // [Bar::class]
+ClassType::parents('MyClass', withSelf: true, withInterfaces: true) // [Baz::class, Bar::class, Stringable::class]
+```
+
 ### Get the class and the parent classes
 ```php
 namespace Foo;

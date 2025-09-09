@@ -18,15 +18,36 @@ class ClassType
     }
 
     /**
-     * Get the class and the parent classes.
+     * Retrieve a list of parent classes (and optionally interfaces) for a given class or object.
+     *
+     * This function extends PHP's built-in class_parents() by optionally including the class itself and implemented interfaces.
+     *
+     * ```
+     * namespace Foo;
+     *
+     * class Bar {};
+     * class Baz extends Bar implements Stringable {};
+     *
+     * ClassType::parents(Baz::class) // [Baz::class, Bar::class]
+     * ClassType::parents(Baz::class, withSelf: false) // [Bar::class]
+     * ClassType::parents('MyClass', withSelf: true, withInterfaces: true) // [Baz::class, Bar::class, Stringable::class]
+     * ```
+     *
+     * @param object|string $objectOrClass  The class name or an object instance to inspect.
+     * @param bool          $withSelf       Whether to include the class itself in the result (default: true).
+     * @param bool          $withInterfaces Whether to include implemented interfaces in the result (default: false).
+     *
+     * @return array List of class/interface names in order: self (if included), parents, then interfaces (if included).
      */
-    public static function selfAndParents(string $class): array
+    public static function parents(object|string $objectOrClass, bool $withSelf = true, bool $withInterfaces = false): array
     {
-        if (false === $parentsClasses = class_parents($class)) {
-            return [$class];
-        }
+        $class = is_object($objectOrClass) ? get_class($objectOrClass) : $objectOrClass;
 
-        return array_merge([$class], $parentsClasses);
+        $self       = $withSelf ? [$class] : [];
+        $parents    = class_parents($class) ?: [];
+        $implements = $withInterfaces ? (class_implements($class) ?: []) : [];
+
+        return array_merge($self, $parents, $implements);
     }
 
     /**
