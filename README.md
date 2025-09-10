@@ -20,7 +20,8 @@
   - [Security utils](#symfony-security-utils)
   - [Test utils](#symfony-test-utils)
   - [Validator utils](#symfony-validator-utils)
-
+- [Value Objects](#value-objects)
+  - [Identifier Value-Object](#simple-identifier-value-object)
 ## Installation
 ```
 composer require cosmologist/gears
@@ -1027,4 +1028,21 @@ use Cosmologist\Gears\Symfony\Validator\ValidationFailedException;
 ValidationFailedException::violate($foo, "Foo with invalid bar");
 ValidationFailedException::violate($foo, "Foo with invalid {{ bar }}", compact('bar'));
 ValidationFailedException::violate($foo, "Foo with invalid bar", propertyPath: 'bar');
+```
+
+## Value Objects
+
+### Simple identifier Value Object
+```php
+class ProductIdentifier extends IdentifierAbstract {}
+
+$p1 = new ProductIdentifier(123);
+$p1->getValue(); // 123
+
+$p2 = new ProductIdentifier('string-id');
+$p2->getValue(); // 'string-id'
+
+$p1->equals($p2); // false
+$p1->equals(new ProductIdentifier(123)); // true
+$p1->equals(123); // true
 ```
