@@ -3,9 +3,9 @@
 namespace Cosmologist\Gears\Symfony\ExpressionLanguage;
 
 use Cosmologist\Gears\CallableType;
+use InvalidArgumentException;
 use ReflectionFunction;
 use ReflectionMethod;
-use RuntimeException;
 use Symfony\Component\ExpressionLanguage\ExpressionFunction;
 
 class ExpressionFunctionUtils
@@ -43,7 +43,7 @@ class ExpressionFunctionUtils
     public static function fromCallable(callable $callable, ?string $name = null): ExpressionFunction
     {
         if (!CallableType::isFunction($callable) && !CallableType::isStaticMethod($callable)) {
-            throw new RuntimeException('Only callable of function or static method supports');
+            throw new InvalidArgumentException('Only a callable of function or static method supports');
         }
 
         $reflection = CallableType::reflection($callable);
