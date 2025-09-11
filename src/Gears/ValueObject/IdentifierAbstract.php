@@ -5,7 +5,7 @@ namespace Cosmologist\Gears\ValueObject;
 use Stringable;
 
 /**
- * Simple identifier Value Object
+ * Identifier Value Object
  *
  * ```
  * class ProductIdentifier extends IdentifierAbstract {}

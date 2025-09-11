@@ -21,7 +21,8 @@
   - [Test utils](#symfony-test-utils)
   - [Validator utils](#symfony-validator-utils)
 - [Value Objects](#value-objects)
-  - [Identifier Value-Object](#simple-identifier-value-object)
+  - [Identifier](#identifier-value-object)
+  - [Identifier-UUID](#identifier-uuid-value-object)
 ## Installation
 ```
 composer require cosmologist/gears
@@ -1032,7 +1033,7 @@ ValidationFailedException::violate($foo, "Foo with invalid bar", propertyPath: '
 
 ## Value Objects
 
-### Simple identifier Value Object
+### Identifier Value Object
 ```php
 class ProductIdentifier extends IdentifierAbstract {}
 
@@ -1042,7 +1043,30 @@ $p1->getValue(); // 123
 $p2 = new ProductIdentifier('string-id');
 $p2->getValue(); // 'string-id'
 
-$p1->equals($p2); // false
-$p1->equals(new ProductIdentifier(123)); // true
-$p1->equals(123); // true
+$p1->equals($p2); // bool(false)
+$p1->equals(new ProductIdentifier(123)); // bool(true)
+$p1->equals(123); // bool(true)
 ```
+
+### Identifier UUID Value Object
+```php
+class ProductIdentifier extends IdentifierUuidAbstract {}
+
+// Create UUID-identifier from value
+$product = new ProductIdentifier('70b3738c-dec5-40a1-a992-bdadb3e33f9d'); // object(ProductIdentifier)
+
+// Create UUID-identifier without value validation (default behaviour)
+$product = new ProductIdentifier('123'); // object(ProductIdentifier)
+
+// Create UUID-identifier with value validation
+$product = new ProductIdentifier('123', validate: true); // InvalidArgumentException
+
+// Create UUID-identifier with auto-generated value (UUID v4)
+$product = new ProductIdentifier(); // // object(ProductIdentifier)
+
+// IdentifierUuidAbstract extends IdentifierAbstract so also you can also call
+$product->getValue(); // string('2b29a26d-ce2a-41a1-bcb7-41858ae4820f')
+// and
+$product->equals('2b29a26d-ce2a-41a1-bcb7-41858ae4820f'); // bool(true)
+```
+
