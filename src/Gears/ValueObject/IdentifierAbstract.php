@@ -46,7 +46,7 @@ abstract class IdentifierAbstract implements Stringable
 
     public function hash(): string
     {
-        return md5(static::class . '@' . $identifier->getValue());
+        return md5(static::class . '@' . $this->value);
     }
 
     public function __toString(): string
