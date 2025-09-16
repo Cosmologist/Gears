@@ -23,6 +23,7 @@
 - [Value Objects](#value-objects)
   - [Identifier](#identifier-value-object)
   - [Identifier-UUID](#identifier-uuid-value-object)
+  - [Identifier-UUID-Hybrid](#identifier-uuid-hybrid-value-object)
 ## Installation
 ```
 composer require cosmologist/gears
@@ -1070,3 +1071,40 @@ $product->getValue(); // string('2b29a26d-ce2a-41a1-bcb7-41858ae4820f')
 $product->equals('2b29a26d-ce2a-41a1-bcb7-41858ae4820f'); // bool(true)
 ```
 
+### Identifier UUID Hybrid Value Object
+The UUID Hybrid Identifier Value Object allows encoding up to two numeric values in a human-readable format.
+
+This can convenient, for example, when a system works with UUIDs, but certain entities still rely on classic incremental identifiers.
+This hybrid UUID implementation may be used to hold 1–2 integer values that can be extracted from it.
+
+```
+$userEntity->getId(); // 12345
+$uuid = new UserIdentifier($userEntity->getId()); // 00012345-0000-8aaa-bbbb-cccdddeeefff
+$uuid->getPrimaryValue(); // 12345
+```
+
+It also supports storing a secondary value to identify nested or aggregated data:
+```
+$userEntity->getId(); // 12345
+$userPhoto = $userEntity->getRandomPhoto();
+$userPhoto->getNumber(); // 25
+$uuid = new UserPhotoIdentifier($userEntity->getId(), $userPhoto->getNumber()); // 00012345-0025-8aaa-bbbb-cccdddeeefff
+$uuid->getPrimaryValue(); // 12345
+$uuid->getSecondaryValue(); // 25
+```
+
+Hybrid identifiers are highly readable for humans, especially within context.
+From the example above, it’s immediately clear that this refers to photo #25 of user #12345.
+
+The hybrid UUID identifier follows this structure:
+`01234567-0890-8aaa-bbbb-cccdddeeefff`
+
+- `1234567`               — Encodes the primary integer identifier, supporting values from 0 to 99,999,999
+                            (approximately uint26).
+- `890`                   — Encodes the optional secondary identifier, supporting values from 0 to 9,999
+                            (approximately uint13).
+- `8`                     — UUID specification version.
+- `aaa-bbbb-cccdddeeefff` — A suffix unique to each identifier implementation,
+                            defined and returned by the method IdentifierUuidHybridAbstract::suffix().
+
+This technique is made possible by leveraging the _UUID v8_ (_custom UUID_) specification.
