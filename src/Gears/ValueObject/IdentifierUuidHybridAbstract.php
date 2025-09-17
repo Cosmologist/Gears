@@ -3,9 +3,7 @@
 namespace Cosmologist\Gears\ValueObject;
 
 use Assert\Assertion;
-use Cosmologist\Gears\StringType;
 use InvalidArgumentException;
-use Ramsey\Uuid\Uuid;
 use Ramsey\Uuid\UuidInterface;
 
 /**
@@ -58,6 +56,8 @@ abstract class IdentifierUuidHybridAbstract extends IdentifierUuidAbstract
         }
 
         if (is_int($value)) {
+            Assertion::greaterThan($value, 0, 'Provided "%s" for the IdentifierUuidHybrid::primary is not greater than "%s".');
+            Assertion::greaterThan($value, 0, 'Provided "%s" for the IdentifierUuidHybrid::secondary is not greater than "%s".');
             Assertion::lessThan($value, 99999999, 'Provided "%s" for the IdentifierUuidHybrid::primary is not less than "%s".');
             Assertion::lessThan($secondaryValue, 9999, 'Provided "%s" for the IdentifierUuidHybrid::secondary is not less than "%s".');
 
@@ -86,7 +86,7 @@ abstract class IdentifierUuidHybridAbstract extends IdentifierUuidAbstract
      */
     public function getPrimaryValue(): int
     {
-        return (int) StringType::strBefore($this->value, '-');
+        return (int) substr($this->value, 0, 8);
     }
 
     /**
@@ -94,8 +94,6 @@ abstract class IdentifierUuidHybridAbstract extends IdentifierUuidAbstract
      */
     public function getSecondaryValue(): int
     {
-        return StringType::strBefore(
-            StringType::strAfter($this->value, '-'), '-'
-        );
+        return (int) substr($this->value, 9, 4);
     }
 }
