@@ -21,9 +21,9 @@
   - [Test utils](#symfony-test-utils)
   - [Validator utils](#symfony-validator-utils)
 - [Value Objects](#value-objects)
-  - [Identifier](#identifier-value-object)
-  - [Identifier-UUID](#identifier-uuid-value-object)
-  - [Identifier-UUID-Hybrid](#identifier-uuid-hybrid-value-object)
+  - [Identifier](#value-object-that-represents-an-identifier)
+  - [Identifier-UUID](#value-object-that-represents-a-uuid-identifier)
+  - [Identifier-UUID-Hybrid](#value-object-that-represents-a-hybrid-uuid-identifier)
 ## Installation
 ```
 composer require cosmologist/gears

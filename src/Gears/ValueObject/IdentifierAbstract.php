@@ -5,7 +5,7 @@ namespace Cosmologist\Gears\ValueObject;
 use Stringable;
 
 /**
- * Identifier Value Object
+ * Value Object that represents an identifier
  *
  * ```
  * class ProductIdentifier extends IdentifierAbstract {}
@@ -21,7 +21,7 @@ use Stringable;
  * $p1->equals(123); // true
  * ```
  */
-abstract class IdentifierAbstract implements Stringable
+abstract readonly class IdentifierAbstract implements Stringable
 {
     public function __construct(protected string|int $value)
     {

@@ -7,7 +7,9 @@ use InvalidArgumentException;
 use Ramsey\Uuid\UuidInterface;
 
 /**
- * The UUID Hybrid Identifier Value Object allows encoding up to two numeric values in a human-readable format.
+ * Value Object that represents a hybrid UUID-identifier
+ *
+ * The hybrid UUID-Identifier Value Object allows encoding up to two numeric values in a human-readable format.
  *
  * This can convenient, for example, when a system works with UUIDs,
  * but certain entities still rely on classic incremental identifiers.
@@ -45,7 +47,7 @@ use Ramsey\Uuid\UuidInterface;
  *
  * This technique is made possible by leveraging the _UUID v8_ (_custom UUID_) specification.
  */
-abstract class IdentifierUuidHybridAbstract extends IdentifierUuidAbstract
+abstract readonly class IdentifierUuidHybridAbstract extends IdentifierUuidAbstract
 {
     public function __construct(UuidInterface|string|int $value, int $secondaryValue = 0, bool $validate = false)
     {

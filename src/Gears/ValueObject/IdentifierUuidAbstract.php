@@ -7,7 +7,7 @@ use Ramsey\Uuid\Uuid;
 use Ramsey\Uuid\UuidInterface;
 
 /**
- * Identifier UUID Value Object
+ * Value Object that represents a UUID-identifier
  *
  * ```
  * class ProductIdentifier extends IdentifierUuidAbstract {}
@@ -30,7 +30,7 @@ use Ramsey\Uuid\UuidInterface;
  * $product->equals('2b29a26d-ce2a-41a1-bcb7-41858ae4820f'); // bool(true)
  * ```
  */
-abstract class IdentifierUuidAbstract extends IdentifierAbstract
+abstract readonly class IdentifierUuidAbstract extends IdentifierAbstract
 {
     public function __construct(UuidInterface|string $value = null, bool $validate = false)
     {
