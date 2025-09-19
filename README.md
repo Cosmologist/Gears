@@ -1034,7 +1034,7 @@ ValidationFailedException::violate($foo, "Foo with invalid bar", propertyPath: '
 
 ## Value Objects
 
-### Identifier Value Object
+### Value Object that represents an identifier
 ```php
 class ProductIdentifier extends IdentifierAbstract {}
 
@@ -1049,7 +1049,7 @@ $p1->equals(new ProductIdentifier(123)); // bool(true)
 $p1->equals(123); // bool(true)
 ```
 
-### Identifier UUID Value Object
+### Value Object that represents a UUID-identifier
 ```php
 class ProductIdentifier extends IdentifierUuidAbstract {}
 
@@ -1071,8 +1071,8 @@ $product->getValue(); // string('2b29a26d-ce2a-41a1-bcb7-41858ae4820f')
 $product->equals('2b29a26d-ce2a-41a1-bcb7-41858ae4820f'); // bool(true)
 ```
 
-### Identifier UUID Hybrid Value Object
-The UUID Hybrid Identifier Value Object allows encoding up to two numeric values in a human-readable format.
+### Value Object that represents a hybrid UUID-identifier
+The hybrid UUID-Identifier Value Object allows encoding up to two numeric values in a human-readable format.
 
 This can convenient, for example, when a system works with UUIDs, but certain entities still rely on classic incremental identifiers.
 This hybrid UUID implementation may be used to hold 1–2 integer values that can be extracted from it.
