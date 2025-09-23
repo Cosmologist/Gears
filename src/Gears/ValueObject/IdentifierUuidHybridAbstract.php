@@ -47,7 +47,7 @@ use Ramsey\Uuid\UuidInterface;
  *
  * This technique is made possible by leveraging the _UUID v8_ (_custom UUID_) specification.
  */
-abstract readonly class IdentifierUuidHybridAbstract extends IdentifierUuidAbstract
+abstract class IdentifierUuidHybridAbstract extends IdentifierUuidAbstract
 {
     public function __construct(UuidInterface|string|int $value, int $secondaryValue = 0, bool $validate = false)
     {
@@ -63,7 +63,7 @@ abstract readonly class IdentifierUuidHybridAbstract extends IdentifierUuidAbstr
             Assertion::lessThan($value, 99999999, 'Provided "%s" for the IdentifierUuidHybrid::primary is not less than "%s".');
             Assertion::lessThan($secondaryValue, 9999, 'Provided "%s" for the IdentifierUuidHybrid::secondary is not less than "%s".');
 
-            $value = sprintf('%d-%d-8%s',
+            $value = sprintf('%s-%s-8%s',
                 str_pad($value, 8, '0', STR_PAD_LEFT),
                 str_pad($secondaryValue, 4, '0', STR_PAD_LEFT),
                 $suffix

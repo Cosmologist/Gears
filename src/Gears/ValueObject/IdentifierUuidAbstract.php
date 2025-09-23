@@ -30,7 +30,7 @@ use Ramsey\Uuid\UuidInterface;
  * $product->equals('2b29a26d-ce2a-41a1-bcb7-41858ae4820f'); // bool(true)
  * ```
  */
-abstract readonly class IdentifierUuidAbstract extends IdentifierAbstract
+abstract class IdentifierUuidAbstract extends IdentifierAbstract
 {
     public function __construct(UuidInterface|string $value = null, bool $validate = false)
     {

@@ -21,7 +21,7 @@ use Stringable;
  * $p1->equals(123); // true
  * ```
  */
-abstract readonly class IdentifierAbstract implements Stringable
+abstract class IdentifierAbstract implements Stringable
 {
     public function __construct(protected string|int $value)
     {
