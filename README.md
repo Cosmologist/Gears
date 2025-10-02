@@ -3,6 +3,7 @@
 - [Installation](#installation)
 - Common
   - [Array functions](#array-functions)
+  - [Cache utils](#cache-utils)
   - [Callable functions](#callable-functions)
   - [Class functions](#class-functions)
   - [File functions](#file-functions)
@@ -152,6 +153,33 @@ If encoded value is false, true or null then returns empty array.
 JSON_THROW_ON_ERROR always enabled.
 ```php
 ArrayType::fromJson($json): array;
+```
+
+## Cache utils
+
+### Generate a cache key by serializing arbitrary parameters into a JSON string
+```php
+$cacheKey        = CacheUtils::generateKey('my-heavy-duty-function-cache-key', $identifier);
+$computeIfNotHit = fn() => heavyDutyFn($identifier);
+
+$cache->get($cacheKey, $computeIfNotHit);
+```
+
+### Generate a cache key by serializing a function name and arbitrary parameters into a JSON string
+```php
+$cacheKey                     = CacheUtils::generateKeyFn(heavyDutyFn(...), $identifier);
+$heavyDutyComputationIfNotHit = fn() => heavyDutyFn($identifier);
+$cache->get($cacheKey, $computeIfNotHit);
+```
+or with an anonymous computation function
+```php
+function getResult()
+{
+    $cacheKey                     = CacheUtils::generateKeyFn(getResult(...), $identifier);
+    $heavyDutyComputationIfNotHit = function() { ... };
+    
+    return $cache->get($cacheKey, $computeIfNotHit);
+}
 ```
 
 ## Callable functions
