@@ -3,22 +3,38 @@
 namespace Cosmologist\Gears;
 
 use Closure;
-use Commerce\Bundle\PlatformBundle\Entity\Shop\Goods;
 use InvalidArgumentException;
 use ReflectionFunction;
-use ReflectionFunctionAbstract;
-use ReflectionMethod;
 
 class CacheUtils
 {
     /**
-     * Generate a cache key by serializing arbitrary parameters into a JSON string
+     * Generate a deterministic cache key for arbitrary parameters
+     *
+     * By serializing into a JSON string.<br>
+     * You can use the cache value calculation function as part of the cache key
+     * (just pass its closure along with the other parameters).
      *
      * ```
-     * $cacheKey        = CacheUtils::generateKey('my-heavy-duty-function-cache-key', $identifier);
-     * $computeIfNotHit = fn() => heavyDutyFn($identifier);
+     * use Symfony\Contracts\Cache\CacheInterface;
+     * use Symfony\Contracts\Cache\ItemInterface;
      *
-     * $cache->get($cacheKey, $computeIfNotHit);
+     * $cacheKey = CacheUtils::generateKey('foo', 123, ['foo' => 'bar'], (object) ['bar' => 'baz'], $identifier);
+     * // or
+     * $cacheKey = CacheUtils::generateKey('my-cache-key', $identifier);
+     * // or
+     * $cacheKey = CacheUtils::generateKey(computingFunction(...), $identifier);
+     *
+     * // On cache misses, a callback is called that should return the missing value.
+     * $callback = fn() => computingFunction($identifier);
+     * // or
+     * $callback = fn(ItemInterface $item) use ($identifier) {
+     *     $item->expiresAfter(3600);
+     *     ...
+     *     computingFunction($identifier);
+     * }
+     *
+     * $value = $cache->get($cacheKey, $callback);
      * ```
      *
      * @param mixed ...$parameters List of values to use in the cache key
@@ -27,42 +43,20 @@ class CacheUtils
      */
     public static function generateKey(mixed ...$parameters): string
     {
-        return json_encode($parameters, JSON_THROW_ON_ERROR);
-    }
+        $normalized = array_map(function (mixed $parameter) {
+            if ($parameter instanceof Closure) {
+                $reflection = new ReflectionFunction($parameter);
 
-    /**
-     * Generate a cache key by serializing a function name and arbitrary parameters into a JSON string
-     *
-     * ```
-     * $cacheKey                     = CacheUtils::generateKeyFn(heavyDutyFn(...), $identifier);
-     * $heavyDutyComputationIfNotHit = fn() => heavyDutyFn($identifier);
-     *
-     * $cache->get($cacheKey, $computeIfNotHit);
-     * ```
-     * or with an anonymous computation function
-     * ```
-     * function getResult()
-     * {
-     *     $cacheKey                     = CacheUtils::generateKeyFn(getResult(...), $identifier);
-     *     $heavyDutyComputationIfNotHit = function() { ... };
-     *
-     *     return $cache->get($cacheKey, $computeIfNotHit);
-     * }
-     * ```
- *
-     * @param Closure $closure       A non-anonymous closure referencing a named function
-     * @param mixed   ...$parameters List of values to use in the cache key
-     *
-     * @return string The cache key
-     */
-    public static function generateKeyFn(Closure $closure, mixed ...$parameters): string
-    {
-        $reflection = new ReflectionFunction($closure);
+                if ($reflection->isAnonymous()) {
+                    throw new InvalidArgumentException('CacheUtils::generateKey() does not support anonymous functions.');
+                }
 
-        if ($reflection->isAnonymous()) {
-            throw new InvalidArgumentException('CacheUtils::generateKeyFn() does not support anonymous functions.');
-        }
+                return $reflection->getName();
+            }
 
-        return self::generateKey($reflection->getName(), ...$parameters);
+            return $parameter;
+        }, $parameters);
+
+        return json_encode($normalized, JSON_THROW_ON_ERROR);
     }
 }

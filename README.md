@@ -157,29 +157,29 @@ ArrayType::fromJson($json): array;
 
 ## Cache utils
 
-### Generate a cache key by serializing arbitrary parameters into a JSON string
+### Generate a deterministic cache key for arbitrary parameters
+By serializing into a JSON string.  
+You can use the cache value calculation function as part of the cache key
+(just pass its closure along with the other parameters).
 ```php
-$cacheKey        = CacheUtils::generateKey('my-heavy-duty-function-cache-key', $identifier);
-$computeIfNotHit = fn() => heavyDutyFn($identifier);
+use Symfony\Contracts\Cache\CacheInterface;
+use Symfony\Contracts\Cache\ItemInterface;
 
-$cache->get($cacheKey, $computeIfNotHit);
-```
+$cacheKey = CacheUtils::generateKey('foo', 123, ['foo' => 'bar'], (object) ['bar' => 'baz'], $identifier);
+// or
+$cacheKey = CacheUtils::generateKey('my-cache-key', $identifier);
+// or
+$cacheKey = CacheUtils::generateKey(computingFunction(...), $identifier);
 
-### Generate a cache key by serializing a function name and arbitrary parameters into a JSON string
-```php
-$cacheKey                     = CacheUtils::generateKeyFn(heavyDutyFn(...), $identifier);
-$heavyDutyComputationIfNotHit = fn() => heavyDutyFn($identifier);
-$cache->get($cacheKey, $computeIfNotHit);
-```
-or with an anonymous computation function
-```php
-function getResult()
-{
-    $cacheKey                     = CacheUtils::generateKeyFn(getResult(...), $identifier);
-    $heavyDutyComputationIfNotHit = function() { ... };
-    
-    return $cache->get($cacheKey, $computeIfNotHit);
+// On cache misses, a callback is called that should return the missing value.
+$callback = fn() => computingFunction($identifier);
+// or
+$callback = fn(ItemInterface $item) use ($identifier) {
+    $item->expiresAfter(3600);
+    ...
+    computingFunction($identifier);
 }
+$value = $cache->get($cacheKey, $callback);
 ```
 
 ## Callable functions
