@@ -44,6 +44,7 @@ class CacheUtils
     public static function generateKey(mixed ...$parameters): string
     {
         $normalized = array_map(function (mixed $parameter) {
+            // Normalize parameters of a closure type to 'namespace::name' string
             if ($parameter instanceof Closure) {
                 $reflection = new ReflectionFunction($parameter);
 
@@ -51,7 +52,7 @@ class CacheUtils
                     throw new InvalidArgumentException('CacheUtils::generateKey() does not support anonymous functions.');
                 }
 
-                return $reflection->getName();
+                return $reflection->getClosureScopeClass()->getName() . ':' . $reflection->getName();
             }
 
             return $parameter;
