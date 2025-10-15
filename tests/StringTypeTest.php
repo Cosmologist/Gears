@@ -16,6 +16,7 @@ class StringTypeTest extends TestCase
         $this->assertSame(StringType::words('Roland TB-303â'), ['Roland', 'TB-303â']);
         $this->assertSame(StringType::words('âRoland TB-303'), ['âRoland', 'TB-303']);
         $this->assertSame(StringType::words('Roland - TB303'), ['Roland', 'TB303']);
+        $this->assertSame(StringType::words('Roland – TB303'), ['Roland', 'TB303']);
         $this->assertSame(StringType::words("Roland'â - TB303"), ["Roland'â", 'TB303']);
         $this->assertSame(StringType::words('"Roland" - TB303'), ['Roland', 'TB303']);
         $this->assertSame(StringType::words('R.O.L.A.N.D. - TB303'), ['R.O.L.A.N.D', 'TB303']);
