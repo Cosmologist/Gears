@@ -16,5 +16,10 @@
     "psr-4": {
       "Cosmologist\\Gears\\": "src/"
     }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "Cosmologist\\Gears\\Tests\\": "tests/"
+    }
   }
 }
