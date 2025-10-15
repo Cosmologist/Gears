@@ -112,8 +112,7 @@ class StringType
 
         $position = $searchCaseSensitive
             ? ($searchFromEnd ? mb_strrpos($haystack, $needle, encoding: $encoding) : mb_strpos($haystack, $needle, encoding: $encoding))
-            : ($searchFromEnd ? mb_strripos($haystack, $needle, encoding: $encoding) : mb_stripos($haystack, $needle, encoding: $encoding))
-        ;
+            : ($searchFromEnd ? mb_strripos($haystack, $needle, encoding: $encoding) : mb_stripos($haystack, $needle, encoding: $encoding));
 
         return $position === false ? null : $position;
     }
@@ -435,7 +434,6 @@ class StringType
      * <code>
      * // Default behaviour like preg_match_all(..., ..., PREG_SET_ORDER)
      * StringType::regexp('a1b2', '\S(\d)'); // [0 => [0 => 'a1', 1 => '1'], 1 => [0 => 'b2', 1 => '2']]
-
      * // Exclude full matches from regular expression matches
      * StringType::regexp('a1b2', '\S(\d)', true); // [0 => [0 => '1'], 1 => [0 => '2']]
      *
@@ -623,6 +621,7 @@ class StringType
                 if ($matches[1] === '_') {
                     return '_' . lcfirst($matches[2]);
                 }
+
                 return $matches[1] . '_' . lcfirst($matches[2]);
             },
             lcfirst(str_replace(' ', '_', $value))
@@ -662,17 +661,49 @@ class StringType
     /**
      * Split text into words
      *
+     * We assume that words are separated by whitespace.
+     * Words can contain letters, numbers, and other symbols, but a word must begin and end with only a letter or number.
+     *
      * <code>
      * StringType::words('Fry me many Beavers... End'); // ['Fry', 'me', 'many', 'Beavers', 'End']
+     *
+     * // Another cases
+     * StringType::words('Roland'); // ['Roland']
+     * StringType::words('Roland TB303'); // ['Roland', 'TB303']
+     * StringType::words('Roland TB-303'); // ['Roland', 'TB-303']
+     * StringType::words('Roland TB-303.'); // ['Roland', 'TB-303']
+     * StringType::words('Roland TB-303â'); // ['Roland', 'TB-303â']
+     * StringType::words('âRoland TB-303'); // ['âRoland', 'TB-303']
+     * StringType::words('Roland - TB303'); // ['Roland', 'TB303']
+     * StringType::words("Roland'â - TB303"); // ["Roland'â", 'TB303']
+     * StringType::words('"Roland" - TB303'); // ['Roland', 'TB303']
+     * StringType::words('R.O.L.A.N.D. - TB303'); // ['R.O.L.A.N.D', 'TB303']
      * </code>
      *
-     * @param string $text Text
-     *
-     * @return string[] Words
+     * @return string[]
      */
-    public static function words($text)
+    public static function words(string $text, bool $trim = true): array
     {
-        return preg_split('/[\s.,!?]+/u', $text);
+        // Split by space-characters
+        if (false === $words = preg_split('/\s+/', $text)) {
+            return [];
+        }
+
+        if ($trim) {
+            // Left trim any non-alpha-numeric characters
+            $pregLtrim = fn(string $value) => preg_replace('/^[^[:alnum:]]+/u', '', $value);
+            // Right trim any non-alpha-numeric characters
+            $pregRtrim = fn(string $value) => preg_replace('/[^[:alnum:]]+$/u', '', $value);
+
+            $words = array_map($pregLtrim, $words);
+            $words = array_map($pregRtrim, $words);
+        }
+
+        // Filter empty words
+        $words = array_filter($words, fn(string $word) => $word !== '');
+
+        // array_values required to re-index $words array after array_filter
+        return array_values($words);
     }
 
     /**

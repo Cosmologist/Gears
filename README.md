@@ -697,8 +697,22 @@ returns
 ```
 
 ### Split text into words
+We assume that words are separated by whitespace.  
+Words can contain letters, numbers, and other symbols, but a word must begin and end with only a letter or number.
 ```php
 StringType::words('Fry me many Beavers... End'); // ['Fry', 'me', 'many', 'Beavers', 'End']
+
+// Another cases
+StringType::words('Roland'); // ['Roland']
+StringType::words('Roland TB303'); // ['Roland', 'TB303']
+StringType::words('Roland TB-303'); // ['Roland', 'TB-303']
+StringType::words('Roland TB-303.'); // ['Roland', 'TB-303']
+StringType::words('Roland TB-303â'); // ['Roland', 'TB-303â']
+StringType::words('âRoland TB-303'); // ['âRoland', 'TB-303']
+StringType::words('Roland - TB303'); // ['Roland', 'TB303']
+StringType::words("Roland'â - TB303"); // ["Roland'â", 'TB303']
+StringType::words('"Roland" - TB303'); // ['Roland', 'TB303']
+StringType::words('R.O.L.A.N.D. - TB303'); // ['R.O.L.A.N.D', 'TB303']
 ```
 
 ### Remove word from text
