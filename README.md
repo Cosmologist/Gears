@@ -1004,7 +1004,7 @@ Before use, you should register `@Gears` as Twig namespace
 # config/packages/twig.yaml
 twig:
     paths:
-      '%kernel.project_dir%/vendor/cosmologist/gears/src/Gears/Symfony/Pagination/Resources/views': Gears
+      '%kernel.project_dir%/vendor/cosmologist/gears/src/Symfony/Pagination/Resources/views': Gears
 ```
 
 ## Symfony PropertyAccess utils
