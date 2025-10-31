@@ -3,6 +3,7 @@
 namespace Cosmologist\Gears\ValueObject;
 
 use Assert\Assertion;
+use Cosmologist\Gears\ClassType;
 use InvalidArgumentException;
 use Ramsey\Uuid\UuidInterface;
 
@@ -69,7 +70,7 @@ abstract class IdentifierUuidHybridAbstract extends IdentifierUuidAbstract
                 $suffix
             );
         } else {
-            Assertion::endsWith($value, $suffix);
+            Assertion::endsWith($value, $suffix, sprintf('%s should be end with "%s".', ClassType::short(static::class), $suffix));
         }
 
         parent::__construct($value, $validate);
