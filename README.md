@@ -922,6 +922,15 @@ class Kernel extends BaseKernel implements AppExtensionKernelInterface
 }
 ```
 
+### Forwards the request to another controller that matches the passed URI.
+Like `Symfony\Bundle\FrameworkBundle\Controller\Controller::forward`, but for URIs.
+```php
+use Cosmologist\Gears\Symfony\Framework\Controller\ControllerUtils;
+
+ControllerUtils::forwardByUri('/blog/my-post');
+```
+
+
 ## Symfony Messenger utils
 
 ### Assert that a symfony messenger command (a command bus message) execution will throw an exception
