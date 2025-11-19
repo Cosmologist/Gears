@@ -1055,6 +1055,53 @@ class FooTest extends WebTestCase
 
 ## Twig utils
 
+### A convenient way to render HTML attributes in Twig templates
+```yaml
+{% set linkAttrs = {
+    'href': 'https://github.com/Cosmologist/Gears',
+    'class': ['important', 'disabled'],
+    'style': {'display': 'block', 'color': 'green'},
+    'data-attribute': 'bar',
+    'data-json': {'foo': 'bar'}} %}
+
+<a{{ linkAttrs | htmlAttributes }}>Click me</a>
+
+rendered as:
+<a href="https://github.com/Cosmologist/Gears"
+    class="important disabled"
+    style="display: block; color: green;"
+    data-attribute="bar"
+    data-json="{'foo':'bar'}">Click me</a>
+
+Use the "merge" filter to manage the attribute dictionary.
+{% set linkAttrs = linkAttrs | merge({'class': 'disabled'}) %}
+
+The "class" attribute may contain null values - they will be filtered out.
+<a{{ {'class': ['important', null]} | htmlAttributes }}>Click me</a> - <a class="important">Click me</a>
+
+Non-unique values of the "class" attribute will be grouped.
+<a{{ {'class': ['important', 'important', null]} | htmlAttributes }}>Click me</a> - <a class="important">Click me</a>
+
+You can pass the "class" attribute as a scalar.
+<a{{ {'class': 'important'} | htmlAttributes }}>Click me</a> - <a class="important">Click me</a>
+
+You can pass the "style" attribute as a scalar.
+<a{{ {'style': 'display: none'} | htmlAttributes }}>Click me</a> - <a style="display: none">Click me</a>
+
+You can pass the "style" attribute as a list.
+<a{{ {'style': ['display: none', 'color: green']} | htmlAttributes }}>Click me</a> - <a style="display: none; color: green">Click me</a>
+```
+
+Don't forget to enable this extension
+```yaml
+# config/services.yaml
+services:
+    _defaults:
+        autoconfigure: true
+
+    Cosmologist\Gears\Twig\GearsUtilsExtension:
+```
+
 ### Twig-based pagination (Bootstrap friendly)
 ```twig
 {% include '@Gears/pagination.html.twig' with { page: current_page, count: items_total, limit: items_per_page } %}
