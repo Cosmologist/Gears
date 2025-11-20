@@ -188,7 +188,7 @@ readonly class DoctrineUtils
      *
      * Attention: method doesn't care about alias uniqueness
      */
-    public static function join(QueryBuilder $queryBuilder, string $join, string $joinTo = null): void
+    public static function join(QueryBuilder $queryBuilder, string $join, ?string $joinTo = null): void
     {
         // Join doesn't require
         if (!StringType::contains($join, '.')) {
@@ -221,7 +221,7 @@ readonly class DoctrineUtils
      *
      * @return string Alias of the existed join or $alias
      */
-    public static function joinOnce(QueryBuilder $queryBuilder, string $join, string $alias, string $conditionType = null, string $condition = null, string $indexBy = null): string
+    public static function joinOnce(QueryBuilder $queryBuilder, string $join, string $alias, ?string $conditionType = null, ?string $condition = null, ?string $indexBy = null): string
     {
         if (null !== $existedJoinAlias = self::getJoinAlias($queryBuilder, $join, $conditionType, $condition, $indexBy)) {
             return $existedJoinAlias;
@@ -237,7 +237,7 @@ readonly class DoctrineUtils
      *
      * See arguments description at the {@link QueryBuilder::add()}.
      */
-    private static function getJoinAlias(QueryBuilder $queryBuilder, string $join, string $conditionType = null, string $condition = null, string $indexBy = null): ?string
+    private static function getJoinAlias(QueryBuilder $queryBuilder, string $join, ?string $conditionType = null, ?string $condition = null, ?string $indexBy = null): ?string
     {
         $joinTo = StringType::strBefore($join, '.');
 

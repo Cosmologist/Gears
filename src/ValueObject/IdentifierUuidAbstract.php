@@ -32,7 +32,7 @@ use Ramsey\Uuid\UuidInterface;
  */
 abstract class IdentifierUuidAbstract extends IdentifierAbstract
 {
-    public function __construct(UuidInterface|string $value = null, bool $validate = false)
+    public function __construct(UuidInterface|string|null $value = null, bool $validate = false)
     {
         if (is_string($value) && $validate && !Uuid::isValid($value)) {
             throw new InvalidArgumentException(sprintf('Invalid UUID "%s"', $value));
