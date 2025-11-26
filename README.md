@@ -1011,6 +1011,30 @@ $i = new Person(name: 'i', parent: $dad);
 
 ## Symfony Security utils
 
+### Command for interactively configuring ACLs
+A simple yet convenient alternative to the standard `acl:set` command from AclBundle — no need to remember command semantics, user and object classes, worry about escaping, etc. every time you need to add access rights.  
+The command allows you to interactively select a user identity and object identity from existing ACLs.  
+If you want to create an ACL from a new user/object identity, you should pass the appropriate arguments to the command.
+
+![](https://github.com/cosmologist/gears/blob/master/doc/symfony_acl_interactive_command.gif?raw=true)
+
+Enable the command:
+```yaml
+# config/services.yaml
+services:
+  _defaults:
+    autowire: true
+    autoconfigure: true
+
+  Cosmologist\Gears\Symfony\Security\Acl\AclInteractiveCommand:
+    bind:
+      $aclConnection: '@doctrine.dbal.security_connection'
+      $aclProvider: '@security.acl.provider'
+      $aclTables:
+        table_classes: '%security.acl.dbal.class_table_name%'
+        table_sid: '%security.acl.dbal.sid_table_name%'
+```
+
 ### A SuperUserRoleVoter brings a ROLE_SUPER_USER, which effectively bypasses any, and all security checks
 
 #### Enable the ROLE_SUPER_USER
