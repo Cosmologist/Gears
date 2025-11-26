@@ -195,7 +195,7 @@ readonly class DoctrineUtils
             return;
         }
 
-        $joinTo = $joinToAlias ?? current($queryBuilder->getRootAliases());
+        $joinTo ??= current($queryBuilder->getRootAliases());
 
         [$current, $left] = explode('.', $join, 2);
         $joinCurrent = sprintf('%s.%s', $joinTo, $current);
@@ -223,6 +223,9 @@ readonly class DoctrineUtils
      */
     public static function joinOnce(QueryBuilder $queryBuilder, string $join, string $alias, ?string $conditionType = null, ?string $condition = null, ?string $indexBy = null): string
     {
+        if ($alias === current($queryBuilder->getRootAliases())) {
+            return $alias;
+        }
         if (null !== $existedJoinAlias = self::getJoinAlias($queryBuilder, $join, $conditionType, $condition, $indexBy)) {
             return $existedJoinAlias;
         }
