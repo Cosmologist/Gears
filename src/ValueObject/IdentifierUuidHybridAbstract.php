@@ -99,4 +99,17 @@ abstract class IdentifierUuidHybridAbstract extends IdentifierUuidAbstract
     {
         return (int) substr($this->value, 9, 4);
     }
+
+    /**
+     * Возвращает компактное строковое представление идентификатора
+     *
+     * Вида "12345" (если идентификатор содержит только primaryValue)
+     * или "12345-67" (если идентификатор содержит и primaryValue и secondaryValue).
+     */
+    public function toStringCompact(): string
+    {
+        return (string) $this->getSecondaryValue()
+            ? $this->getPrimaryValue() . '-' . $this->getSecondaryValue()
+            : $this->getPrimaryValue();
+    }
 }
