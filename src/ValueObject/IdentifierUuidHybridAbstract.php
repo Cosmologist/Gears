@@ -77,15 +77,15 @@ abstract class IdentifierUuidHybridAbstract extends IdentifierUuidAbstract
     }
 
     /**
-     * Возвращает уникальный суффикс для гибридного UUID
+     * Returns a unique suffix for a hybrid UUID.
      *
-     * Формат суффикса "aaa-bbbb-cccdddeeefff", каждый символ представляет собой представление шестнадцатеричной цифры ([0-9A-F]{1,2}).
-     * Суффикс не проверяется на уникальность, вы сами должны гарантировать уникальность суффикса.
+     * The suffix format is "aaa-bbbb-cccdddeeefff", each character is a hexadecimal digit representation ([0-9A-F]{1,2}).
+     * The suffix is not checked for uniqueness, you must ensure the uniqueness of the suffix yourself.
      */
     public abstract static function suffix(): string;
 
     /**
-     * Извлекает целочисленное значение основного идентификатора закодированного в UUID
+     * Retrieves the integer value of the primary identifier encoded in the UUID.
      */
     public function getPrimaryValue(): int
     {
@@ -93,7 +93,7 @@ abstract class IdentifierUuidHybridAbstract extends IdentifierUuidAbstract
     }
 
     /**
-     * Извлекает целочисленное значение опционального идентификатора закодированного в UUID
+     * Retrieves the integer value of the optional identifier encoded in a UUID.
      */
     public function getSecondaryValue(): int
     {
@@ -101,10 +101,10 @@ abstract class IdentifierUuidHybridAbstract extends IdentifierUuidAbstract
     }
 
     /**
-     * Возвращает компактное строковое представление идентификатора
+     * Returns a compact string representation of the identifier
      *
-     * Вида "12345" (если идентификатор содержит только primaryValue)
-     * или "12345-67" (если идентификатор содержит и primaryValue и secondaryValue).
+     * Of the form "12345" (if the identifier contains only primaryValue)
+     * or "12345-67" (if the identifier contains both primaryValue and secondaryValue).
      */
     public function toStringCompact(): string
     {
