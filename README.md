@@ -10,6 +10,7 @@
   - [Number functions](#number-functions)
   - [Object functions](#object-functions)
   - [String functions](#string-functions)
+- [Broadway](#broadway-utils)
 - Doctrine
   - [Common utils](#doctrine-common-utils)
   - [DBAL utils](#doctrine-dbal-utils)
@@ -721,6 +722,23 @@ StringType::words('R.O.L.A.N.D. - TB303'); // ['R.O.L.A.N.D', 'TB303']
 ### Remove word from text
 ```php
 StringType::unword('Remove word from text', 'word'); // 'Remove from text'
+```
+
+## Broadway utils
+
+### The DbalEventStoreSelectable, inherited from DBALEventStore, allows you to select messages from the store based on specified criteria.
+The criteria specified using `Doctrine\Common\Collections\Criteria`.
+```php
+$criteria = new Criteria();
+$criteria->where(new Expr\Comparison('uuid', Expr\Comparison::EQ, $order->getValue()));
+$criteria->orWhere(new Expr\Comparison('_related->"$[*]"', Expr\Comparison::MEMBER_OF, $order->getValue()));
+
+$this->eventStore->walk(
+    $criteria,
+    function (DomainMessage $domainMessage) {
+        ...
+    }
+);
 ```
 
 ## Doctrine common utils
