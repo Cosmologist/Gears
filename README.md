@@ -10,7 +10,9 @@
   - [Number functions](#number-functions)
   - [Object functions](#object-functions)
   - [String functions](#string-functions)
-- [Doctrine Utils](#doctrine-utils)
+- Doctrine
+  - [Common utils](#doctrine-common-utils)
+  - [DBAL utils](#doctrine-dbal-utils)
 - Symfony
   - [ExpressionLanguage utils](#symfony-expressionlanguage-utils)
   - [Form utils](#symfony-forms-utils)
@@ -721,7 +723,7 @@ StringType::words('R.O.L.A.N.D. - TB303'); // ['R.O.L.A.N.D', 'TB303']
 StringType::unword('Remove word from text', 'word'); // 'Remove from text'
 ```
 
-## Doctrine utils
+## Doctrine common utils
 
 ### DoctrineUtils activation
 Manually instance a DoctrineUtils
@@ -816,6 +818,25 @@ DoctrineUtils::joinOnce($qb, 'contact.user', 'u2'); // "u1"
 ### Get a target class name of a given association path recursively (e.g. "contact.user")
 ```php
 $doctrineUtils->getAssociationTargetClassRecursive('AppBundle/Entity/Company', 'contact.user'); // 'AppBundle/Entity/User'
+```
+
+## Doctrine DBAL utils
+
+### Apply Doctrine Collection expressions (Criteria) to the DBAL QueryBuilder
+The converter implementation incomplete - a limited number of comparisons currently supported.
+```php
+$criteria = new Criteria();
+$criteria->where(new Expr\Comparison('uuid', Expr\Comparison::EQ, $order->getValue()));
+$criteria->orWhere(new Expr\Comparison('_related->"$[*]"', Expr\Comparison::MEMBER_OF, $order->getValue()));
+
+$queryBuilder = $this->connection->createQueryBuilder();
+$visitor      = new DbalExpressionVisitor($queryBuilder);
+
+$queryBuilder
+    ->select('*')
+    ->from($this->tableName)
+    ->andWhere($criteria->getWhereExpression()->visit($visitor))
+    ->executeQuery();
 ```
 
 ## Symfony ExpressionLanguage utils
