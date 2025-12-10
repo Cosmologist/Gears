@@ -38,13 +38,13 @@ class ObjectType
      *
      * @see https://ocramius.github.io/blog/accessing-private-php-class-members-without-reflection/
      */
-    public static function getInternal(object $object, string $property): mixed
+    public static function getInternal(object $object, string $property, string|null $scope = 'static'): mixed
     {
         $closure = function () use ($property) {
             return $this->$property;
         };
 
-        return $closure->call($object);
+        return $closure->bindTo($object, $scope)();
     }
 
     /**
@@ -82,7 +82,7 @@ class ObjectType
      *
      * @see https://ocramius.github.io/blog/accessing-private-php-class-members-without-reflection/
      */
-    public static function setInternal(object $object, string $property, mixed $value): mixed
+    public static function setInternal(object $object, string $property, mixed $value, string|null $scope = 'static'): mixed
     {
         $closure = function () use ($property, $value) {
             $this->$property = $value;
@@ -98,13 +98,13 @@ class ObjectType
      *
      * @see https://ocramius.github.io/blog/accessing-private-php-class-members-without-reflection/
      */
-    public static function callInternal(object $object, string $method, mixed ...$args): mixed
+    public static function callInternal(object $object, string $method, array $args, string|null $scope = 'static'): mixed
     {
         $closure = function () use ($method, $args) {
             return call_user_func([$this, $method], ...$args);
         };
 
-        return $closure->call($object);
+        return $closure->bindTo($object, $scope)(...$args);
     }
 
     /**
