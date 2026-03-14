@@ -6,6 +6,7 @@
   - [Cache utils](#cache-utils)
   - [Callable functions](#callable-functions)
   - [Class functions](#class-functions)
+  - [File object](#file-object)
   - [File functions](#file-functions)
   - [Number functions](#number-functions)
   - [Object functions](#object-functions)
@@ -284,6 +285,22 @@ ClassType::selfAndParents(new Foo\Baz()); // ["Foo\Baz", "Foo\Bar"]
 Basic enumerations does not implement from() or tryFrom() methods, but it is possible to return the corresponding enum case using the constant() function.
 ```php
 ClassType::enumCase(FooEnum::class, 'bar');
+```
+
+## File object
+File object-oriented implementation
+
+### Serializes data and immediately writes it to the file corresponding to the object
+```php
+$storage = new File('storage/abc.json');
+$storage->serialize($fooObject);
+```
+
+### Unserializes data from the file corresponding to the object
+```php
+$storage = new File('storage/abc.json');
+$storage->serialize($fooObject);
+$barObject = $storage->unserialize(MyObject::class); // object(MyObject)
 ```
 
 ## File functions
