@@ -17,6 +17,18 @@ final readonly class File
     {
     }
 
+    public function parent(): self
+    {
+        return new self(dirname($this->path));
+    }
+
+    public function mkdir(): void
+    {
+        if (!file_exists($this->path)) {
+            mkdir($this->path);
+        }
+    }
+
     /**
      * Serializes data and immediately writes it to the file corresponding to the object
      *
@@ -31,6 +43,7 @@ final readonly class File
     {
         $serializer = new Serializer([new ObjectNormalizer()], [new JsonEncoder()]);
         $json = $serializer->serialize($data, 'json');
+        $this->parent()->mkdir();
         file_put_contents($this->path, $json);
     }
 
