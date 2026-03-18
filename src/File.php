@@ -56,12 +56,15 @@ final readonly class File
      * $barObject = $storage->unserialize(MyObject::class); // object(MyObject)
      * </code>
      *
-     * @param class-string<T> $class The expected class to instantiate
+     * @param string|null $class The expected class to instantiate
      */
-    public function unserialize(string $class): array|object
+    public function unserialize(string|null $class = null): array|object
     {
-        $serializer = new Serializer([new ObjectNormalizer()], [new JsonEncoder()]);
+        $serializer = new Serializer([new ObjectNormalizer(), new ArrayDenormalizer()], [new JsonEncoder()]);
+        $data = file_get_contents($this->path);
 
-        return $serializer->deserialize(file_get_contents($this->path), $class, 'json');
+        return ($class === null)
+                ? $serializer->decode($data, 'json')
+                : $serializer->deserialize($data, $class, 'json');
     }
 }
