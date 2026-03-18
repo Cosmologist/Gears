@@ -23,6 +23,11 @@ final readonly class File
         return new self(dirname($this->path));
     }
 
+    public function child(string $name): self
+    {
+        return new self(FileType::joinPaths($this->path, $name));
+    }
+
     public function mkdir(): void
     {
         if (!file_exists($this->path)) {
