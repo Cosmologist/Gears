@@ -14,7 +14,7 @@ use Symfony\Component\Serializer\Serializer;
  */
 final readonly class File
 {
-    public function __construct(private string $path)
+    public function __construct(private(set) string $path)
     {
     }
 
@@ -26,6 +26,11 @@ final readonly class File
     public function child(string $name): self
     {
         return new self(FileType::joinPaths($this->path, $name));
+    }
+
+    public function exists(): bool
+    {
+        return file_exists($this->path);
     }
 
     public function mkdir(): void
@@ -72,5 +77,10 @@ final readonly class File
         return ($class === null)
                 ? $serializer->decode($data, 'json')
                 : $serializer->deserialize($data, $class, 'json');
+    }
+
+    public function put($data): void
+    {
+        file_put_contents($this->path, $data);
     }
 }
