@@ -36,7 +36,7 @@ final readonly class File
     public function mkdir(): void
     {
         if (!file_exists($this->path)) {
-            mkdir($this->path);
+            mkdir($this->path, recursive: true);
         }
     }
 
@@ -54,8 +54,7 @@ final readonly class File
     {
         $serializer = new Serializer([new ObjectNormalizer()], [new JsonEncoder()]);
         $json = $serializer->serialize($data, 'json');
-        $this->parent()->mkdir();
-        file_put_contents($this->path, $json);
+        $this->put($json);
     }
 
     /**
@@ -81,6 +80,7 @@ final readonly class File
 
     public function put($data): void
     {
+        $this->parent()->mkdir();
         file_put_contents($this->path, $data);
     }
 }
