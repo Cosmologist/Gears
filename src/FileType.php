@@ -115,7 +115,7 @@ class FileType
      *
      * @return string[]
      */
-    public static function guessExtensions(string $fileName): arrat
+    public static function guessExtensions(string $fileName): array
     {
         $raw = (new finfo(FILEINFO_EXTENSION))->file($fileName);
 
