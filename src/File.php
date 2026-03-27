@@ -33,6 +33,13 @@ final readonly class File
         return file_exists($this->path);
     }
 
+    public function assertExists(): void
+    {
+        if (!$this->exists()) {
+            throw new \InvalidArgumentException("File '{$this->path}' doesn't exist");
+        }
+    }
+
     public function mkdir(): void
     {
         if (!file_exists($this->path)) {
@@ -53,7 +60,7 @@ final readonly class File
     public function serialize(array|object $data): void
     {
         $serializer = new Serializer([new ObjectNormalizer()], [new JsonEncoder()]);
-        $json = $serializer->serialize($data, 'json');
+        $json       = $serializer->serialize($data, 'json');
         $this->put($json);
     }
 
@@ -66,17 +73,18 @@ final readonly class File
      * $barObject = $storage->unserialize(MyObject::class); // object(MyObject)
      * </code>
      *
-     * @param class-string<T>|null $class The expected class to instantiate
+     * @param  class-string<T>|null  $class  The expected class to instantiate
+     *
      * @return T|array
      */
     public function unserialize(string|null $class = null): array|object
     {
         $serializer = new Serializer([new ObjectNormalizer(), new ArrayDenormalizer()], [new JsonEncoder()]);
-        $data = file_get_contents($this->path);
+        $data       = file_get_contents($this->path);
 
         return ($class === null)
-                ? $serializer->decode($data, 'json')
-                : $serializer->deserialize($data, $class, 'json');
+            ? $serializer->decode($data, 'json')
+            : $serializer->deserialize($data, $class, 'json');
     }
 
     public function get(): string
