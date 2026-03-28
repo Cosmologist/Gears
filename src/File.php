@@ -18,21 +18,65 @@ final readonly class File
     {
     }
 
+    /**
+     * Get the base name of the file
+     *
+     * @return string The file name with leading directory paths removed
+     */
+    public function basename(): string
+    {
+        return basename($this->path);
+    }
+
+    /**
+     * Get the file extension
+     *
+     * @return string|null The extension without the leading dot, or null if none exists
+     */
+    public function extension(): string|null
+    {
+        $ext = pathinfo($this->path, PATHINFO_EXTENSION);
+
+        return ($ext === '') ? null : $ext;
+    }
+
+    /**
+     * Get the parent directory of the current file
+     *
+     * @return File A new File instance representing the parent directory
+     */
     public function parent(): self
     {
         return new self(dirname($this->path));
     }
 
+    /**
+     * Create a child file or directory path relative to the current file
+     *
+     * @param string $name The name of the child file or directory
+     *
+     * @return File A new File instance representing the child path
+     */
     public function child(string $name): self
     {
         return new self(FileType::joinPaths($this->path, $name));
     }
 
+    /**
+     * Check if the file or directory exists
+     *
+     * @return bool True if the file exists, false otherwise
+     */
     public function exists(): bool
     {
         return file_exists($this->path);
     }
 
+    /**
+     * Assert that the file exists
+     *
+     * @throws \InvalidArgumentException If the file does not exist
+     */
     public function assertExists(): void
     {
         if (!$this->exists()) {
@@ -40,6 +84,25 @@ final readonly class File
         }
     }
 
+    /**
+     * List all files and directories in the current directory
+     *
+     * @return File[] An array of File objects representing the children
+     */
+    public function list(): array
+    {
+        return array_reduce(scandir($this->path), function(array $result, string $item) {
+            if ($item !== '.' && $item !== '..') {
+                $result[] = $this->child($item);
+            }
+            return $result;
+        }, []);
+
+    }
+
+    /**
+     * Create the directory if it doesn't exist
+     */
     public function mkdir(): void
     {
         if (!file_exists($this->path)) {
@@ -87,11 +150,21 @@ final readonly class File
             : $serializer->deserialize($data, $class, 'json');
     }
 
+    /**
+     * Get the file contents
+     *
+     * @return string The contents of the file
+     */
     public function get(): string
     {
         return file_get_contents($this->path);
     }
 
+    /**
+     * Write data to the file
+     *
+     * @param mixed $data The data to write
+     */
     public function put($data): void
     {
         $this->parent()->mkdir();
