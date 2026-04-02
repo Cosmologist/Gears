@@ -12,11 +12,20 @@ use Symfony\Component\Serializer\Serializer;
  *
  * @template T of object
  */
-final readonly class File
+final class File
 {
-    public function __construct(private(set) string $path)
+    public function __construct(private(set) readonly string $path)
     {
     }
+
+    /**
+     * Lock file handle resource
+     *
+     * Used by lock() and unlock() methods to track the lock state.
+     *
+     * @var resource|null
+     */
+    private $lockHandle = null;
 
     /**
      * Get the base name of the file
@@ -75,12 +84,12 @@ final readonly class File
     /**
      * Assert that the file exists
      *
-     * @throws \InvalidArgumentException If the file does not exist
+     * @throws FileException If the file does not exist
      */
     public function assertExists(): void
     {
         if (!$this->exists()) {
-            throw new \InvalidArgumentException("File '{$this->path}' doesn't exist");
+            throw FileException::notFound($this->path);
         }
     }
 
@@ -165,9 +174,87 @@ final readonly class File
      *
      * @param mixed $data The data to write
      */
-    public function put($data): void
+    public function put(mixed $data): void
     {
         $this->parent()->mkdir();
         file_put_contents($this->path, $data);
+    }
+
+    /**
+     * Acquire a lock on the file
+     *
+     * Opens the file and acquires a lock on it.
+     * The lock handle is stored internally and can be released via unlock().
+     *
+     * <code>
+     * $file = new File('storage/data.json');
+     * $file->lock();                    // exclusive lock, wait until acquired
+     * $file->lock(exclusive: false);    // shared lock, wait until acquired
+     * $file->lock(waitForLock: false);  // exclusive lock, fail immediately if unavailable
+     * // ... perform operations ...
+     * $file->unlock();
+     * </code>
+     *
+     * @param bool $exclusive   Whether to acquire an exclusive lock (true) or shared lock (false)
+     * @param bool $waitForLock Whether to wait for the lock to be acquired or fail immediately
+     *
+     * @throws FileException If the lock cannot be acquired when waitForLock is false
+     * @throws FileException If the file is already locked
+     *
+     * @see self::unlock()
+     */
+    public function lock(bool $exclusive = true, bool $waitForLock = false): void
+    {
+        if ($this->lockHandle !== null) {
+            throw FileException::alreadyLocked();
+        }
+
+        $this->parent()->mkdir();
+        $handle = fopen($this->path, 'c+');
+
+        if ($handle === false) {
+            throw FileException::unableToOpen($this->path);
+        }
+
+        $operation = $exclusive ? LOCK_EX : LOCK_SH;
+
+        if (!$waitForLock) {
+            $operation |= LOCK_NB;
+        }
+
+        if (!flock($handle, $operation)) {
+            fclose($handle);
+            throw FileException::unableToAcquireLock($this->path);
+        }
+
+        $this->lockHandle = $handle;
+    }
+
+    /**
+     * Release the lock on the file
+     *
+     * Releases the lock acquired by lock() and closes the file handle.
+     *
+     * <code>
+     * $file = new File('storage/data.json');
+     * $file->lock();
+     * // ... perform operations ...
+     * $file->unlock();
+     * </code>
+     *
+     * @throws FileException If no lock is currently held
+     *
+     * @see self::lock()
+     */
+    public function unlock(): void
+    {
+        if ($this->lockHandle === null) {
+            throw FileException::notLocked();
+        }
+
+        flock($this->lockHandle, LOCK_UN);
+        fclose($this->lockHandle);
+
+        $this->lockHandle = null;
     }
 }
