@@ -111,12 +111,16 @@ final class File
 
     /**
      * Create the directory if it doesn't exist
+     *
+     * @return $this
      */
-    public function mkdir(): void
+    public function mkdir(): self
     {
         if (!file_exists($this->path)) {
             mkdir($this->path, recursive: true);
         }
+
+        return $this;
     }
 
     /**
@@ -128,12 +132,16 @@ final class File
      * </code>
      *
      * @param array|T $data
+     *
+     * @return $this
      */
-    public function serialize(array|object $data): void
+    public function serialize(array|object $data): self
     {
         $serializer = new Serializer([new ObjectNormalizer()], [new JsonEncoder()]);
         $json       = $serializer->serialize($data, 'json');
         $this->put($json);
+
+        return $this;
     }
 
     /**
@@ -173,11 +181,15 @@ final class File
      * Write data to the file
      *
      * @param mixed $data The data to write
+     *
+     * @return $this
      */
-    public function put(mixed $data): void
+    public function put(mixed $data): self
     {
         $this->parent()->mkdir();
         file_put_contents($this->path, $data);
+
+        return $this;
     }
 
     /**
@@ -206,9 +218,11 @@ final class File
      * @throws FileException If the lock cannot be acquired when waitForLock is false
      * @throws FileException If the file is already locked and reentrant is false
      *
+     * @return $this
+     *
      * @see self::unlock()
      */
-    public function lock(bool $exclusive = true, bool $waitForLock = false, bool $reentrant = true): void
+    public function lock(bool $exclusive = true, bool $waitForLock = false, bool $reentrant = true): self
     {
         if ($this->lockHandle !== null && !$reentrant) {
             throw FileException::alreadyLocked();
@@ -233,6 +247,8 @@ final class File
         }
 
         $this->lockHandle = $handle;
+
+        return $this;
     }
 
     /**
@@ -252,15 +268,17 @@ final class File
      * @throws FileException If no lock is currently held and throwOnError is true
      * @throws FileException If flock() fails and throwOnError is true
      *
+     * @return $this
+     *
      * @see self::lock()
      */
-    public function unlock(bool $throwOnError = false): void
+    public function unlock(bool $throwOnError = false): self
     {
         if ($this->lockHandle === null) {
             if ($throwOnError) {
                 throw FileException::notLocked();
             }
-            return;
+            return $this;
         }
 
         $released = flock($this->lockHandle, LOCK_UN);
@@ -270,5 +288,7 @@ final class File
         if (!$released && $throwOnError) {
             throw FileException::unableToReleaseLock($this->path);
         }
+
+        return $this;
     }
 }
