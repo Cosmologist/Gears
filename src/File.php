@@ -186,26 +186,31 @@ final class File
      * Opens the file and acquires a lock on it.
      * The lock handle is stored internally and can be released via unlock().
      *
+     * Reentrant locking is enabled by default: calling lock() multiple times within
+     * the same process will succeed without blocking or throwing an exception.
+     *
      * <code>
      * $file = new File('storage/data.json');
      * $file->lock();                    // exclusive lock, wait until acquired
      * $file->lock(exclusive: false);    // shared lock, wait until acquired
      * $file->lock(waitForLock: false);  // exclusive lock, fail immediately if unavailable
+     * $file->lock(reentrant: false);    // throw exception if already locked
      * // ... perform operations ...
      * $file->unlock();
      * </code>
      *
      * @param bool $exclusive   Whether to acquire an exclusive lock (true) or shared lock (false)
      * @param bool $waitForLock Whether to wait for the lock to be acquired or fail immediately
+     * @param bool $reentrant   Whether to allow reentrant locking (skip if already locked in same process)
      *
      * @throws FileException If the lock cannot be acquired when waitForLock is false
-     * @throws FileException If the file is already locked
+     * @throws FileException If the file is already locked and reentrant is false
      *
      * @see self::unlock()
      */
-    public function lock(bool $exclusive = true, bool $waitForLock = false): void
+    public function lock(bool $exclusive = true, bool $waitForLock = false, bool $reentrant = true): void
     {
-        if ($this->lockHandle !== null) {
+        if ($this->lockHandle !== null && !$reentrant) {
             throw FileException::alreadyLocked();
         }
 
@@ -242,19 +247,28 @@ final class File
      * $file->unlock();
      * </code>
      *
-     * @throws FileException If no lock is currently held
+     * @param bool $throwOnError Whether to throw exception on errors (true) or silently ignore (false)
+     *
+     * @throws FileException If no lock is currently held and throwOnError is true
+     * @throws FileException If flock() fails and throwOnError is true
      *
      * @see self::lock()
      */
-    public function unlock(): void
+    public function unlock(bool $throwOnError = false): void
     {
         if ($this->lockHandle === null) {
-            throw FileException::notLocked();
+            if ($throwOnError) {
+                throw FileException::notLocked();
+            }
+            return;
         }
 
-        flock($this->lockHandle, LOCK_UN);
+        $released = flock($this->lockHandle, LOCK_UN);
         fclose($this->lockHandle);
-
         $this->lockHandle = null;
+
+        if (!$released && $throwOnError) {
+            throw FileException::unableToReleaseLock($this->path);
+        }
     }
 }

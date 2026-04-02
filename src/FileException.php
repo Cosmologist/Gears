@@ -27,6 +27,11 @@ final class FileException extends \RuntimeException
         return new self('No lock is currently held');
     }
 
+    public static function unableToReleaseLock(string $path): self
+    {
+        return new self("Unable to release lock on '{$path}'");
+    }
+
     public static function notFound(string $path): self
     {
         return new self("File '{$path}' doesn't exist");
