@@ -2,6 +2,9 @@
 
 namespace Cosmologist\Gears;
 
+use Symfony\Component\PropertyInfo\Extractor\PhpDocExtractor;
+use Symfony\Component\PropertyInfo\Extractor\ReflectionExtractor;
+use Symfony\Component\PropertyInfo\PropertyInfoExtractor;
 use Symfony\Component\Serializer\Encoder\JsonEncoder;
 use Symfony\Component\Serializer\Normalizer\ArrayDenormalizer;
 use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
@@ -62,7 +65,7 @@ final class File
     /**
      * Create a child file or directory path relative to the current file
      *
-     * @param string $name The name of the child file or directory
+     * @param  string  $name  The name of the child file or directory
      *
      * @return File A new File instance representing the child path
      */
@@ -100,10 +103,11 @@ final class File
      */
     public function list(): array
     {
-        return array_reduce(scandir($this->path), function(array $result, string $item) {
+        return array_reduce(scandir($this->path), function (array $result, string $item) {
             if ($item !== '.' && $item !== '..') {
                 $result[] = $this->child($item);
             }
+
             return $result;
         }, []);
 
@@ -131,7 +135,7 @@ final class File
      * $storage->serialize($fooObject);
      * </code>
      *
-     * @param array|T $data
+     * @param  array|T  $data
      *
      * @return $this
      */
@@ -159,8 +163,11 @@ final class File
      */
     public function unserialize(string|null $class = null): array|object
     {
-        $serializer = new Serializer([new ObjectNormalizer(), new ArrayDenormalizer()], [new JsonEncoder()]);
-        $data       = file_get_contents($this->path);
+        $extractors            = [new PhpDocExtractor(), new ReflectionExtractor()];
+        $propertyInfoExtractor = new PropertyInfoExtractor($extractors, $extractors);
+        $objectNormalizer      = new ObjectNormalizer(null, null, null, $propertyInfoExtractor);
+        $serializer            = new Serializer([$objectNormalizer, new ArrayDenormalizer()], [new JsonEncoder()]);
+        $data                  = file_get_contents($this->path);
 
         return ($class === null)
             ? $serializer->decode($data, 'json')
@@ -180,7 +187,7 @@ final class File
     /**
      * Write data to the file
      *
-     * @param mixed $data The data to write
+     * @param  mixed  $data  The data to write
      *
      * @return $this
      */
@@ -211,15 +218,15 @@ final class File
      * $file->unlock();
      * </code>
      *
-     * @param bool $exclusive   Whether to acquire an exclusive lock (true) or shared lock (false)
-     * @param bool $waitForLock Whether to wait for the lock to be acquired or fail immediately
-     * @param bool $reentrant   Whether to allow reentrant locking (skip if already locked in same process)
-     *
-     * @throws FileException If the lock cannot be acquired when waitForLock is false
-     * @throws FileException If the file is already locked and reentrant is false
+     * @param  bool  $exclusive  Whether to acquire an exclusive lock (true) or shared lock (false)
+     * @param  bool  $waitForLock  Whether to wait for the lock to be acquired or fail immediately
+     * @param  bool  $reentrant  Whether to allow reentrant locking (skip if already locked in same process)
      *
      * @return $this
      *
+     * @throws FileException If the file is already locked and reentrant is false
+     *
+     * @throws FileException If the lock cannot be acquired when waitForLock is false
      * @see self::unlock()
      */
     public function lock(bool $exclusive = true, bool $waitForLock = false, bool $reentrant = true): self
@@ -263,13 +270,13 @@ final class File
      * $file->unlock();
      * </code>
      *
-     * @param bool $throwOnError Whether to throw exception on errors (true) or silently ignore (false)
-     *
-     * @throws FileException If no lock is currently held and throwOnError is true
-     * @throws FileException If flock() fails and throwOnError is true
+     * @param  bool  $throwOnError  Whether to throw exception on errors (true) or silently ignore (false)
      *
      * @return $this
      *
+     * @throws FileException If flock() fails and throwOnError is true
+     *
+     * @throws FileException If no lock is currently held and throwOnError is true
      * @see self::lock()
      */
     public function unlock(bool $throwOnError = false): self
@@ -278,6 +285,7 @@ final class File
             if ($throwOnError) {
                 throw FileException::notLocked();
             }
+
             return $this;
         }
 
