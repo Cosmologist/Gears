@@ -303,6 +303,13 @@ $storage->serialize($fooObject);
 $barObject = $storage->unserialize(MyObject::class); // object(MyObject)
 ```
 
+### Returns file contents as base64 string with data URI prefix
+Uses finfo to detect actual MIME type from file content.
+```php
+$file = new File('image.jpg');
+$base64 = $file->toBase64(); // data:image/jpeg;base64,/9j/4AAQ...
+```
+
 ## File functions
 
 ### Get the extension of a file name
