@@ -220,6 +220,25 @@ final class File
     }
 
     /**
+     * Returns file contents as base64 string with data URI prefix.
+     *
+     * Uses finfo to detect actual MIME type from file content.
+     *
+     * <code>
+     * $file = new File('image.jpg');
+     * $base64 = $file->toBase64(); // data:image/jpeg;base64,/9j/4AAQ...
+     * </code>
+     *
+     * @return string Base64 string with prefix (e.g., data:image/jpeg;base64,...)
+     */
+    public function toBase64(): string
+    {
+        $mimeType = FileType::guessMime($this->path) ?? 'application/octet-stream';
+
+        return 'data:' . $mimeType . ';base64,' . base64_encode($this->get());
+    }
+
+    /**
      * Acquire a lock on the file
      *
      * Opens the file and acquires a lock on it.
