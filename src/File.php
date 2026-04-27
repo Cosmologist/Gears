@@ -173,6 +173,16 @@ final class File
     }
 
     /**
+     * Get the MIME type of the file
+     *
+     * @return string The MIME type (e.g., text/plain, image/jpeg)
+     */
+    public function mime(): string
+    {
+        return FileType::guessMime($this->path);
+    }
+
+    /**
      * Returns file contents as base64 string with data URI prefix.
      *
      * Uses finfo to detect actual MIME type from file content.

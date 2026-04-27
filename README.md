@@ -310,6 +310,12 @@ $file = new File('image.jpg');
 $base64 = $file->toBase64(); // data:image/jpeg;base64,/9j/4AAQ...
 ```
 
+### Get the MIME type of the file
+```php
+$file = new File('image.jpg');
+$mimeType = $file->mime(); // 'image/jpeg'
+```
+
 ## File functions
 
 ### Get the extension of a file name
