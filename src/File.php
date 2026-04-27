@@ -185,6 +185,26 @@ final class File
     }
 
     /**
+     * Rename the file and return a new File instance
+     *
+     * @param  string  $newName  The new filename (without path)
+     *
+     * @return File New File instance with the new path
+     *
+     * @throws FileException If unable to rename the file
+     */
+    public function rename(string $newName): File
+    {
+        $newFile = $this->parent()->child($newName);
+
+        if (!rename($this->path, $newFile->path)) {
+            throw FileException::unableToOpen($this->path);
+        }
+
+        return $newFile;
+    }
+
+    /**
      * Write data to the file
      *
      * @param  mixed  $data  The data to write
