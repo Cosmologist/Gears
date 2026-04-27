@@ -97,6 +97,26 @@ final class File
     }
 
     /**
+     * Rename the file and return a new File instance
+     *
+     * @param  string  $newName  The new filename (without path)
+     *
+     * @return File New File instance with the new path
+     *
+     * @throws FileException If unable to rename the file
+     */
+    public function rename(string $newName): File
+    {
+        $newFile = $this->parent()->child($newName);
+
+        if (!rename($this->path, $newFile->path)) {
+            throw FileException::unableToOpen($this->path);
+        }
+
+        return $newFile;
+    }
+
+    /**
      * List all files and directories in the current directory
      *
      * @return File[] An array of File objects representing the children
@@ -128,53 +148,6 @@ final class File
     }
 
     /**
-     * Serializes data and immediately writes it to the file corresponding to the object
-     *
-     * <code>
-     * $storage = new File('storage/abc.json');
-     * $storage->serialize($fooObject);
-     * </code>
-     *
-     * @param  array|T  $data
-     *
-     * @return $this
-     */
-    public function serialize(array|object $data): self
-    {
-        $serializer = new Serializer([new ObjectNormalizer()], [new JsonEncoder()]);
-        $json       = $serializer->serialize($data, 'json');
-        $this->put($json);
-
-        return $this;
-    }
-
-    /**
-     * Unserializes data from the file corresponding to the object
-     *
-     * <code>
-     * $storage = new File('storage/abc.json');
-     * $storage->serialize($fooObject);
-     * $barObject = $storage->unserialize(MyObject::class); // object(MyObject)
-     * </code>
-     *
-     * @param  class-string<T>|null  $class  The expected class to instantiate
-     *
-     * @return T|array
-     */
-    public function unserialize(string|null $class = null): array|object
-    {
-        $extractors            = [new PhpDocExtractor(), new ReflectionExtractor()];
-        $propertyInfoExtractor = new PropertyInfoExtractor($extractors, $extractors);
-        $objectNormalizer      = new ObjectNormalizer(null, null, null, $propertyInfoExtractor);
-        $serializer            = new Serializer([$objectNormalizer, new ArrayDenormalizer()], [new JsonEncoder()]);
-        $data                  = file_get_contents($this->path);
-
-        return ($class === null)
-            ? $serializer->decode($data, 'json')
-            : $serializer->deserialize($data, $class, 'json');
-    }
-
-    /**
      * Get the file contents
      *
      * @return string The contents of the file
@@ -182,26 +155,6 @@ final class File
     public function get(): string
     {
         return file_get_contents($this->path);
-    }
-
-    /**
-     * Rename the file and return a new File instance
-     *
-     * @param  string  $newName  The new filename (without path)
-     *
-     * @return File New File instance with the new path
-     *
-     * @throws FileException If unable to rename the file
-     */
-    public function rename(string $newName): File
-    {
-        $newFile = $this->parent()->child($newName);
-
-        if (!rename($this->path, $newFile->path)) {
-            throw FileException::unableToOpen($this->path);
-        }
-
-        return $newFile;
     }
 
     /**
@@ -337,5 +290,52 @@ final class File
         }
 
         return $this;
+    }
+
+    /**
+     * Serializes data and immediately writes it to the file corresponding to the object
+     *
+     * <code>
+     * $storage = new File('storage/abc.json');
+     * $storage->serialize($fooObject);
+     * </code>
+     *
+     * @param  array|T  $data
+     *
+     * @return $this
+     */
+    public function serialize(array|object $data): self
+    {
+        $serializer = new Serializer([new ObjectNormalizer()], [new JsonEncoder()]);
+        $json       = $serializer->serialize($data, 'json');
+        $this->put($json);
+
+        return $this;
+    }
+
+    /**
+     * Unserializes data from the file corresponding to the object
+     *
+     * <code>
+     * $storage = new File('storage/abc.json');
+     * $storage->serialize($fooObject);
+     * $barObject = $storage->unserialize(MyObject::class); // object(MyObject)
+     * </code>
+     *
+     * @param  class-string<T>|null  $class  The expected class to instantiate
+     *
+     * @return T|array
+     */
+    public function unserialize(string|null $class = null): array|object
+    {
+        $extractors            = [new PhpDocExtractor(), new ReflectionExtractor()];
+        $propertyInfoExtractor = new PropertyInfoExtractor($extractors, $extractors);
+        $objectNormalizer      = new ObjectNormalizer(null, null, null, $propertyInfoExtractor);
+        $serializer            = new Serializer([$objectNormalizer, new ArrayDenormalizer()], [new JsonEncoder()]);
+        $data                  = file_get_contents($this->path);
+
+        return ($class === null)
+            ? $serializer->decode($data, 'json')
+            : $serializer->deserialize($data, $class, 'json');
     }
 }
