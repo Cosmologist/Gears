@@ -31,6 +31,14 @@ final class File
     private $lockHandle = null;
 
     /**
+     * @todo
+     */
+    public function absolute(): string
+    {
+        return FileType::isAbsolutePath($this->path) ? $this->path : getcwd() . DIRECTORY_SEPARATOR . $this->path;
+    }
+
+    /**
      * Get the base name of the file
      *
      * @return string The file name with leading directory paths removed
