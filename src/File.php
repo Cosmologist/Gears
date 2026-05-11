@@ -39,6 +39,27 @@ final class File
     }
 
     /**
+     * @todo
+     */
+    function uri(): string 
+    {
+        $path = $this->absolute();
+        $path = str_replace('\\', '/', $path);
+
+        $parts = explode('/', $path);
+        $encodedParts = array_map('rawurlencode', $parts);
+        $encodedPath = implode('/', $encodedParts);
+
+        // Для Unix путь уже начинается с "/" (первый элемент массива был пустым)
+        // Для Windows (C:/...) добавляем ведущий слэш для стандарта file:///
+        if (strpos($encodedPath, '/') !== 0) {
+            $encodedPath = '/' . $encodedPath;
+        }
+
+        return 'file://' . $encodedPath;
+    }
+
+    /**
      * Get the base name of the file
      *
      * @return string The file name with leading directory paths removed
