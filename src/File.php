@@ -2,6 +2,7 @@
 
 namespace Cosmologist\Gears;
 
+use FilesystemIterator;
 use Symfony\Component\PropertyInfo\Extractor\PhpDocExtractor;
 use Symfony\Component\PropertyInfo\Extractor\ReflectionExtractor;
 use Symfony\Component\PropertyInfo\PropertyInfoExtractor;
@@ -41,14 +42,14 @@ final class File
     /**
      * @todo
      */
-    function uri(): string 
+    function uri(): string
     {
         $path = $this->absolute();
         $path = str_replace('\\', '/', $path);
 
-        $parts = explode('/', $path);
+        $parts        = explode('/', $path);
         $encodedParts = array_map('rawurlencode', $parts);
-        $encodedPath = implode('/', $encodedParts);
+        $encodedPath  = implode('/', $encodedParts);
 
         // Для Unix путь уже начинается с "/" (первый элемент массива был пустым)
         // Для Windows (C:/...) добавляем ведущий слэш для стандарта file:///
@@ -114,6 +115,16 @@ final class File
     }
 
     /**
+     * Check if the file is a directory
+     *
+     * @return bool True if the path is a directory, false otherwise
+     */
+    public function isDirectory(): bool
+    {
+        return is_dir($this->path);
+    }
+
+    /**
      * Assert that the file exists
      *
      * @throws FileException If the file does not exist
@@ -146,20 +157,31 @@ final class File
     }
 
     /**
-     * List all files and directories in the current directory
+     * List directory contents with recursion support
      *
-     * @return File[] An array of File objects representing the children
+     * @return iterable<File> A generator of File objects representing the children
      */
-    public function list(): array
+    public function list(bool $recursive = false): iterable
     {
-        return array_reduce(scandir($this->path), function (array $result, string $item) {
-            if ($item !== '.' && $item !== '..') {
-                $result[] = $this->child($item);
-            }
+        $iterator = $recursive
+            ? new \RecursiveDirectoryIterator($this->path, FilesystemIterator::SKIP_DOTS)
+            : new \DirectoryIterator($this->path);
 
-            return $result;
-        }, []);
+        foreach ($iterator as $fileInfo) {
+            yield $this->child($fileInfo->getPathname());
+        }
+    }
 
+    /**
+     * Iterate over directory contents and pass each File to callback
+     *
+     * @param  callable(File):void  $callback
+     */
+    public function iterate(callable $callback, bool $recursive = false): void
+    {
+        foreach ($this->list($recursive) as $file) {
+            $callback($file);
+        }
     }
 
     /**
@@ -376,5 +398,24 @@ final class File
         return ($class === null)
             ? $serializer->decode($data, 'json')
             : $serializer->deserialize($data, $class, 'json');
+    }
+
+    /**
+     * Delete the file or directory
+     *
+     * @param  bool  $recursive  Whether to delete directories recursively (true) or throw exception (false)
+     *
+     * @throws FileException If attempting to delete a non-empty directory without $recursive flag
+     */
+    public function delete(bool $recursive = false): self
+    {
+        if ($this->isDirectory()) {
+            $this->iterate(fn(File $child) => $child->delete($recursive), $recursive);
+            rmdir($this->path);
+        } else {
+            unlink($this->path);
+        }
+
+        return $this;
     }
 }

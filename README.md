@@ -316,6 +316,26 @@ $file = new File('image.jpg');
 $mimeType = $file->mime(); // 'image/jpeg'
 ```
 
+### List directory contents with recursion support
+```php
+$file = new File('path/to/dir');
+foreach ($file->list(recursive: true) as $child) {
+    echo $child->basename() . "\n";
+}
+```
+
+### Delete the file or directory
+```php
+$file = new File('path/to/file.txt');
+$file->delete(); // deletes the file
+```
+
+For directories, use the recursive flag:
+```php
+$file = new File('path/to/dir');
+$file->delete(recursive: true); // deletes directory and all contents
+```
+
 ## File functions
 
 ### Get the extension of a file name
