@@ -8,6 +8,7 @@
   - [Class functions](#class-functions)
   - [File object](#file-object)
   - [File functions](#file-functions)
+  - [Guzzle utils](#guzzle-utils)
   - [Number functions](#number-functions)
   - [Object functions](#object-functions)
   - [String functions](#string-functions)
@@ -334,6 +335,31 @@ For directories, use the recursive flag:
 ```php
 $file = new File('path/to/dir');
 $file->delete(recursive: true); // deletes directory and all contents
+```
+
+## Guzzle utils
+
+### Configure Guzzle to simulate a browser
+
+```php
+use Cosmologist\Gears\Guzzle\GuzzleBuilder;
+
+GuzzleBuilder::configureAsBrowser();
+$client = GuzzleBuilder::create();
+```
+
+### Configure Guzzle to bind to a specific network interface
+
+```php
+use Cosmologist\Gears\Guzzle\GuzzleBuilder;
+
+// Bind to specific interface
+GuzzleBuilder::bindToInterface('eth0');
+$client = GuzzleBuilder::create();
+
+// Auto-detect and bind to first physical interface
+GuzzleBuilder::bindToInterface();
+$client = GuzzleBuilder::create();
 ```
 
 ## File functions
