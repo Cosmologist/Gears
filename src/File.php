@@ -67,7 +67,7 @@ final class File
      */
     public function basename(): string
     {
-        return pathinfo($this->basename(), PATHINFO_BASENAME);
+        return pathinfo($this->path, PATHINFO_BASENAME);
     }
 
     /**
@@ -75,13 +75,14 @@ final class File
      */
     public function filename(): string
     {
-        return pathinfo($this->basename(), PATHINFO_FILENAME);
+        return pathinfo($this->path, PATHINFO_FILENAME);
     }
 
     /**
      * Get the file extension
      *
-     * @param bool $lowercase Return extension in lowercase
+     * @param  bool  $lowercase  Return extension in lowercase
+     *
      * @return string|null The extension without the leading dot, or null if none exists
      */
     public function extension(bool $lowercase = true): string|null
@@ -266,7 +267,7 @@ final class File
     /**
      * Download file from URL and save to current path
      *
-     * @param string $url HTTP URL to download from
+     * @param  string  $url  HTTP URL to download from
      */
     public function putFromUrl(string $url): self
     {
@@ -460,8 +461,6 @@ final class File
      * Delete the file or directory
      *
      * @param  bool  $recursive  Whether to delete directories recursively (true) or throw exception (false)
-     *
-     * @throws FileException If attempting to delete a non-empty directory without $recursive flag
      */
     public function delete(bool $recursive = false): self
     {
