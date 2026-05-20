@@ -67,19 +67,32 @@ final class File
      */
     public function basename(): string
     {
-        return basename($this->path);
+        return pathinfo($this->basename(), PATHINFO_BASENAME);
+    }
+
+    /**
+     * @todo
+     */
+    public function filename(): string
+    {
+        return pathinfo($this->basename(), PATHINFO_FILENAME);
     }
 
     /**
      * Get the file extension
      *
+     * @param bool $lowercase Return extension in lowercase
      * @return string|null The extension without the leading dot, or null if none exists
      */
-    public function extension(): string|null
+    public function extension(bool $lowercase = true): string|null
     {
         $ext = pathinfo($this->path, PATHINFO_EXTENSION);
 
-        return ($ext === '') ? null : $ext;
+        if ($ext === '') {
+            return null;
+        }
+
+        return $lowercase ? strtolower($ext) : $ext;
     }
 
     /**
@@ -125,6 +138,14 @@ final class File
     }
 
     /**
+     * @todo
+     */
+    public function isFile(): bool
+    {
+        return is_file($this->path);
+    }
+
+    /**
      * Assert that the file exists
      *
      * @throws FileException If the file does not exist
@@ -154,6 +175,25 @@ final class File
         }
 
         return $newFile;
+    }
+
+    /**
+     * Compare file extension with MIME type and rename if needed
+     *
+     * @return File New File instance if renamed, current File otherwise
+     */
+    public function fixExtension(): File
+    {
+        $currentExt = $this->extension();
+        $guessedExt = FileType::guessExtension($this->path);
+
+        if ($currentExt === $guessedExt || $guessedExt === null) {
+            return $this;
+        }
+
+        $newName = pathinfo($this->basename(), PATHINFO_FILENAME) . '.' . $guessedExt;
+
+        return $this->rename($newName);
     }
 
     /**
@@ -221,6 +261,22 @@ final class File
         file_put_contents($this->path, $data);
 
         return $this;
+    }
+
+    /**
+     * Download file from URL and save to current path
+     *
+     * @param string $url HTTP URL to download from
+     */
+    public function putFromUrl(string $url): self
+    {
+        $content = file_get_contents($url);
+
+        if ($content === false) {
+            throw new \RuntimeException("Failed to download from {$url}");
+        }
+
+        return $this->put($content);
     }
 
     /**
