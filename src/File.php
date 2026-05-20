@@ -10,6 +10,7 @@ use Symfony\Component\Serializer\Encoder\JsonEncoder;
 use Symfony\Component\Serializer\Normalizer\ArrayDenormalizer;
 use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
 use Symfony\Component\Serializer\Serializer;
+use GuzzleHttp;
 
 /**
  * File object-oriented implementation
@@ -267,14 +268,20 @@ final class File
     /**
      * Download file from URL and save to current path
      *
-     * @param  string  $url  HTTP URL to download from
+     * @param  string  $url                     HTTP URL to download from
+     * @param  GuzzleHttp\Client|null  $guzzle  Guzzle HTTP-client - if passed, will be used to get the contents of the URL
      */
-    public function putFromUrl(string $url): self
+    public function putFromUrl(string $url, ?GuzzleHttp\Client $guzzle = null): self
     {
-        $content = file_get_contents($url);
+        if ($guzzle !== null) {
+            $response = $guzzle->get($url);
+            $content  = $response->getBody()->getContents();
+        } else {
+            $content = file_get_contents($url);
 
-        if ($content === false) {
-            throw new \RuntimeException("Failed to download from {$url}");
+            if ($content === false) {
+                throw new \RuntimeException("Failed to download from {$url}");
+            }
         }
 
         return $this->put($content);
