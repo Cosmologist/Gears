@@ -14,31 +14,64 @@ class GuzzleBuilder
      */
     public static function configureAsBrowser(): void
     {
-        $cookieJar = new CookieJar();
+        self::useTimeout(15.0);
+        self::useConnectTimeout(5.0);
+        self::useCookies();
+        self::allowRedirects();
 
-        self::$options = [
-            'timeout' => 15.0,
-            'connect_timeout' => 5.0,
-            'cookies' => $cookieJar,
-            'allow_redirects' => [
-                'max' => 5,
-                'strict' => false,
-                'referer' => true,
-                'track_redirects' => true,
-            ],
-            'headers' => [
-                'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
-                'Accept' => 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
-                'Accept-Language' => 'en-US,en;q=0.9',
-                'Accept-Encoding' => 'gzip, deflate, br',
-                'Connection' => 'keep-alive',
-                'Upgrade-Insecure-Requests' => '1',
-                'Sec-Fetch-Dest' => 'document',
-                'Sec-Fetch-Mode' => 'navigate',
-                'Sec-Fetch-Site' => 'none',
-                'Sec-Fetch-User' => '?1',
-                'Cache-Control' => 'max-age=0',
-            ],
+        self::$options['headers'] = [
+            'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
+            'Accept' => 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
+            'Accept-Language' => 'en-US,en;q=0.9',
+            'Accept-Encoding' => 'gzip, deflate, br',
+            'Connection' => 'keep-alive',
+            'Upgrade-Insecure-Requests' => '1',
+            'Sec-Fetch-Dest' => 'document',
+            'Sec-Fetch-Mode' => 'navigate',
+            'Sec-Fetch-Site' => 'none',
+            'Sec-Fetch-User' => '?1',
+            'Cache-Control' => 'max-age=0',
+        ];
+    }
+
+    /**
+     * Set timeout option.
+     */
+    public static function useTimeout(float $timeout): void
+    {
+        self::$options['timeout'] = $timeout;
+    }
+
+    /**
+     * Set connect timeout option.
+     */
+    public static function useConnectTimeout(float $connectTimeout): void
+    {
+        self::$options['connect_timeout'] = $connectTimeout;
+    }
+
+    /**
+     * Enable cookie jar.
+     */
+    public static function useCookies(): void
+    {
+        self::$options['cookies'] = new CookieJar();
+    }
+
+    /**
+     * Configure redirect handling.
+     */
+    public static function allowRedirects(
+        int $max = 5,
+        bool $strict = false,
+        bool $referer = true,
+        bool $trackRedirects = true
+    ): void {
+        self::$options['allow_redirects'] = [
+            'max' => $max,
+            'strict' => $strict,
+            'referer' => $referer,
+            'track_redirects' => $trackRedirects,
         ];
     }
 
@@ -74,8 +107,14 @@ class GuzzleBuilder
             throw new \RuntimeException('No network interfaces found');
         }
 
-        // Common physical interface prefixes
-        $physicalPrefixes = ['eth', 'en', 'wlan', 'wlp'];
+        // Standard predictable interface prefixes (https://www.thomas-krenn.com/en/wiki/Predictable_Network_Interface_Names)
+        $standardPrefixes = ['en', 'ib', 'sl', 'wl', 'ww'];
+
+        // Legacy prefixes
+        $legacyPrefixes = ['eth', 'wlan'];
+
+        // Combined list of all valid prefixes
+        $validPrefixes = array_merge($standardPrefixes, $legacyPrefixes);
 
         // Filter physical interfaces
         foreach ($interfaces as $name => $interface) {
@@ -84,8 +123,13 @@ class GuzzleBuilder
                 continue;
             }
 
-            // Check if interface name starts with physical prefix
-            foreach ($physicalPrefixes as $prefix) {
+            // Interface is actively running and allocated by the system.
+            if (empty($interface['flags']) || !($interface['flags'] & 0x1)) {
+                continue;
+            }
+
+            // Check if interface name starts with any valid prefix
+            foreach ($validPrefixes as $prefix) {
                 if (str_starts_with($name, $prefix)) {
                     return $name;
                 }

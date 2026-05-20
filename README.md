@@ -346,6 +346,13 @@ use Cosmologist\Gears\Guzzle\GuzzleBuilder;
 
 GuzzleBuilder::configureAsBrowser();
 $client = GuzzleBuilder::create();
+
+// Or configure individually
+GuzzleBuilder::useTimeout(15.0);
+GuzzleBuilder::useConnectTimeout(5.0);
+GuzzleBuilder::useCookies();
+GuzzleBuilder::allowRedirects(max: 5, strict: false, referer: true, track_redirects: true);
+$client = GuzzleBuilder::create();
 ```
 
 ### Configure Guzzle to bind to a specific network interface
