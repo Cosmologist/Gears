@@ -7,19 +7,19 @@ use GuzzleHttp\Cookie\CookieJar;
 
 class GuzzleBuilder
 {
-    private static array $options = [];
+    private array $options = [];
 
     /**
      * Configure Guzzle options to simulate a browser.
      */
-    public static function configureAsBrowser(): void
+    public function configureAsBrowser(): self
     {
-        self::useTimeout(15.0);
-        self::useConnectTimeout(5.0);
-        self::useCookies();
-        self::allowRedirects();
+        $this->useTimeout(15.0);
+        $this->useConnectTimeout(5.0);
+        $this->useCookies();
+        $this->allowRedirects();
 
-        self::$options['headers'] = [
+        $this->options['headers'] = [
             'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
             'Accept' => 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
             'Accept-Language' => 'en-US,en;q=0.9',
@@ -32,53 +32,63 @@ class GuzzleBuilder
             'Sec-Fetch-User' => '?1',
             'Cache-Control' => 'max-age=0',
         ];
+
+        return $this;
     }
 
     /**
      * Set timeout option.
      */
-    public static function useTimeout(float $timeout): void
+    public function useTimeout(float $timeout): self
     {
-        self::$options['timeout'] = $timeout;
+        $this->options['timeout'] = $timeout;
+
+        return $this;
     }
 
     /**
      * Set connect timeout option.
      */
-    public static function useConnectTimeout(float $connectTimeout): void
+    public function useConnectTimeout(float $connectTimeout): self
     {
-        self::$options['connect_timeout'] = $connectTimeout;
+        $this->options['connect_timeout'] = $connectTimeout;
+
+        return $this;
     }
 
     /**
      * Enable cookie jar.
      */
-    public static function useCookies(): void
+    public function useCookies(): self
     {
-        self::$options['cookies'] = new CookieJar();
+        $this->options['cookies'] = new CookieJar();
+
+        return $this;
     }
 
     /**
      * Configure redirect handling.
      */
-    public static function allowRedirects(
+    public function allowRedirects(
         int $max = 5,
         bool $strict = false,
         bool $referer = true,
         bool $trackRedirects = true
-    ): void {
-        self::$options['allow_redirects'] = [
+    ): self {
+        $this->options['allow_redirects'] = [
             'max' => $max,
             'strict' => $strict,
             'referer' => $referer,
             'track_redirects' => $trackRedirects,
         ];
+
+        return $this;
     }
 
     /**
      * Configure Guzzle to bind to a specific network interface.
      */
-    public static function bindToInterface(?string $interface = null): void
+    public function bindToInterface(?string $interface = null): self
     {
         // Ensure Guzzle is using cURL handler
         if (!extension_loaded('curl')) {
@@ -87,18 +97,20 @@ class GuzzleBuilder
 
         // Auto-detect interface if not provided
         if ($interface === null) {
-            $interface = self::detectPhysicalInterface();
+            $interface = $this->detectPhysicalInterface();
         }
 
-        self::$options['curl'] = [
+        $this->options['curl'] = [
             CURLOPT_INTERFACE => $interface,
         ];
+
+        return $this;
     }
 
     /**
      * Detect first available physical network interface.
      */
-    private static function detectPhysicalInterface(): string
+    private function detectPhysicalInterface(): string
     {
         // Get all network interfaces
         $interfaces = net_get_interfaces();
@@ -142,8 +154,8 @@ class GuzzleBuilder
     /**
      * Create and return a Guzzle client with the configured options.
      */
-    public static function create(): Client
+    public function create(): Client
     {
-        return new Client(self::$options);
+        return new Client($this->options);
     }
 }

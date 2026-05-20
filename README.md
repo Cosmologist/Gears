@@ -344,15 +344,17 @@ $file->delete(recursive: true); // deletes directory and all contents
 ```php
 use Cosmologist\Gears\Guzzle\GuzzleBuilder;
 
-GuzzleBuilder::configureAsBrowser();
-$client = GuzzleBuilder::create();
+$client = GuzzleBuilder()
+    ->configureAsBrowser()
+    ->create();
 
 // Or configure individually
-GuzzleBuilder::useTimeout(15.0);
-GuzzleBuilder::useConnectTimeout(5.0);
-GuzzleBuilder::useCookies();
-GuzzleBuilder::allowRedirects(max: 5, strict: false, referer: true, track_redirects: true);
-$client = GuzzleBuilder::create();
+$client = GuzzleBuilder()
+    ->useTimeout(15.0)
+    ->useConnectTimeout(5.0)
+    ->useCookies()
+    ->allowRedirects(max: 5, strict: false, referer: true, track_redirects: true)
+    ->create();
 ```
 
 ### Configure Guzzle to bind to a specific network interface
@@ -361,12 +363,14 @@ $client = GuzzleBuilder::create();
 use Cosmologist\Gears\Guzzle\GuzzleBuilder;
 
 // Bind to specific interface
-GuzzleBuilder::bindToInterface('eth0');
-$client = GuzzleBuilder::create();
+$guzzleBuilder = new GuzzleBuilder();
+$guzzleBuilder->bindToInterface('eth0');
+$client = $guzzleBuilder->create();
 
 // Auto-detect and bind to first physical interface
-GuzzleBuilder::bindToInterface();
-$client = GuzzleBuilder::create();
+$guzzleBuilder = new GuzzleBuilder();
+$guzzleBuilder->bindToInterface();
+$client = $guzzleBuilder->create();
 ```
 
 ## File functions
