@@ -210,7 +210,7 @@ final class File
             : new \DirectoryIterator($this->path);
 
         foreach ($iterator as $fileInfo) {
-            yield $this->child($fileInfo->getPathname());
+            yield new self($fileInfo->getPathname());
         }
     }
 
@@ -471,6 +471,10 @@ final class File
      */
     public function delete(bool $recursive = false): self
     {
+        if (!$this->exists()) {
+            return $this;
+        }
+
         if ($this->isDirectory()) {
             $this->iterate(fn(File $child) => $child->delete($recursive), $recursive);
             rmdir($this->path);

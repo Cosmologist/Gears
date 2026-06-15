@@ -337,6 +337,8 @@ $file = new File('path/to/dir');
 $file->delete(recursive: true); // deletes directory and all contents
 ```
 
+Missing paths are ignored.
+
 ## Guzzle utils
 
 ### Configure Guzzle to simulate a browser
