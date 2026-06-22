@@ -9,6 +9,7 @@
   - [File object](#file-object)
   - [File functions](#file-functions)
   - [Guzzle utils](#guzzle-utils)
+  - [Network functions](#network-functions)
   - [Number functions](#number-functions)
   - [Object functions](#object-functions)
   - [String functions](#string-functions)
@@ -428,6 +429,21 @@ FileType::guessExtension('/foo/bar.jpg'); // 'jpeg'
 ```php
 FileType::guessMime('/foo/bar.txt'); // 'text/plain'
 FileType::guessMime('/foo/bar.jpg'); // 'image/jpeg'
+```
+
+## Network functions
+
+### Check if the value is a valid IP address
+```php
+Network::isIp('127.0.0.1'); // true
+Network::isIp('::1'); // true
+Network::isIp('::1', allowV4: true, allowV6: false); // false
+```
+
+### Assert that the value is a valid IP address
+```php
+Network::assertIp('127.0.0.1');
+Network::assertIp('::1', allowV4: false, allowV6: true);
 ```
 
 ## Number functions
