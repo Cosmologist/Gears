@@ -52,8 +52,6 @@ final class File
         $encodedParts = array_map('rawurlencode', $parts);
         $encodedPath  = implode('/', $encodedParts);
 
-        // Для Unix путь уже начинается с "/" (первый элемент массива был пустым)
-        // Для Windows (C:/...) добавляем ведущий слэш для стандарта file:///
         if (strpos($encodedPath, '/') !== 0) {
             $encodedPath = '/' . $encodedPath;
         }
@@ -156,6 +154,20 @@ final class File
     {
         if (!$this->exists()) {
             throw FileException::notFound($this->path);
+        }
+    }
+
+    /**
+     * Assert that the path exists and points to a regular file
+     *
+     * @throws FileException If the path does not exist or is not a regular file
+     */
+    public function assertFile(): void
+    {
+        $this->assertExists();
+
+        if (!$this->isFile()) {
+            throw FileException::notFile($this->path);
         }
     }
 
@@ -314,6 +326,31 @@ final class File
         $mimeType = FileType::guessMime($this->path) ?? 'application/octet-stream';
 
         return 'data:' . $mimeType . ';base64,' . base64_encode($this->get());
+    }
+
+    /**
+     * Start a one-time HTTP server and serve the file once by secret URL
+     *
+     * The server starts on the given IP and port, generates a unique URL with a hash,
+     * passes that URL to the callback, then waits until the matching HTTP request arrives.
+     * After the file is fully sent, the server stops and the method returns.
+     *
+     * <code>
+     * $file = new File('storage/report.pdf');
+     * $file->serve(function (string $url) {
+     *     // send URL somewhere
+     * });
+     * </code>
+     *
+     * @param  callable(string):void  $urlRecipient
+     * @param  string  $ip
+     * @param  int  $port
+     *
+     * @throws FileException If the target does not exist, is not a regular file, or server startup fails
+     */
+    public function serve(callable $urlRecipient, string $ip = '0.0.0.0', int $port = 0): void
+    {
+        Network::serve($this, $urlRecipient, $ip, $port);
     }
 
     /**

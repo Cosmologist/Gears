@@ -312,6 +312,18 @@ $file = new File('image.jpg');
 $base64 = $file->toBase64(); // data:image/jpeg;base64,/9j/4AAQ...
 ```
 
+### Start a one-time HTTP server and serve the file once by secret URL
+The method binds a simple PHP socket server, generates a unique hash in the URL,
+passes that URL into the callback, waits for a valid `GET` request, sends the file as a download, and then stops.
+```php
+$file = new File('storage/report.pdf');
+
+$file->serve(function (string $url) {
+    // for example, send the URL to a browser, bot, or another process
+    var_dump($url);
+});
+```
+
 ### Get the MIME type of the file
 ```php
 $file = new File('image.jpg');
@@ -444,6 +456,15 @@ Network::isIp('::1', allowV4: true, allowV6: false); // false
 ```php
 Network::assertIp('127.0.0.1');
 Network::assertIp('::1', allowV4: false, allowV6: true);
+```
+
+### Start a one-time HTTP server and serve the file once by secret URL
+```php
+$file = new File('storage/report.pdf');
+
+Network::serve($file, function (string $url) {
+    var_dump($url);
+});
 ```
 
 ## Number functions

@@ -7,6 +7,16 @@ namespace Cosmologist\Gears;
  */
 final class FileException extends \RuntimeException
 {
+    public static function unableToServe(string $address, string $reason): self
+    {
+        return new self("Unable to serve file on '{$address}': {$reason}");
+    }
+
+    public static function notFile(string $path): self
+    {
+        return new self("Path '{$path}' is not a regular file and cannot be served");
+    }
+
     public static function alreadyLocked(): self
     {
         return new self('File is already locked');
@@ -15,6 +25,11 @@ final class FileException extends \RuntimeException
     public static function unableToOpen(string $path): self
     {
         return new self("Unable to open file '{$path}' for locking");
+    }
+
+    public static function unableToRead(string $path): self
+    {
+        return new self("Unable to open file '{$path}' for reading");
     }
 
     public static function unableToAcquireLock(string $path): self
