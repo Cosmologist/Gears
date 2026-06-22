@@ -95,8 +95,10 @@ final class Network
                     continue;
                 }
 
-                while (($headerLine = fgets($connection)) !== false) {
-                    if ($headerLine === "\r\n" || $headerLine === "\n") {
+                while (true) {
+                    $headerLine = stream_get_line($connection, 8192, "\r\n");
+
+                    if ($headerLine === false || $headerLine === '') {
                         break;
                     }
                 }
