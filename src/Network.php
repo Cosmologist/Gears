@@ -9,16 +9,20 @@ final class Network
     /**
      * Check if the value is a valid IP address
      */
-    public static function isIp(string $ip, bool $allowV4 = true, bool $allowV6 = true): bool
+    public static function isIp(string $ip, bool $allowIpV4 = true, bool $allowIpV6 = true): bool
     {
+        if (($allowIpV4 || $allowIpV6) === false) {
+            throw new \InvalidArgumentException('At least one IP version must be allowed');
+        }
+
         $flags = 0;
 
-        if ($allowV4 && !$allowV6) {
-            $flags = FILTER_FLAG_IPV4;
-        } elseif (!$allowV4 && $allowV6) {
-            $flags = FILTER_FLAG_IPV6;
-        } elseif (!$allowV4 && !$allowV6) {
-            return false;
+        if ($allowIpV4) {
+            $flags |= FILTER_FLAG_IPV4;
+        }
+
+        if ($allowIpV6) {
+            $flags |= FILTER_FLAG_IPV6;
         }
 
         return filter_var($ip, FILTER_VALIDATE_IP, $flags) !== false;
@@ -29,10 +33,10 @@ final class Network
      *
      * @throws NetworkException If the value is not a valid IP address
      */
-    public static function assertIp(string $ip, bool $allowV4 = true, bool $allowV6 = true): void
+    public static function assertIp(string $ip, bool $allowIpV4 = true, bool $allowIpV6 = true): void
     {
-        if (!self::isIp($ip, $allowV4, $allowV6)) {
-            throw NetworkException::invalidIp($ip);
+        if (!self::isIp($ip, $allowIpV4, $allowIpV6)) {
+            throw NetworkException::invalidIp($ip, $allowIpV4, $allowIpV6);
         }
     }
 
@@ -43,7 +47,8 @@ final class Network
      * passes that URL to the callback, then waits until the matching HTTP request arrives.
      * After the file is fully sent, the server stops and the method returns.
      *
-     * @param  callable(string):void  $urlRecipient
+     * @param  callable(string):void  $urlRecipient  Receives generated URL, useful when port is auto-assigned
+     * @param  int  $port  TCP port, `0` lets OS pick a free one
      *
      * @throws FileException If the target does not exist, is not a regular file, or cannot be read
      * @throws NetworkException If the server cannot be started
@@ -51,29 +56,32 @@ final class Network
     public static function serve(File $file, callable $urlRecipient, string $ip = '0.0.0.0', int $port = 0): void
     {
         $file->assertFile();
+        self::assertIp($ip);
 
-        $address = "tcp://{$ip}:{$port}";
+        $bindIp = self::isIp($ip, allowIpV4: false, allowIpV6: true) ? "[{$ip}]" : $ip;
+        $address = "tcp://{$bindIp}:{$port}";
         $errorCode = 0;
         $errorMessage = '';
         $server = stream_socket_server($address, $errorCode, $errorMessage);
 
         if ($server === false) {
-            throw NetworkException::unableToServe($address, $errorMessage ?: "error {$errorCode}");
+            throw NetworkException::unableToServe($address, $errorMessage, $errorCode);
         }
 
         try {
             $hash = bin2hex(random_bytes(16));
-            [$serverIp, $serverPort] = explode(':', stream_socket_get_name($server, false));
+            preg_match('/:(\d+)$/', stream_socket_get_name($server, false), $portMatches);
+            $serverPort = (int) ($portMatches[1] ?? $port);
+            $uriHost = self::isIp($ip, allowIpV4: false, allowIpV6: true) ? "[{$ip}]" : $ip;
 
-            $url = (new Uri('http://localhost'))
-                ->withHost($serverIp)
-                ->withPort((int) $serverPort)
+            $url = (new Uri("http://{$uriHost}:{$serverPort}"))
                 ->withPath('/' . $hash)
                 ->toString();
 
             $urlRecipient($url);
 
             while (true) {
+                // -1 means wait indefinitely for the single allowed download request.
                 $connection = stream_socket_accept($server, -1);
 
                 if ($connection === false) {

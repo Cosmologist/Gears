@@ -449,13 +449,13 @@ FileType::guessMime('/foo/bar.jpg'); // 'image/jpeg'
 ```php
 Network::isIp('127.0.0.1'); // true
 Network::isIp('::1'); // true
-Network::isIp('::1', allowV4: true, allowV6: false); // false
+Network::isIp('::1', allowIpV4: true, allowIpV6: false); // false
 ```
 
 ### Assert that the value is a valid IP address
 ```php
 Network::assertIp('127.0.0.1');
-Network::assertIp('::1', allowV4: false, allowV6: true);
+Network::assertIp('::1', allowIpV4: false, allowIpV6: true);
 ```
 
 ### Start a one-time HTTP server and serve the file once by secret URL

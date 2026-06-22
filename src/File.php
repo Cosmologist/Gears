@@ -342,11 +342,12 @@ final class File
      * });
      * </code>
      *
-     * @param  callable(string):void  $urlRecipient
+     * @param  callable(string):void  $urlRecipient  Receives generated URL, useful when port is auto-assigned
      * @param  string  $ip
-     * @param  int  $port
+     * @param  int  $port  TCP port, `0` lets OS pick a free one
      *
-     * @throws FileException If the target does not exist, is not a regular file, or server startup fails
+     * @throws FileException If the target does not exist or is not a regular file
+     * @throws NetworkException If the server cannot be started
      */
     public function serve(callable $urlRecipient, string $ip = '0.0.0.0', int $port = 0): void
     {
