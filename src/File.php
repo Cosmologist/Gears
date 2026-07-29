@@ -278,6 +278,28 @@ final class File
     }
 
     /**
+     * Write data to the file only if it does not exist
+     *
+     * If the file does not exist, the provider callable is invoked to get the content,
+     * which is then written to the file via the put method, and the provided content is returned.
+     *
+     * <code>
+     * $file = new File('storage/data.json');
+     * $file->putIfNotExists(fn() => $backupService->fetch());
+     * </code>
+     *
+     * @param  callable(): mixed  $provider  The callable that provides the data to write
+     */
+    public function putIfNotExists(callable $provider): self
+    {
+        if (!$this->exists()) {
+            $this->put($provider());
+        }
+
+        return $this;
+    }
+
+    /**
      * Download file from URL and save to current path
      *
      * @param  string  $url                     HTTP URL to download from

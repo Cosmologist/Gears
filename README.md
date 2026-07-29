@@ -352,6 +352,13 @@ $file->delete(recursive: true); // deletes directory and all contents
 
 Missing paths are ignored.
 
+### Write data to the file only if it does not exist
+If the file does not exist, the provider callable is invoked to get the content, which is then written to the file.
+```php
+$file = new File('storage/data.json');
+$file->putIfNotExists(fn() => $backupService->fetch());
+```
+
 ## Guzzle utils
 
 ### Configure Guzzle to simulate a browser
