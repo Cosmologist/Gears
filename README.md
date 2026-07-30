@@ -9,6 +9,7 @@
   - [File object](#file-object)
   - [File functions](#file-functions)
   - [Guzzle utils](#guzzle-utils)
+  - [DataClient utils](#dataclient-utils)
   - [Network functions](#network-functions)
   - [Number functions](#number-functions)
   - [Object functions](#object-functions)
@@ -448,6 +449,25 @@ FileType::guessExtension('/foo/bar.jpg'); // 'jpeg'
 ```php
 FileType::guessMime('/foo/bar.txt'); // 'text/plain'
 FileType::guessMime('/foo/bar.jpg'); // 'image/jpeg'
+```
+
+## DataClient utils
+
+A generic HTTP client wrapper utilizing PSR-18 HTTP Client and PSR-17 HTTP Factories.
+
+### WebDataClient
+
+An abstract client preconfigured with common browser headers.
+
+```php
+use Cosmologist\Gears\DataClient\WebDataClient;
+
+class MyWebClient extends WebDataClient {
+    // Implement domain specific logic if needed
+}
+
+$client = new MyWebClient($psr18Client, $psr17RequestFactory, $psr17StreamFactory);
+$html = $client->fetchBy('https://example.com');
 ```
 
 ## Network functions

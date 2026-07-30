@@ -9,7 +9,10 @@
 
   "suggest": {
     "symfony/property-access": "*",
-    "ralouphie/mimey": "^2.1"
+    "ralouphie/mimey": "^2.1",
+    "psr/http-client": "^1.0",
+    "psr/http-message": "^1.0|^2.0",
+    "psr/http-factory": "^1.0"
   },
 
   "autoload": {
