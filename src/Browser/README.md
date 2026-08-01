@@ -1,34 +1,38 @@
 # BrowserControl
 
-`BrowserControl` is a PHP component for controlling the [browser-controller](https://github.com/automato/browser-controller) browser extension via WebSockets. It acts as a WebSocket server that the extension connects to, providing an asynchronous, Promise-based API for browser automation.
+`BrowserControl` is a PHP component within the `Cosmologist/Gears` library that provides a programmatic API to control browser sessions via the `browser-controller` extension.
 
-## Problem Solved
-Automating browser tasks usually requires heavy tools like Puppeteer or Selenium. `BrowserControl` allows lightweight browser automation by communicating directly with a minimal Manifest V3 browser extension (Chrome or Firefox) over a standard WebSocket connection.
+## What problem does this solve?
 
-## How it works
-1. You start the `BrowserControl` WebSocket server in your PHP application.
-2. The browser extension connects to this server.
-3. You use the asynchronous API to send commands (`navigate`, `html`, `execute`, `select`) to the active tab in the browser.
+It allows PHP applications to automate browser tasks (like navigation, executing JavaScript, and querying the DOM) natively. Instead of relying on heavy external drivers like Selenium or Puppeteer, it communicates directly with a lightweight browser extension over WebSockets.
 
-## Example
+## How to run it
+
+This component acts as a WebSocket server and requires a ReactPHP event loop. You initialize the `BrowserControl` server on a specific port, wait for the browser extension to connect, and then issue asynchronous commands.
+
+## Examples of usage
 
 ```php
 use Cosmologist\Gears\Browser\BrowserControl;
 use React\EventLoop\Loop;
 
-$control = new BrowserControl();
-// Start server on ws://127.0.0.1:42777
-$control->startServer(42777);
+$browser = new BrowserControl();
 
-$control->on('connected', function () use ($control) {
-    $control->navigate('https://example.com')
-        ->then(function () use ($control) {
-            return $control->html();
-        })
-        ->then(function ($response) {
-            echo "HTML Length: " . strlen($response['html']) . "\n";
-        });
+// Start the server on port 42777 and wait for the extension to connect
+$browser->connect(42777)->then(function () use ($browser) {
+    echo "Extension connected!\n";
+    
+    // Navigate to a URL
+    return $browser->navigate('https://example.com');
+})->then(function () use ($browser) {
+    // Get the HTML content
+    return $browser->html();
+})->then(function ($response) {
+    echo "HTML Length: " . strlen($response['html']) . "\n";
+})->catch(function ($error) {
+    echo "Error: " . $error->getMessage() . "\n";
 });
 
+// Run the event loop
 Loop::run();
 ```
