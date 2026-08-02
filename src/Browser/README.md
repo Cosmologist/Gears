@@ -6,33 +6,27 @@
 
 It allows PHP applications to automate browser tasks (like navigation, executing JavaScript, and querying the DOM) natively. Instead of relying on heavy external drivers like Selenium or Puppeteer, it communicates directly with a lightweight browser extension over WebSockets.
 
-## How to run it
+## How it works
 
-This component acts as a WebSocket server and requires a ReactPHP event loop. You initialize the `BrowserControl` server on a specific port, wait for the browser extension to connect, and then issue asynchronous commands.
+This component acts as a WebSocket server built on top of ReactPHP. However, all the asynchronous complexity (Promises, Deferreds, and Event Loops) is hidden under the hood. Using PHP 8.1 Fibers (via `react/async`), the API behaves synchronously for developers, making it as easy to use as blocking code, while keeping the network layer fully non-blocking.
 
 ## Examples of usage
 
 ```php
 use Cosmologist\Gears\Browser\BrowserControl;
-use React\EventLoop\Loop;
 
 $browser = new BrowserControl();
 
-// Start the server on port 42777 and wait for the extension to connect
-$browser->connect(42777)->then(function () use ($browser) {
-    echo "Extension connected!\n";
-    
-    // Navigate to a URL
-    return $browser->navigate('https://example.com');
-})->then(function () use ($browser) {
-    // Get the HTML content
-    return $browser->html();
-})->then(function ($response) {
-    echo "HTML Length: " . strlen($response['html']) . "\n";
-})->catch(function ($error) {
-    echo "Error: " . $error->getMessage() . "\n";
-});
+// Starts the internal WebSocket server and waits until the browser extension connects.
+$browser->open('127.0.0.1', 42777);
 
-// Run the event loop
-Loop::run();
+echo "Extension connected!\n";
+
+// Commands are executed synchronously
+$browser->navigate('https://example.com');
+$html = $browser->html();
+
+echo "HTML Length: " . strlen($html['html']) . "\n";
+
+$browser->close();
 ```
