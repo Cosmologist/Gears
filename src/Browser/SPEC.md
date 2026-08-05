@@ -1,7 +1,7 @@
 # BrowserControl Synchronous API
 
-**Date**: 2026-08-02
-**Status**: draft
+**Date**: 2026-08-05
+**Status**: implemented
 
 ## Problem
 
@@ -36,6 +36,14 @@ $result = $browser->navigate('http://example.com');
 
 - Must run on PHP 8.1+ to support Fibers (which `react/async` relies on for synchronous-like `await()`).
 - The internal WebSocket logic and connection deferrals must still function properly using ReactPHP without blocking the process globally (no sleep() or similar).
+
+## Architecture Decisions
+
+### Why not use `Ratchet\App->run()`?
+The official Ratchet documentation often shows launching servers via `$app = new Ratchet\App(...); $app->run();`. However, the `run()` method invokes a blocking, infinite event loop. Since `BrowserControl` is intended to be used as an inline client library (e.g., inside a controller) and not as a standalone daemon, calling a blocking `run()` would prevent any subsequent PHP code (like `$browser->navigate(...)`) from ever executing. We embed `IoServer` and use Fibers to keep the event loop running in the background without permanently blocking the main execution flow.
+
+### Why not fork the process (`pcntl_fork`)?
+Forking the process to run the server in a child and the client code in the parent introduces massive complexity due to Inter-Process Communication (IPC). The parent process would have no direct access to the WebSocket memory space in the child process. Additionally, the `pcntl` extension is CLI-only and often disabled in web environments, which would severely limit the library's compatibility. Fibers solve this cleanly within a single process.
 
 ## Open questions
 
