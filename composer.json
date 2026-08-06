@@ -4,9 +4,6 @@
   "description": "PHP-Gears - handy helper library for PHP and Symfony",
   "license": "MIT",
 
-  "require": {
-  },
-
   "suggest": {
     "symfony/property-access": "*",
     "ralouphie/mimey": "^2.1",
@@ -24,5 +21,8 @@
     "psr-4": {
       "Cosmologist\\Gears\\Tests\\": "tests/"
     }
+  },
+  "require-dev": {
+    "phpunit/phpunit": "^13.2"
   }
 }

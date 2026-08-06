@@ -1,14 +1,18 @@
 # BrowserControl
 
-`BrowserControl` is a PHP component within the `Cosmologist/Gears` library that provides a programmatic API to control browser sessions via the `browser-controller` extension.
-
-## What problem does this solve?
-
-It allows PHP applications to automate browser tasks (like navigation, executing JavaScript, and querying the DOM) natively. Instead of relying on heavy external drivers like Selenium or Puppeteer, it communicates directly with a lightweight browser extension over WebSockets.
+`Cosmologist/Gears/Browser/BrowserControl` позволяет управлять запущенным браузером - открывать URL, получать содержимое страниц, обращаться к DOM элементам, выполнять javascript код в контексте страницы и так далее.
 
 ## How it works
 
-This component acts as a WebSocket server built on top of ReactPHP. However, all the asynchronous complexity (Promises, Deferreds, and Event Loops) is hidden under the hood. Using PHP 8.1 Fibers (via `react/async`), the API behaves synchronously for developers, making it as easy to use as blocking code, while keeping the network layer fully non-blocking.
+Для управления браузером используется расширение _tools/browser-controller_ установленное и включенное в браузере.
+Расширение подключается к запущенному `BrowserControl` который в свою очередь запускает простой websocket-сервер, отслеживает установку подключения, передает команды расширению, получает результаты ее выполнения и передает их вызывающему коду.
+
+## What problem does this solve?
+
+Управлять браузером в контексте пользовательского профиля проблематично.
+Стандартный способ управления браузером это ChromeDevTools Protocol (поддерживается не только Chrome, но и Firefox и другими браузерами построенным на Chromium). Но Chrome отключил возможность использовать CDP для браузера запущенным в рамках профиля основного пользователя.
+В некоторых случаях это создает неудобства - например, для инструментов автоматизации, когда вместо того, чтобы инструмент выполнил свою главную задачу, ты тратишь большое количество времени на автоматическую авторизацию, обход антифрод систем и тд.
+`BrowserControl` решает эту проблему используя управление через расширение, а также, так как расширение является частью родительского проекта _automato_ есть возможность добавлять в него уникальный инструментарий и держать его простым и легковесным.
 
 ## Examples of usage
 
@@ -17,16 +21,21 @@ use Cosmologist\Gears\Browser\BrowserControl;
 
 $browser = new BrowserControl();
 
-// Starts the internal WebSocket server and waits until the browser extension connects.
-$browser->open('127.0.0.1', 42777);
+// 1. Запуск сервера и ожидание подключения расширения
+$browser->listen(8080, 180);
 
-echo "Extension connected!\n";
+// 2. Открытие страницы
+$browser->navigate('http://example.com');
 
-// Commands are executed synchronously
-$browser->navigate('https://example.com');
-$html = $browser->html();
+// 3. Получение HTML страницы
+$html = $browser->getHtml();
 
-echo "HTML Length: " . strlen($html['html']) . "\n";
+// 4. Поиск элементов по селектору
+$elements = $browser->select('h1, h2');
 
-$browser->close();
+// 5. Выполнение произвольного JS кода на странице
+$titleLength = $browser->execute('return document.title.length;');
+
+// 6. Закрытие соединения
+$browser->disconnect();
 ```

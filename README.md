@@ -3,6 +3,7 @@
 - [Installation](#installation)
 - Common
   - [Array functions](#array-functions)
+  - [Browser utils](#browser-utils)
   - [Cache utils](#cache-utils)
   - [Callable functions](#callable-functions)
   - [Class functions](#class-functions)
@@ -160,6 +161,26 @@ If encoded value is false, true or null then returns empty array.
 JSON_THROW_ON_ERROR always enabled.
 ```php
 ArrayType::fromJson($json): array;
+```
+
+## Browser utils
+
+### Managing a running browser via the [browser-controller](https://github.com/Cosmologist/automato/tree/master/tools/browser-controller) extension.
+
+```php
+use Cosmologist\Gears\Browser\BrowserControl;
+
+$browser = new BrowserControl();
+
+// Wait for browser extension to connect
+$browser->listen();
+
+$browser->navigate('http://example.com');
+$html = $browser->getHtml();
+$titleLength = $browser->execute('return document.title.length;');
+$elements = $browser->select('h1');
+
+$browser->disconnect();
 ```
 
 ## Cache utils
