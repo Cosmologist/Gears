@@ -912,7 +912,6 @@ $response = $server->receive();
 $server->disconnect();
 ```
 
-
 ## Broadway utils
 
 ### The DbalEventStoreSelectable, inherited from DBALEventStore, allows you to select messages from the store based on specified criteria.
