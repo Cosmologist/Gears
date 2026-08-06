@@ -2,12 +2,12 @@
 
 ## Problem
 
-Предоставляет удобный программный интерфейс для управления бразуером через расширение [`browser-controller`](https://github.com/Cosmologist/automato/tree/master/tools/browser-controller) проекта [automato](https://github.com/Cosmologist/automato).
-Расширение работает открывая websocket-соединение с приложением, которое выступает в качестве сервера.
+Provides a convenient programmatic interface for controlling the browser via the [`browser-controller`](https://github.com/Cosmologist/automato/tree/master/tools/browser-controller) extension from the [automato](https://github.com/Cosmologist/automato) project.
+The extension works by opening a websocket connection to the application, which acts as a server.
 
 ## Goal
 
-`Cosmologist/Gears/BrowserControl` является инфраструктурным классом скрывающим более низкоуровненные детали реализации от вызывающего кода, предлагая чистый и понятный интерфейс.
+`Cosmologist/Gears/BrowserControl` is an infrastructural class that hides the lower-level implementation details from the calling code, offering a clean and understandable interface.
 
 ## Example
 
@@ -23,9 +23,10 @@ $browser->disconnect();
 
 ## Implementation
 
-Для простоты и легковесности, класс сделан синхронным и реализует работу с сокетами самостоятельно, без использования сторонних библиотек.
-Класс реализует публичный интерфейс предлагаемый расширением полностью - смотри [tools/browser-controller#request-contract](https://github.com/Cosmologist/automato/tree/master/tools/browser-controller#request-contract).
-
+For simplicity and lightweightness, the class uses the minimalistic synchronous websocket server `Cosmologist\Gears\Websocket\WebsocketServerSynchronous`.
 ## Tests
 
-Пишем один простой тест, который устанавливает соединение и вызывает все публичные методы предоставляемые расширением, а затем разрывает соединение.Расширение имитируется python-скриптом ext-mock.py.
+Tests cover:
+- establishing a connection
+- a simple call of the public methods of the extension and receiving a response for each
+- closing the connection

@@ -15,6 +15,7 @@
   - [Number functions](#number-functions)
   - [Object functions](#object-functions)
   - [String functions](#string-functions)
+  - [Websocket utils](#websocket-utils)
 - [Broadway](#broadway-utils)
 - Doctrine
   - [Common utils](#doctrine-common-utils)
@@ -897,6 +898,20 @@ StringType::words('R.O.L.A.N.D. - TB303'); // ['R.O.L.A.N.D', 'TB303']
 ```php
 StringType::unword('Remove word from text', 'word'); // 'Remove from text'
 ```
+
+## Websocket utils
+
+### Establish a connection, as well as send and receive messages via WebSocket in synchronous mode.
+```php
+use Cosmologist\Gears\Websocket\WebsocketServerSynchronous;
+
+$server = new WebsocketServerSynchronous();
+$server->listen(8080);
+$server->send('Hello WebSocket!');
+$response = $server->receive();
+$server->disconnect();
+```
+
 
 ## Broadway utils
 

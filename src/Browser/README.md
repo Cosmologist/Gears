@@ -1,18 +1,18 @@
 # BrowserControl
 
-`Cosmologist/Gears/Browser/BrowserControl` позволяет управлять запущенным браузером - открывать URL, получать содержимое страниц, обращаться к DOM элементам, выполнять javascript код в контексте страницы и так далее.
+`Cosmologist/Gears/Browser/BrowserControl` allows you to control a running browser - open URLs, get page content, interact with DOM elements, execute javascript code in the page context, and so on.
 
 ## How it works
 
-Для управления браузером используется расширение _tools/browser-controller_ установленное и включенное в браузере.
-Расширение подключается к запущенному `BrowserControl` который в свою очередь запускает простой websocket-сервер, отслеживает установку подключения, передает команды расширению, получает результаты ее выполнения и передает их вызывающему коду.
+To control the browser, the _tools/browser-controller_ extension is used, which is installed and enabled in the browser.
+The extension connects to the running `BrowserControl`, which (using the `WebsocketServerSynchronous` component) monitors the connection establishment, sends commands to the extension, receives the results of their execution, and passes them to the calling code.
 
 ## What problem does this solve?
 
-Управлять браузером в контексте пользовательского профиля проблематично.
-Стандартный способ управления браузером это ChromeDevTools Protocol (поддерживается не только Chrome, но и Firefox и другими браузерами построенным на Chromium). Но Chrome отключил возможность использовать CDP для браузера запущенным в рамках профиля основного пользователя.
-В некоторых случаях это создает неудобства - например, для инструментов автоматизации, когда вместо того, чтобы инструмент выполнил свою главную задачу, ты тратишь большое количество времени на автоматическую авторизацию, обход антифрод систем и тд.
-`BrowserControl` решает эту проблему используя управление через расширение, а также, так как расширение является частью родительского проекта _automato_ есть возможность добавлять в него уникальный инструментарий и держать его простым и легковесным.
+Controlling a browser in the context of a user profile is problematic.
+The standard way to control a browser is the ChromeDevTools Protocol (supported not only by Chrome, but also by Firefox and other Chromium-based browsers). However, Chrome has disabled the ability to use CDP for a browser launched under the main user's profile.
+In some cases, this creates inconveniences - for example, for automation tools, when instead of the tool performing its main task, you spend a large amount of time on automatic authorization, bypassing anti-fraud systems, etc.
+`BrowserControl` solves this problem by using extension-based control, and also, since the extension is part of the parent project _automato_, there is an opportunity to add unique tools to it and keep it simple and lightweight.
 
 ## Examples of usage
 
@@ -21,21 +21,21 @@ use Cosmologist\Gears\Browser\BrowserControl;
 
 $browser = new BrowserControl();
 
-// 1. Запуск сервера и ожидание подключения расширения
+// 1. Start the server and wait for the extension to connect
 $browser->listen(8080, 180);
 
-// 2. Открытие страницы
+// 2. Open a page
 $browser->navigate('http://example.com');
 
-// 3. Получение HTML страницы
+// 3. Get the HTML of the page
 $html = $browser->getHtml();
 
-// 4. Поиск элементов по селектору
+// 4. Find elements by selector
 $elements = $browser->select('h1, h2');
 
-// 5. Выполнение произвольного JS кода на странице
+// 5. Execute arbitrary JS code on the page
 $titleLength = $browser->execute('return document.title.length;');
 
-// 6. Закрытие соединения
+// 6. Close the connection
 $browser->disconnect();
 ```
