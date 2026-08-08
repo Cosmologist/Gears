@@ -169,18 +169,21 @@ ArrayType::fromJson($json): array;
 ### Managing a running browser via the [browser-controller](https://github.com/Cosmologist/automato/tree/master/tools/browser-controller) extension.
 
 ```php
-use Cosmologist\Gears\Browser\BrowserControl;
+$browser = new Cosmologist\Gears\Browser\BrowserControl();
 
-$browser = new BrowserControl();
-
-// Wait for browser extension to connect
-$browser->listen();
-
+// wait for browser extension to connect
+$browser->connect();
+// navigate
 $browser->navigate('http://example.com');
-$html = $browser->getHtml();
+// navigate with delay from previous naviagate
+$browser->navigate('http://example.com', delaySec: 0.5);
+// navigate is fluent
+$html = $browser->navigate('http://example.com')->html();
+// execute JS
 $titleLength = $browser->execute('return document.title.length;');
+// access DOM
 $elements = $browser->select('h1');
-
+// close connection
 $browser->disconnect();
 ```
 

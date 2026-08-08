@@ -8,6 +8,7 @@ use Cosmologist\Gears\Websocket\WebsocketServerSynchronous;
 class BrowserControl
 {
     private $server;
+    private float $lastNavigateTimestamp = 0.0;
 
     public function __construct()
     {
@@ -22,43 +23,53 @@ class BrowserControl
      *
      * @throws \Cosmologist\Gears\Websocket\Exception\WebsocketServerException
      */
-    public function listen(int $port = 8080, int $timeout = 180): void
+    public function connect(int $port = 8080, int $timeout = 180): self
     {
         $this->server->listen($port, $timeout);
+        
+        return $this;
     }
 
     /**
      * Navigate to URL.
      * 
      * @param string $url
+     * @param float $delay Pause between navigate calls in seconds. If the next call happens sooner, it will block execution until the delay expires.
+     * @return self
      */
-    public function navigate(string $url): BrowserControl
+    public function navigate(string $url, float $delaySec = 0.0): BrowserControl
     {
-        $this->sendCommand('navigate', ['url' => $url]);
+        if ($delaySec > 0 && $this->lastNavigateTimestamp > 0) {
+            $elapsedSec = microtime(true) - $this->lastNavigateTimestamp;
+            if ($elapsedSec < $delaySec) {
+                usleep((int) (($delaySec - $elapsedSec) * 1000000));
+            }
+        }
+
+        $this->command('navigate', ['url' => $url]);
+        $this->lastNavigateTimestamp = microtime(true);
+
         return $this;
     }
 
     /**
      * Get HTML of the page.
      * 
-     * @return string
+     * @return string|null
      */
-    public function getHtml(): string
+    public function html(): ?string
     {
-        $result = $this->sendCommand('html');
-        return $result['html'] ?? '';
+        return $this->command('html');
     }
 
     /**
      * Execute javascript code in the page.
      * 
      * @param string $code
-     * @return mixed
      */
-    public function execute(string $code)
+    public function execute(string $code): array|string|int|float|bool|null
     {
-        $result = $this->sendCommand('execute', ['code' => $code]);
-        return $result['value'] ?? null;
+        return $this->command('execute', ['code' => $code]);
     }
 
     /**
@@ -69,16 +80,17 @@ class BrowserControl
      */
     public function select(string $selector): array
     {
-        $result = $this->sendCommand('select', ['selector' => $selector]);
-        return $result['items'] ?? [];
+        return $this->command('select', ['selector' => $selector]);
     }
 
     /**
      * Disconnect the client and stop the server.
      */
-    public function disconnect(): void
+    public function disconnect(): self
     {
         $this->server->disconnect();
+
+        return $this;
     }
 
     /**
@@ -86,11 +98,11 @@ class BrowserControl
      * 
      * @param string $method
      * @param array $params
-     * @return array
+     * @return array|string|int|float|bool|null
      * @throws BrowserControlException
      * @throws \Cosmologist\Gears\Websocket\Exception\WebsocketServerException
      */
-    private function sendCommand(string $method, array $params = []): array
+    private function command(string $method, array $params = []): array|string|int|float|bool|null
     {
         $payload = ['cmd' => $method];
         if (!empty($params)) {
@@ -105,10 +117,10 @@ class BrowserControl
         if (isset($response['error_type'])) {
             throw BrowserControlException::extensionError(
                 $response['error_type'], 
-                $response['error_message'] ?? 'Unknown error'
+                $response['error_message']
             );
         }
 
-        return $response ?: [];
+        return $response['items'] ?? $response['value'] ?? null;
     }
 }
