@@ -32,9 +32,10 @@ class BrowserControl
      * 
      * @param string $url
      */
-    public function navigate(string $url): void
+    public function navigate(string $url): BrowserControl
     {
         $this->sendCommand('navigate', ['url' => $url]);
+        return $this;
     }
 
     /**
