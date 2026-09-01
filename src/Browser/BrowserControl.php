@@ -7,6 +7,9 @@ use Cosmologist\Gears\Websocket\WebsocketServerSynchronous;
 
 class BrowserControl
 {
+    public const DEFAULT_PORT = 42778;
+    public const DEFAULT_TIMEOUT = 180;
+
     private $server;
     private float $lastNavigateTimestamp = 0.0;
 
@@ -23,7 +26,7 @@ class BrowserControl
      *
      * @throws \Cosmologist\Gears\Websocket\Exception\WebsocketServerException
      */
-    public function connect(int $port = 8080, int $timeout = 180): self
+    public function connect(int $port = self::DEFAULT_PORT, int $timeout = self::DEFAULT_TIMEOUT): self
     {
         $this->server->listen($port, $timeout);
         
@@ -113,6 +116,7 @@ class BrowserControl
 
         $responseJson = $this->server->receive();
         $response = json_decode($responseJson, true);
+        if ($response === null) throw new \RuntimeException("JSON decode error: " . json_last_error_msg() . " (payload length: " . strlen($responseJson) . ")");
 
         if (isset($response['error_type'])) {
             throw BrowserControlException::extensionError(
