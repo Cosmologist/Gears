@@ -318,6 +318,14 @@ ClassType::enumCase(FooEnum::class, 'bar');
 ## File object
 File object-oriented implementation
 
+### Change the file or directory permissions
+```php
+$file = new File('storage/data.json');
+$file->chmod(0600); // returns the same File object
+```
+
+Pass permissions as an octal number. Throws `FileException` if the permissions cannot be changed.
+
 ### Serializes data and immediately writes it to the file corresponding to the object
 ```php
 $storage = new File('storage/abc.json');

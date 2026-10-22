@@ -239,6 +239,28 @@ final class File
     }
 
     /**
+     * Change the file or directory permissions
+     *
+     * <code>
+     * $file->chmod(0600);
+     * </code>
+     *
+     * @param  int  $permissions  Permissions expressed as an octal number, for example 0600
+     *
+     * @return $this
+     *
+     * @throws FileException If the permissions cannot be changed
+     */
+    public function chmod(int $permissions): self
+    {
+        if (!@chmod($this->path, $permissions)) {
+            throw FileException::unableToChangePermissions($this->path, $permissions);
+        }
+
+        return $this;
+    }
+
+    /**
      * Create the directory if it doesn't exist
      *
      * @return $this

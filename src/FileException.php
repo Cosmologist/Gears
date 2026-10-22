@@ -47,6 +47,11 @@ final class FileException extends \RuntimeException
         return new self("Unable to release lock on '{$path}'");
     }
 
+    public static function unableToChangePermissions(string $path, int $permissions): self
+    {
+        return new self(sprintf("Unable to change permissions on '%s' to %04o", $path, $permissions));
+    }
+
     public static function notFound(string $path): self
     {
         return new self("File '{$path}' doesn't exist");
