@@ -61,4 +61,9 @@ final class FileException extends \RuntimeException
     {
         return new self("File '{$path}' doesn't exist");
     }
+
+    public static function notWritable(string $path): self
+    {
+        return new self("Path '{$path}' is not writable");
+    }
 }

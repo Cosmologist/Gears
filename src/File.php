@@ -146,6 +146,16 @@ final class File
     }
 
     /**
+     * Check if the file or directory is writable
+     *
+     * @return bool True if the path exists and is writable, false otherwise
+     */
+    public function isWritable(): bool
+    {
+        return is_writable($this->path);
+    }
+
+    /**
      * Assert that the file exists
      *
      * @throws FileException If the file does not exist
@@ -168,6 +178,20 @@ final class File
 
         if (!$this->isFile()) {
             throw FileException::notFile($this->path);
+        }
+    }
+
+    /**
+     * Assert that the file or directory exists and is writable
+     *
+     * @throws FileException If the path does not exist or is not writable
+     */
+    public function assertWritable(): void
+    {
+        $this->assertExists();
+
+        if (!$this->isWritable()) {
+            throw FileException::notWritable($this->path);
         }
     }
 

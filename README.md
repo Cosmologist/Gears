@@ -318,6 +318,18 @@ ClassType::enumCase(FooEnum::class, 'bar');
 ## File object
 File object-oriented implementation
 
+### Check if the file or directory is writable
+```php
+$file = new File('storage/data.json');
+$file->isWritable(); // true if the path exists and is writable, false otherwise
+```
+
+### Assert that the file or directory exists and is writable
+```php
+$file = new File('storage/data.json');
+$file->assertWritable(); // throws FileException if the path does not exist or is not writable
+```
+
 ### Change the file or directory permissions
 ```php
 $file = new File('storage/data.json');
