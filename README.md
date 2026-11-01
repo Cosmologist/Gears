@@ -326,6 +326,17 @@ $file->chmod(0600); // returns the same File object
 
 Pass permissions as an octal number. Throws `FileException` if the permissions cannot be changed.
 
+### Update the file access and modification times, creating the file if it does not exist
+Creates parent directories if needed without changing the file contents.
+```php
+$file = new File('storage/data.json');
+$file->touch(); // uses the current time and returns the same File object
+$file->touch(mtime: 1700000000); // uses the given time for both modification and access
+$file->touch(mtime: 1700000000, atime: 1700000100);
+```
+
+Throws `FileException` if the file cannot be created or its times cannot be updated.
+
 ### Serializes data and immediately writes it to the file corresponding to the object
 ```php
 $storage = new File('storage/abc.json');

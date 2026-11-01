@@ -275,6 +275,29 @@ final class File
     }
 
     /**
+     * Update the file access and modification times, creating the file if it does not exist
+     *
+     * Creates parent directories if needed without changing the file contents.
+     *
+     * @param  int|null  $mtime  Modification time as a Unix timestamp, or null for the current time
+     * @param  int|null  $atime  Access time as a Unix timestamp, or null to use the modification time
+     *
+     * @return $this
+     *
+     * @throws FileException If the file cannot be created or its times cannot be updated
+     */
+    public function touch(?int $mtime = null, ?int $atime = null): self
+    {
+        $this->parent()->mkdir();
+
+        if (!@touch($this->path, $mtime, $atime)) {
+            throw FileException::unableToTouch($this->path);
+        }
+
+        return $this;
+    }
+
+    /**
      * Get the file contents
      *
      * @return string The contents of the file

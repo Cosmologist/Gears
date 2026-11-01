@@ -52,6 +52,11 @@ final class FileException extends \RuntimeException
         return new self(sprintf("Unable to change permissions on '%s' to %04o", $path, $permissions));
     }
 
+    public static function unableToTouch(string $path): self
+    {
+        return new self("Unable to update access and modification times of file '{$path}'");
+    }
+
     public static function notFound(string $path): self
     {
         return new self("File '{$path}' doesn't exist");
