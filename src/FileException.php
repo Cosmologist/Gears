@@ -5,7 +5,7 @@ namespace Cosmologist\Gears;
 /**
  * File system exception
  */
-final class FileException extends \RuntimeException
+class FileException extends \RuntimeException
 {
     public static function unableToServe(string $address, string $reason): self
     {

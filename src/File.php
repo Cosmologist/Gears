@@ -33,6 +33,13 @@ final class File
     private $lockHandle = null;
 
     /**
+     * File handle resource returned by fopen()
+     *
+     * @var resource|null
+     */
+    private $handle = null;
+
+    /**
      * @todo
      */
     public function absolute(): string
@@ -130,18 +137,36 @@ final class File
     /**
      * Check if the file is a directory
      *
-     * @return bool True if the path is a directory, false otherwise
+     * When the file is opened via self::fopen(), checks the open handle to avoid a path lookup and TOCTOU issues.
+     *
+     * @return bool True if the target is a directory, false otherwise
      */
     public function isDirectory(): bool
     {
+        if (is_resource($this->handle)) {
+            $stat = fstat($this->handle);
+
+            return $stat !== false && ($stat['mode'] & 0170000) === 0040000;
+        }
+
         return is_dir($this->path);
     }
 
     /**
-     * @todo
+     * Check if the target is a regular file
+     *
+     * When the file is opened via fopen(), checks the open handle to avoid a path lookup and TOCTOU issues.
+     *
+     * @return bool True if the target is a regular file, false otherwise
      */
     public function isFile(): bool
     {
+        if (is_resource($this->handle)) {
+            $stat = fstat($this->handle);
+
+            return $stat !== false && ($stat['mode'] & 0170000) === 0100000;
+        }
+
         return is_file($this->path);
     }
 
@@ -319,6 +344,50 @@ final class File
         }
 
         return $this;
+    }
+
+    /**
+     * Open the file using the native fopen() modes and options
+     *
+     * Unlike native fopen(), throws FileOpenException if opening returns false.
+     *
+     * To protect against file substitution between a path-based check and the actual read or write (TOCTOU),
+     * open first, check with isFile() or isDirectory(), then read or write through that same handle.
+     *
+     * Path-based methods such as get() and put() do not use this handle.
+     * The caller closes the handle with fclose().
+     *
+     * <code>
+     * $file = new File('storage/data.json');
+     * $handle = $file->fopen('rb');
+     * try {
+     *     if ($file->isFile()) {
+     *         $contents = stream_get_contents($handle);
+     *     }
+     * } finally {
+     *     fclose($handle);
+     * }
+     * </code>
+     *
+     * @param  string  $mode  The native fopen() mode
+     * @param  bool  $useIncludePath  Whether to search for the file in include_path
+     * @param  resource|null  $context  A stream context created with stream_context_create()
+     *
+     * @return resource The opened stream
+     *
+     * @throws FileOpenException If fopen() returns false
+     */
+    public function fopen(string $mode, bool $useIncludePath = false, mixed $context = null)
+    {
+        $handle = @fopen($this->path, $mode, $useIncludePath, $context);
+
+        if ($handle === false) {
+            throw new FileOpenException($this->path, $mode);
+        }
+
+        $this->handle = $handle;
+
+        return $handle;
     }
 
     /**

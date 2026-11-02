@@ -318,6 +318,34 @@ ClassType::enumCase(FooEnum::class, 'bar');
 ## File object
 File object-oriented implementation
 
+### Open the file using the native fopen() modes and options
+Like native `fopen()`, but throws `FileOpenException` (which extends `FileException`) if opening returns `false`.
+Accepts the same mode strings, include-path option, and stream context.
+Stores the returned handle; `isFile()` and `isDirectory()` inspect its type with `fstat()`.
+```php
+$file = new File('storage/data.json');
+$handle = $file->fopen('rb');
+try {
+    if ($file->isFile()) {
+        $contents = stream_get_contents($handle);
+    }
+} finally {
+    fclose($handle);
+}
+```
+
+To protect against file substitution between a path-based check and the actual read or write (TOCTOU),
+open first, check with `isFile()` or `isDirectory()`, then read or write through that same handle.
+Path-based methods such as `get()` and `put()` do not use this handle.
+
+### Check if the target is a regular file or directory
+```php
+$file->isFile(); // true for a regular file
+$file->isDirectory(); // true for a directory
+```
+
+When the file is opened via `fopen()`, these methods inspect its open handle to avoid a path lookup and TOCTOU issues.
+
 ### Check if the file or directory is writable
 ```php
 $file = new File('storage/data.json');
