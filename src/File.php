@@ -2,6 +2,10 @@
 
 namespace Cosmologist\Gears;
 
+use Cosmologist\Gears\File\Exception\DirectoryCreateException;
+use Cosmologist\Gears\File\Exception\FileException;
+use Cosmologist\Gears\File\Exception\OpenFileException;
+
 use FilesystemIterator;
 use Symfony\Component\PropertyInfo\Extractor\PhpDocExtractor;
 use Symfony\Component\PropertyInfo\Extractor\ReflectionExtractor;
@@ -318,8 +322,7 @@ final class File
     {
         if (!file_exists($this->path)) {
             if (false === @mkdir($this->path, $permissions, $recursive)) {
-                // todo need specific exception
-                throw new \RuntimeException(sprintf('Unable to create directory "%s"', $this->path));
+                throw new DirectoryCreateException($this->path);
             }
         }
 
@@ -378,14 +381,14 @@ final class File
      *
      * @return resource The opened stream
      *
-     * @throws FileOpenException If fopen() returns false
+     * @throws OpenFileException If fopen() returns false
      */
     public function fopen(string $mode, bool $useIncludePath = false, mixed $context = null)
     {
         $handle = @fopen($this->path, $mode, $useIncludePath, $context);
 
         if ($handle === false) {
-            throw new FileOpenException($this->path, $mode);
+            throw new OpenFileException($this->path, $mode);
         }
 
         $this->handle = $handle;

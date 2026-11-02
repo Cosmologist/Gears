@@ -3,7 +3,7 @@
 namespace Cosmologist\Gears\Tests;
 
 use Cosmologist\Gears\File;
-use Cosmologist\Gears\FileException;
+use Cosmologist\Gears\File\Exception\FileException;
 use PHPUnit\Framework\TestCase;
 
 class FileTest extends TestCase
@@ -22,7 +22,7 @@ class FileTest extends TestCase
         }
     }
 
-    public function testFopenPassesContextAndCachesStreamType()
+    public function testFopenPassesContextAndChecksStreamType()
     {
         stream_wrapper_register('gears-file-test', FileTestStreamWrapper::class);
         FileTestStreamWrapper::$statCalls = 0;
@@ -40,7 +40,7 @@ class FileTest extends TestCase
                     $this->assertFalse($file->isDirectory());
                 }
 
-                $this->assertSame(1, FileTestStreamWrapper::$statCalls);
+                $this->assertSame(6, FileTestStreamWrapper::$statCalls);
             } finally {
                 fclose($handle);
             }

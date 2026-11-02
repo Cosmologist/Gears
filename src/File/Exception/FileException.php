@@ -1,11 +1,11 @@
 <?php
 
-namespace Cosmologist\Gears;
+namespace Cosmologist\Gears\File\Exception;
 
 /**
  * File system exception
  */
-class FileException extends \RuntimeException
+class FileException extends \RuntimeException implements FileExceptionInterface
 {
     public static function unableToServe(string $address, string $reason): self
     {

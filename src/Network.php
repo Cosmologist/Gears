@@ -2,6 +2,8 @@
 
 namespace Cosmologist\Gears;
 
+use Cosmologist\Gears\File\Exception\FileException;
+
 use Uri\Rfc3986\Uri;
 
 final class Network

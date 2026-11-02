@@ -319,7 +319,7 @@ ClassType::enumCase(FooEnum::class, 'bar');
 File object-oriented implementation
 
 ### Open the file using the native fopen() modes and options
-Like native `fopen()`, but throws `FileOpenException` (which extends `FileException`) if opening returns `false`.
+Like native `fopen()`, but throws `OpenFileException` (which extends `FileException`) if opening returns `false`.
 Accepts the same mode strings, include-path option, and stream context.
 Stores the returned handle; `isFile()` and `isDirectory()` inspect its type with `fstat()`.
 ```php

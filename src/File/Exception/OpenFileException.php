@@ -1,11 +1,11 @@
 <?php
 
-namespace Cosmologist\Gears;
+namespace Cosmologist\Gears\File\Exception;
 
 /**
  * Exception thrown when a file cannot be opened
  */
-final class FileOpenException extends FileException
+final class OpenFileException extends FileException implements FileExceptionInterface
 {
     public function __construct(string $path, string $mode)
     {
