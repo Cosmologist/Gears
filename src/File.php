@@ -314,10 +314,13 @@ final class File
      *
      * @return $this
      */
-    public function mkdir(): self
+    public function mkdir(bool $recursive = true, int $permissions = 0777): self
     {
         if (!file_exists($this->path)) {
-            mkdir($this->path, recursive: true);
+            if (false === @mkdir($this->path, $permissions, $recursive)) {
+                // todo need specific exception
+                throw new \RuntimeException(sprintf('Unable to create directory "%s"', $this->path));
+            }
         }
 
         return $this;
@@ -515,7 +518,7 @@ final class File
     }
 
     /**
-     * Acquire a lock on the file
+     * Acquire an advisory lock on the file
      *
      * Opens the file and acquires a lock on it.
      * The lock handle is stored internally and can be released via unlock().
@@ -542,9 +545,9 @@ final class File
      * @throws FileException If the file is already locked and reentrant is false
      *
      * @throws FileException If the lock cannot be acquired when waitForLock is false
-     * @see self::unlock()
+     * @see self::advisoryUnlock()
      */
-    public function lock(bool $exclusive = true, bool $waitForLock = false, bool $reentrant = true): self
+    public function advisoryLock(bool $exclusive = true, bool $waitForLock = false, bool $reentrant = true): self
     {
         if ($this->lockHandle !== null && !$reentrant) {
             throw FileException::alreadyLocked();
@@ -592,9 +595,9 @@ final class File
      * @throws FileException If flock() fails and throwOnError is true
      *
      * @throws FileException If no lock is currently held and throwOnError is true
-     * @see self::lock()
+     * @see self::advisoryLock()
      */
-    public function unlock(bool $throwOnError = false): self
+    public function advisoryUnlock(bool $throwOnError = false): self
     {
         if ($this->lockHandle === null) {
             if ($throwOnError) {
