@@ -768,6 +768,24 @@ ObjectType::toClassName($objectOrClass): string;
 
 ## String functions
 
+### Assert that the string is not empty
+Only an empty string is rejected; whitespace and `'0'` are allowed.
+Throws `StringException`, which extends `InvalidArgumentException`.
+```php
+StringType::assertNonEmpty('Foo');
+StringType::assertNonEmpty('0');
+StringType::assertNonEmpty(' ');
+StringType::assertNonEmpty(''); // throws StringException
+```
+
+### Assert that the string contains no null bytes
+Empty strings are allowed. Throws `StringException`, which extends `InvalidArgumentException`.
+```php
+StringType::assertNoNullBytes('Foo');
+StringType::assertNoNullBytes('');
+StringType::assertNoNullBytes("Foo\0Bar"); // throws StringException
+```
+
 ### Determine if a given string contains a given substring
 ```php
 StringType::contains('Foo', 'Bar'); // false

@@ -12,6 +12,30 @@ use RuntimeException;
 class StringType
 {
     /**
+     * Assert that the string is not empty
+     *
+     * @throws StringException If the string is empty
+     */
+    public static function assertNonEmpty(string $string): void
+    {
+        if ($string === '') {
+            throw StringException::emptyString();
+        }
+    }
+
+    /**
+     * Assert that the string contains no null bytes
+     *
+     * @throws StringException If the string contains a null byte
+     */
+    public static function assertNoNullBytes(string $string): void
+    {
+        if (str_contains($string, "\0")) {
+            throw StringException::containsNullBytes();
+        }
+    }
+
+    /**
      * Determine if a given string contains a given substring.
      *
      * @param string $haystack
