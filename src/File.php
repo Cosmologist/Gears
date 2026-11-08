@@ -2,9 +2,12 @@
 
 namespace Cosmologist\Gears;
 
+use Cosmologist\Gears\File\Exception\AppendModeRequiredException;
 use Cosmologist\Gears\File\Exception\DirectoryCreateException;
 use Cosmologist\Gears\File\Exception\FileException;
+use Cosmologist\Gears\File\Exception\FileNotOpenException;
 use Cosmologist\Gears\File\Exception\OpenFileException;
+use Cosmologist\Gears\File\Exception\WriteFileException;
 
 use FilesystemIterator;
 use Symfony\Component\PropertyInfo\Extractor\PhpDocExtractor;
@@ -394,6 +397,92 @@ final class File
         $this->handle = $handle;
 
         return $handle;
+    }
+
+    /**
+     * Write all data through the handle stored by fopen()
+     *
+     * Unlike native fwrite(), uses the handle stored by fopen() and continues after partial
+     * writes until the entire string is written; there is no optional length argument.
+     * Requires an open handle and uses its existing mode and file position.
+     * Throws WriteFileException on failure or zero progress instead of returning false or zero.
+     * Bytes already written are not rolled back.
+     *
+     * @param  string  $data  The bytes to write
+     *
+     * @return int The number of bytes written, equal to strlen($data)
+     *
+     * @throws FileNotOpenException If the stored handle is missing or closed
+     * @throws WriteFileException If writing fails or makes no progress
+     */
+    public function fwrite(string $data): int
+    {
+        $length = strlen($data);
+
+        if (!is_resource($this->handle)) {
+            throw new FileNotOpenException($this->path);
+        }
+
+        $offset = 0;
+
+        while ($offset < $length) {
+            $written = @fwrite($this->handle, substr($data, $offset));
+
+            if ($written === false || $written === 0) {
+                throw new WriteFileException($this->path, $offset, $length);
+            }
+
+            $offset += $written;
+        }
+
+        return $offset;
+    }
+
+    /**
+     * Append all data, opening the file in append-binary mode if needed
+     *
+     * Reuses the stored handle while it is open. An existing handle must have an append mode.
+     * Delegates complete-write handling to fwrite(); does not add a newline.
+     *
+     * @param  string  $data  The bytes to append
+     *
+     * @return int The number of bytes written, equal to strlen($data)
+     *
+     * @throws OpenFileException If the file cannot be opened
+     * @throws AppendModeRequiredException If the stored handle is not in append mode
+     * @throws WriteFileException If writing fails or makes no progress
+     */
+    public function fappend(string $data): int
+    {
+        if (!is_resource($this->handle)) {
+            $this->fopen('ab');
+        } else {
+            $mode = stream_get_meta_data($this->handle)['mode'];
+
+            if (!str_starts_with($mode, 'a')) {
+                throw new AppendModeRequiredException($this->path, $mode);
+            }
+        }
+
+        return $this->fwrite($data);
+    }
+
+    /**
+     * Append a string followed by PHP_EOL
+     *
+     * Equivalent to fappend($string . PHP_EOL), including automatic opening and partial-write handling.
+     *
+     * @param  string  $string  The bytes to append before the line ending
+     *
+     * @return int The number of bytes written, including PHP_EOL
+     *
+     * @throws OpenFileException If the file cannot be opened
+     * @throws AppendModeRequiredException If the stored handle is not in append mode
+     * @throws WriteFileException If writing fails or makes no progress
+     */
+    public function fappendLine(string $string): int
+    {
+        return $this->fappend($string . PHP_EOL);
     }
 
     /**

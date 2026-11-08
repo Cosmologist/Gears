@@ -338,6 +338,47 @@ To protect against file substitution between a path-based check and the actual r
 open first, check with `isFile()` or `isDirectory()`, then read or write through that same handle.
 Path-based methods such as `get()` and `put()` do not use this handle.
 
+### Write all data through the handle stored by fopen()
+Unlike native `fwrite()`, `fwrite(string $data): int` uses the stored handle and continues after partial writes
+until the entire string is written; there is no optional length argument.
+Requires a handle opened by `fopen()` and uses its existing mode and file position.
+Throws `FileNotOpenException` for a missing or closed handle.
+A failed write or zero progress throws `WriteFileException` instead of returning `false` or `0`.
+Both exceptions extend `FileException`; write errors report the number of bytes already written.
+Bytes already written are not rolled back. The method does not open the file or add a newline.
+```php
+$file = new File('storage/data.bin');
+$handle = $file->fopen('wb');
+try {
+    $bytes = $file->fwrite('contents');
+} finally {
+    fclose($handle);
+}
+```
+
+### Append all data, opening the file in append-binary mode if needed
+`fappend(string $data): int` opens the file in `ab` mode when its handle is missing or closed.
+Reuses the stored handle while it is open. An existing handle must have an append mode (`a`, `ab`, `a+`, etc.);
+otherwise throws `AppendModeRequiredException`, reporting the actual mode without writing or reopening the file.
+Delegates complete-write handling to `fwrite()` and returns the byte count without adding a newline.
+Automatic opening can throw `OpenFileException`; failed writes or zero progress throw `WriteFileException`.
+All these exceptions extend `FileException`.
+Even an empty string opens the file if no open handle exists.
+```php
+$file = new File('storage/events.log');
+$file->fappend('Controller ');
+$file->fappend('connected');
+```
+
+### Append a string followed by PHP_EOL
+`fappendLine(string $string): int` is equivalent to `fappend($string . PHP_EOL)`.
+Uses the same automatic opening and partial-write handling; returns the byte count including the line ending.
+Throws `OpenFileException`, `AppendModeRequiredException`, or `WriteFileException` under the same conditions as `fappend()`.
+```php
+$file = new File('storage/events.log');
+$bytes = $file->fappendLine('Controller connected');
+```
+
 ### Check if the target is a regular file or directory
 ```php
 $file->isFile(); // true for a regular file
