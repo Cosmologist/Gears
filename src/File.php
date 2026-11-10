@@ -4,6 +4,7 @@ namespace Cosmologist\Gears;
 
 use Cosmologist\Gears\File\Exception\DirectoryCreateException;
 use Cosmologist\Gears\File\Exception\FileException;
+use Cosmologist\Gears\File\Exception\FileNotOpenedException;
 use Cosmologist\Gears\File\Exception\OpenFileException;
 use Cosmologist\Gears\File\Exception\ReadModeRequiredException;
 use Cosmologist\Gears\File\Exception\WriteFileException;
@@ -193,19 +194,21 @@ final class File
     }
 
     /**
-     * Check whether the stored stream or a temporarily opened path is a terminal
+     * Check whether the stored stream is a terminal, opening an existing path in ab mode if needed
      *
-     * @throws OpenFileException If the stream cannot be opened
+     * Keeps the opened stream for subsequent operations. An open handle is checked without a path lookup.
+     *
+     * @throws FileException If the path does not exist and no stream is open
+     * @throws OpenFileException If the path cannot be opened for writing
      */
     public function isTerminal(): bool
     {
-        $this->assertExists();
-
         if (!is_resource($this->handle)) {
+            $this->assertExists();
             $this->fopen();
         }
 
-        return stream_isatty($this->handle);;
+        return stream_isatty($this->handle);
     }
 
     /**
@@ -389,19 +392,18 @@ final class File
     /**
      * Open and store the file stream using the native fopen() modes and options
      *
-     * Used internally by fwrite() and isTerminal(). Validates the opened handle against the requested access.
+     * Used internally by fwrite() and isTerminal(). Defaults to append-binary mode.
+     * Preserves native mode and wrapper behavior.
      * Throws OpenFileException if native opening returns false.
      * The stream is closed when this object is destroyed; parent directories are not created.
      *
-     * @param  string  $mode  The native fopen() mode
+     * @param  string  $mode  The native fopen() mode, ab by default
      * @param  bool  $useIncludePath  Whether to search for the file in include_path
      * @param  resource|null  $context  A stream context created with stream_context_create()
      *
      * @return resource The opened stream
      *
      * @throws OpenFileException If fopen() returns false
-     * @throws ReadModeRequiredException If the opened handle does not permit requested reading
-     * @throws WriteModeRequiredException If the opened handle does not permit requested writing
      */
     private function fopen(string $mode = 'ab', bool $useIncludePath = false, mixed $context = null)
     {
@@ -414,6 +416,23 @@ final class File
         return $this->handle = $handle;
     }
 
+    /**
+     * Assert that the stored file handle is an open stream
+     *
+     * @throws FileNotOpenedException If the handle is missing, closed, or is not a stream
+     */
+    private function assertFileWasOpened(): void
+    {
+        if (!is_resource($this->handle) || get_resource_type($this->handle) !== 'stream') {
+            throw new FileNotOpenedException($this);
+        }
+    }
+
+    /**
+     * Return the current mode of the stored open stream without caching it
+     *
+     * @throws FileNotOpenedException If the file stream is not open
+     */
     private function fmode(): string
     {
         $this->assertFileWasOpened();
@@ -421,32 +440,59 @@ final class File
         return stream_get_meta_data($this->handle)['mode'];
     }
 
+    /**
+     * Check whether the stored open stream permits writing
+     *
+     * @throws FileNotOpenedException If the file stream is not open
+     */
     private function fwritable(): bool
     {
         // Modes w, a, x and c allow writing; + also makes a read mode writable.
-        return strpbrk($this->fmode(), 'waxc+') === false
+        return strpbrk($this->fmode(), 'waxc+') !== false;
     }
 
+    /**
+     * Assert that the stored open stream permits writing
+     *
+     * @throws FileNotOpenedException If the file stream is not open
+     * @throws WriteModeRequiredException If its mode does not permit writing
+     */
     private function assertFwritable(): void
     {
-        throw new WriteModeRequiredException($this);
+        if (!$this->fwritable()) {
+            throw new WriteModeRequiredException($this);
+        }
     }
 
+    /**
+     * Check whether the stored open stream permits reading
+     *
+     * @throws FileNotOpenedException If the file stream is not open
+     */
     private function freadable(): bool
     {
-        return strpbrk($this->fmode(), 'TODO') === false
+        // r permits reading; + also makes w/a/x/c modes readable.
+        return strpbrk($this->fmode(), 'r+') !== false;
     }
 
+    /**
+     * Assert that the stored open stream permits reading
+     *
+     * @throws FileNotOpenedException If the file stream is not open
+     * @throws ReadModeRequiredException If its mode does not permit reading
+     */
     private function assertFreadable(): void
     {
-        throw new ReadModeRequiredException($this);
+        if (!$this->freadable()) {
+            throw new ReadModeRequiredException($this);
+        }
     }
 
     /**
      * Write all data through the file stream, opening it in append-binary mode if needed
      *
      * Opens the file in ab mode if the stored handle is missing or closed; parent directories are not created.
-     * Validates the open handle with assertFopenForWrite(), preserving its mode and position.
+     * Validates the open handle with assertFwritable(), preserving its mode and position.
      * Continues after partial writes until the entire string is written; does not add a newline.
      * An empty string returns zero without opening or writing to the file.
      * Throws WriteFileException on failure or zero progress instead of returning false or zero.
@@ -470,7 +516,7 @@ final class File
             $this->fopen();
         }
 
-        $this->assertFopenForWrite();
+        $this->assertFwritable();
 
         // Native fwrite() may write only part of the data; continue while progress is made.
         $offset = 0;

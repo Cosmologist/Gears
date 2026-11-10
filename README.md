@@ -320,10 +320,26 @@ File object-oriented implementation
 
 Instances cannot be cloned because they store file descriptors: a clone would share them with the original object.
 The stream used for writing is closed when the object is destroyed. `fopen()` is an internal helper.
+The internal stream helpers inspect the stored descriptor without opening it or checking the filesystem path:
+
+- `assertFileWasOpened()` requires an open stream; a missing, closed, or non-stream handle throws `FileNotOpenedException`.
+- `fmode()` returns its actual current mode through `stream_get_meta_data()` without caching it.
+- `freadable()` returns whether the mode permits reading (`r` or `+`).
+- `fwritable()` returns whether the mode permits writing (`w`, `a`, `x`, `c`, or `+`).
+- `assertFreadable()` and `assertFwritable()` throw `ReadModeRequiredException` or `WriteModeRequiredException` only when the corresponding predicate returns false.
+
+The predicates and mode assertions also throw `FileNotOpenedException` when the stream is not open.
+These helpers are private. The three handle-state exceptions (`FileNotOpenedException`,
+`ReadModeRequiredException`, and `WriteModeRequiredException`) accept a `File` object for its path
+in the error message; they do not keep a reference to it or reopen the stream.
+All three extend `FileException` and implement `FileExceptionInterface`.
+`fopen()` defaults to `ab`, preserves native modes, wrappers, and `include_path` behavior, and stores the resulting stream.
+Failed native opening (including a missing file in `r`/`r+` mode) throws `OpenFileException`.
 
 ### Write all data through the file stream, opening it in append-binary mode if needed
 `fwrite(string $data): int` opens the file in `ab` mode when its handle is missing or closed;
-parent directories are not created. Reuses an open writable handle with its existing mode and file position.
+parent directories are not created. It then validates the descriptor with `assertFwritable()`.
+Reuses an open writable handle with its existing mode and file position, even if its path was removed or replaced.
 Continues after partial writes until the entire string is written and returns the number of bytes written.
 Does not add a newline. An empty string returns `0` without opening or writing to the file.
 Throws `OpenFileException` if opening fails, `WriteModeRequiredException` if the stored handle is not writable,
@@ -344,6 +360,19 @@ Throws `OpenFileException`, `WriteModeRequiredException`, or `WriteFileException
 ```php
 $file = new File('storage/events.log');
 $file->fwriteln('Controller connected');
+```
+
+### Check whether the file stream is a terminal
+`isTerminal(): bool` calls `stream_isatty()` on an open handle without checking the path again.
+Without an open handle, it first requires an existing path (`FileException` if missing), then opens it
+in `ab` mode (`OpenFileException` on failure) and keeps the stream for subsequent operations.
+Opening requires write permission. Already open read-only streams can be inspected without reopening;
+already open `php://` streams and files whose paths were removed or replaced remain usable.
+The existence check is a preflight check, not an atomic guarantee: if a path disappears between the
+check and native `fopen('ab')`, the native call may recreate it.
+```php
+$file = new File('/dev/stderr');
+$file->isTerminal();
 ```
 
 ### Check if the target is a regular file or directory

@@ -124,6 +124,50 @@ class FileWriteTest extends TestCase
         }
     }
 
+    public function testFwriteStillReportsNativeOpenFailure()
+    {
+        $this->expectException(OpenFileException::class);
+        (new File(sys_get_temp_dir()))->fwrite('data');
+    }
+
+    public function testFwriteRejectsExistingUnwritableFile()
+    {
+        $path = tempnam(sys_get_temp_dir(), 'gears-readonly-');
+        chmod($path, 0444);
+
+        try {
+            if (is_writable($path)) {
+                $this->markTestSkipped('Current user can write despite the permission bits');
+            }
+            $this->expectException(OpenFileException::class);
+            $this->expectExceptionMessage("Unable to open file '{$path}' in mode 'ab'");
+            (new File($path))->fwrite('data');
+        } finally {
+            chmod($path, 0600);
+            unlink($path);
+        }
+    }
+
+    public function testFwriteRejectsUnwritableParentWithoutCreatingFile()
+    {
+        $directory = sys_get_temp_dir() . '/gears-readonly-' . bin2hex(random_bytes(8));
+        mkdir($directory, 0500);
+        $path = $directory . '/data';
+
+        try {
+            if (is_writable($directory)) {
+                $this->markTestSkipped('Current user can write despite the permission bits');
+            }
+            $this->expectException(OpenFileException::class);
+            $this->expectExceptionMessage("Unable to open file '{$path}' in mode 'ab'");
+            (new File($path))->fwrite('data');
+        } finally {
+            $this->assertFileDoesNotExist($path);
+            chmod($directory, 0700);
+            rmdir($directory);
+        }
+    }
+
     public function testFwriteEmptyDataDoesNotCreateFile()
     {
         $path = sys_get_temp_dir() . '/gears-fwrite-' . bin2hex(random_bytes(8));
@@ -201,7 +245,7 @@ class FileWriteTest extends TestCase
 
         try {
             $this->expectException(WriteModeRequiredException::class);
-            $this->expectExceptionMessage("handle mode 'rb' is not writable");
+            $this->expectExceptionMessage("Cannot write to file '{$path}': handle is not opened for writing");
             $file->fwrite('data');
         } finally {
             $this->assertSame(0, ftell($handle));

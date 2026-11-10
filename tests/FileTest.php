@@ -194,6 +194,11 @@ class FileTestStreamWrapper
         return true;
     }
 
+    public function stream_eof(): bool
+    {
+        return false;
+    }
+
     public function stream_write(string $data): int
     {
         return strlen($data);
