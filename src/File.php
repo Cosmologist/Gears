@@ -2,12 +2,12 @@
 
 namespace Cosmologist\Gears;
 
-use Cosmologist\Gears\File\Exception\AppendModeRequiredException;
 use Cosmologist\Gears\File\Exception\DirectoryCreateException;
 use Cosmologist\Gears\File\Exception\FileException;
-use Cosmologist\Gears\File\Exception\FileNotOpenException;
 use Cosmologist\Gears\File\Exception\OpenFileException;
+use Cosmologist\Gears\File\Exception\ReadModeRequiredException;
 use Cosmologist\Gears\File\Exception\WriteFileException;
+use Cosmologist\Gears\File\Exception\WriteModeRequiredException;
 
 use FilesystemIterator;
 use Symfony\Component\PropertyInfo\Extractor\PhpDocExtractor;
@@ -26,10 +26,6 @@ use GuzzleHttp;
  */
 final class File
 {
-    public function __construct(private(set) readonly string $path)
-    {
-    }
-
     /**
      * Lock file handle resource
      *
@@ -40,11 +36,30 @@ final class File
     private $lockHandle = null;
 
     /**
-     * File handle resource returned by fopen()
+     * File stream used by fwrite() and fwriteln(), closed when this object is destroyed
      *
      * @var resource|null
      */
     private $handle = null;
+
+    public function __construct(private(set) readonly string $path)
+    {
+    }
+
+    /**
+     * Prevent cloning because it would share the stored file descriptors between objects.
+     * Closing a descriptor in one object would invalidate it in the other.
+     */
+    private function __clone(): void
+    {
+    }
+
+    public function __destruct()
+    {
+        if (is_resource($this->handle)) {
+            fclose($this->handle);
+        }
+    }
 
     /**
      * @todo
@@ -144,7 +159,7 @@ final class File
     /**
      * Check if the file is a directory
      *
-     * When the file is opened via self::fopen(), checks the open handle to avoid a path lookup and TOCTOU issues.
+     * Once fwrite() opens the stream, checks that handle instead of looking up the path again.
      *
      * @return bool True if the target is a directory, false otherwise
      */
@@ -162,7 +177,7 @@ final class File
     /**
      * Check if the target is a regular file
      *
-     * When the file is opened via fopen(), checks the open handle to avoid a path lookup and TOCTOU issues.
+     * Once fwrite() opens the stream, checks that handle instead of looking up the path again.
      *
      * @return bool True if the target is a regular file, false otherwise
      */
@@ -175,6 +190,22 @@ final class File
         }
 
         return is_file($this->path);
+    }
+
+    /**
+     * Check whether the stored stream or a temporarily opened path is a terminal
+     *
+     * @throws OpenFileException If the stream cannot be opened
+     */
+    public function isTerminal(): bool
+    {
+        $this->assertExists();
+
+        if (!is_resource($this->handle)) {
+            $this->fopen();
+        }
+
+        return stream_isatty($this->handle);;
     }
 
     /**
@@ -356,27 +387,11 @@ final class File
     }
 
     /**
-     * Open the file using the native fopen() modes and options
+     * Open and store the file stream using the native fopen() modes and options
      *
-     * Unlike native fopen(), throws FileOpenException if opening returns false.
-     *
-     * To protect against file substitution between a path-based check and the actual read or write (TOCTOU),
-     * open first, check with isFile() or isDirectory(), then read or write through that same handle.
-     *
-     * Path-based methods such as get() and put() do not use this handle.
-     * The caller closes the handle with fclose().
-     *
-     * <code>
-     * $file = new File('storage/data.json');
-     * $handle = $file->fopen('rb');
-     * try {
-     *     if ($file->isFile()) {
-     *         $contents = stream_get_contents($handle);
-     *     }
-     * } finally {
-     *     fclose($handle);
-     * }
-     * </code>
+     * Used internally by fwrite() and isTerminal(). Validates the opened handle against the requested access.
+     * Throws OpenFileException if native opening returns false.
+     * The stream is closed when this object is destroyed; parent directories are not created.
      *
      * @param  string  $mode  The native fopen() mode
      * @param  bool  $useIncludePath  Whether to search for the file in include_path
@@ -385,8 +400,10 @@ final class File
      * @return resource The opened stream
      *
      * @throws OpenFileException If fopen() returns false
+     * @throws ReadModeRequiredException If the opened handle does not permit requested reading
+     * @throws WriteModeRequiredException If the opened handle does not permit requested writing
      */
-    public function fopen(string $mode, bool $useIncludePath = false, mixed $context = null)
+    private function fopen(string $mode = 'ab', bool $useIncludePath = false, mixed $context = null)
     {
         $handle = @fopen($this->path, $mode, $useIncludePath, $context);
 
@@ -394,17 +411,44 @@ final class File
             throw new OpenFileException($this->path, $mode);
         }
 
-        $this->handle = $handle;
+        return $this->handle = $handle;
+    }
 
-        return $handle;
+    private function fmode(): string
+    {
+        $this->assertFileWasOpened();
+
+        return stream_get_meta_data($this->handle)['mode'];
+    }
+
+    private function fwritable(): bool
+    {
+        // Modes w, a, x and c allow writing; + also makes a read mode writable.
+        return strpbrk($this->fmode(), 'waxc+') === false
+    }
+
+    private function assertFwritable(): void
+    {
+        throw new WriteModeRequiredException($this);
+    }
+
+    private function freadable(): bool
+    {
+        return strpbrk($this->fmode(), 'TODO') === false
+    }
+
+    private function assertFreadable(): void
+    {
+        throw new ReadModeRequiredException($this);
     }
 
     /**
-     * Write all data through the handle stored by fopen()
+     * Write all data through the file stream, opening it in append-binary mode if needed
      *
-     * Unlike native fwrite(), uses the handle stored by fopen() and continues after partial
-     * writes until the entire string is written; there is no optional length argument.
-     * Requires an open handle and uses its existing mode and file position.
+     * Opens the file in ab mode if the stored handle is missing or closed; parent directories are not created.
+     * Validates the open handle with assertFopenForWrite(), preserving its mode and position.
+     * Continues after partial writes until the entire string is written; does not add a newline.
+     * An empty string returns zero without opening or writing to the file.
      * Throws WriteFileException on failure or zero progress instead of returning false or zero.
      * Bytes already written are not rolled back.
      *
@@ -412,18 +456,25 @@ final class File
      *
      * @return int The number of bytes written, equal to strlen($data)
      *
-     * @throws FileNotOpenException If the stored handle is missing or closed
+     * @throws OpenFileException If the file cannot be opened
+     * @throws WriteModeRequiredException If the stored handle is not writable
      * @throws WriteFileException If writing fails or makes no progress
      */
     public function fwrite(string $data): int
     {
-        $length = strlen($data);
-
-        if (!is_resource($this->handle)) {
-            throw new FileNotOpenException($this->path);
+        if ($data === '') {
+            return 0;
         }
 
+        if (!is_resource($this->handle)) {
+            $this->fopen();
+        }
+
+        $this->assertFopenForWrite();
+
+        // Native fwrite() may write only part of the data; continue while progress is made.
         $offset = 0;
+        $length = strlen($data);
 
         while ($offset < $length) {
             $written = @fwrite($this->handle, substr($data, $offset));
@@ -439,50 +490,20 @@ final class File
     }
 
     /**
-     * Append all data, opening the file in append-binary mode if needed
+     * Write a string followed by PHP_EOL
      *
-     * Reuses the stored handle while it is open. An existing handle must have an append mode.
-     * Delegates complete-write handling to fwrite(); does not add a newline.
+     * Delegates to fwrite($data . PHP_EOL), including automatic opening and partial-write handling.
+     * Returns no value. An empty string still writes the line ending.
      *
-     * @param  string  $data  The bytes to append
-     *
-     * @return int The number of bytes written, equal to strlen($data)
+     * @param  string  $data  The bytes to write before the line ending
      *
      * @throws OpenFileException If the file cannot be opened
-     * @throws AppendModeRequiredException If the stored handle is not in append mode
+     * @throws WriteModeRequiredException If the stored handle is not writable
      * @throws WriteFileException If writing fails or makes no progress
      */
-    public function fappend(string $data): int
+    public function fwriteln(string $data): void
     {
-        if (!is_resource($this->handle)) {
-            $this->fopen('ab');
-        } else {
-            $mode = stream_get_meta_data($this->handle)['mode'];
-
-            if (!str_starts_with($mode, 'a')) {
-                throw new AppendModeRequiredException($this->path, $mode);
-            }
-        }
-
-        return $this->fwrite($data);
-    }
-
-    /**
-     * Append a string followed by PHP_EOL
-     *
-     * Equivalent to fappend($string . PHP_EOL), including automatic opening and partial-write handling.
-     *
-     * @param  string  $string  The bytes to append before the line ending
-     *
-     * @return int The number of bytes written, including PHP_EOL
-     *
-     * @throws OpenFileException If the file cannot be opened
-     * @throws AppendModeRequiredException If the stored handle is not in append mode
-     * @throws WriteFileException If writing fails or makes no progress
-     */
-    public function fappendLine(string $string): int
-    {
-        return $this->fappend($string . PHP_EOL);
+        $this->fwrite($data . PHP_EOL);
     }
 
     /**

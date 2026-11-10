@@ -3,10 +3,9 @@
 namespace Cosmologist\Gears\Tests;
 
 use Cosmologist\Gears\File;
-use Cosmologist\Gears\File\Exception\AppendModeRequiredException;
-use Cosmologist\Gears\File\Exception\FileNotOpenException;
 use Cosmologist\Gears\File\Exception\OpenFileException;
 use Cosmologist\Gears\File\Exception\WriteFileException;
+use Cosmologist\Gears\File\Exception\WriteModeRequiredException;
 use PHPUnit\Framework\TestCase;
 
 class FileWriteTest extends TestCase
@@ -16,27 +15,25 @@ class FileWriteTest extends TestCase
         $path = tempnam(sys_get_temp_dir(), 'gears-fwrite-');
         file_put_contents($path, 'existing:');
         $file = new File($path);
-        $handle = $file->fopen('ab');
 
         try {
             $this->assertSame(5, $file->fwrite("a\0b\r\n"));
             $this->assertSame(3, $file->fwrite('end'));
-            fflush($handle);
             $this->assertSame("existing:a\0b\r\nend", file_get_contents($path));
         } finally {
-            fclose($handle);
+            unset($file);
             unlink($path);
         }
     }
 
-    public function testFappendLineCompletesPartialWritesWithoutAttemptLimit()
+    public function testFwritelnCompletesPartialWritesWithoutAttemptLimit()
     {
         $this->withPartialStream(function (File $file): void {
             $data = str_repeat('ab', 32);
-            $this->assertSame(strlen($data . PHP_EOL), $file->fappendLine($data));
+            $file->fwriteln($data);
             $this->assertSame($data . PHP_EOL, FileWriteStream::$data);
             $this->assertSame(1, FileWriteStream::$openCalls);
-        }, 'ab');
+        });
     }
 
     public function testFwriteReportsFailureAfterPartialWriteAndKeepsWrittenPrefix()
@@ -72,17 +69,18 @@ class FileWriteTest extends TestCase
     {
         $this->withPartialStream(function (File $file): void {
             $this->assertSame(0, $file->fwrite(''));
+            $this->assertSame(0, FileWriteStream::$openCalls);
             $this->assertSame(0, FileWriteStream::$writeCalls);
         });
     }
 
-    public function testFappendCreatesFileWhenNoHandleIsStored()
+    public function testFwriteCreatesFileWhenNoHandleIsStored()
     {
         $path = sys_get_temp_dir() . '/gears-fwrite-' . bin2hex(random_bytes(8));
         $file = new File($path);
 
         try {
-            $this->assertSame(4, $file->fappend('data'));
+            $this->assertSame(4, $file->fwrite('data'));
             unset($file);
             $this->assertSame('data', file_get_contents($path));
         } finally {
@@ -93,16 +91,17 @@ class FileWriteTest extends TestCase
         }
     }
 
-    public function testFappendReopensClosedHandleInAppendMode()
+    public function testFwriteReopensClosedHandleInAppendMode()
     {
         $path = tempnam(sys_get_temp_dir(), 'gears-fwrite-');
         $file = new File($path);
-        $handle = $file->fopen('wb');
+        $handle = fopen($path, 'wb');
+        $this->storeHandle($file, $handle);
         fwrite($handle, 'existing:');
         fclose($handle);
 
         try {
-            $this->assertSame(4, $file->fappend('data'));
+            $this->assertSame(4, $file->fwrite('data'));
             unset($file);
             $this->assertSame('existing:data', file_get_contents($path));
         } finally {
@@ -111,42 +110,45 @@ class FileWriteTest extends TestCase
         }
     }
 
-    public function testFappendReportsAutomaticOpenFailure()
+    public function testFwriteReportsAutomaticOpenFailure()
     {
-        $path = sys_get_temp_dir() . '/gears-fwrite-missing-' . bin2hex(random_bytes(8)) . '/data';
+        $directory = sys_get_temp_dir() . '/gears-fwrite-missing-' . bin2hex(random_bytes(8));
+        $path = $directory . '/data';
 
-        $this->expectException(OpenFileException::class);
-        (new File($path))->fappend('data');
+        try {
+            $this->expectException(OpenFileException::class);
+            $this->expectExceptionMessage("Unable to open file '{$path}' in mode 'ab'");
+            (new File($path))->fwrite('data');
+        } finally {
+            $this->assertDirectoryDoesNotExist($directory);
+        }
     }
 
-    public function testFwriteRejectsMissingHandleWithoutCreatingFile()
+    public function testFwriteEmptyDataDoesNotCreateFile()
     {
         $path = sys_get_temp_dir() . '/gears-fwrite-' . bin2hex(random_bytes(8));
 
         try {
-            $this->expectException(FileNotOpenException::class);
-            $this->expectExceptionMessage("File '{$path}' has no open handle");
-            (new File($path))->fwrite('data');
+            $this->assertSame(0, (new File($path))->fwrite(''));
         } finally {
             $this->assertFileDoesNotExist($path);
         }
     }
 
-    public function testFwriteRejectsClosedHandle()
+    public function testFwritelnEmptyDataWritesLineEnding()
     {
-        $file = new File('php://temp');
-        $handle = $file->fopen('w+b');
-        fclose($handle);
-
-        $this->expectException(FileNotOpenException::class);
-        $this->expectExceptionMessage("File 'php://temp' has no open handle");
-        $file->fwrite('data');
+        $this->withPartialStream(function (File $file): void {
+            $file->fwriteln('');
+            $this->assertSame(PHP_EOL, FileWriteStream::$data);
+            $this->assertSame(1, FileWriteStream::$openCalls);
+        });
     }
 
     public function testFwriteUsesCurrentPositionOfNonAppendHandle()
     {
         $file = new File('php://temp');
-        $handle = $file->fopen('w+b');
+        $handle = fopen('php://temp', 'w+b');
+        $this->storeHandle($file, $handle);
 
         try {
             fwrite($handle, 'abcd');
@@ -159,46 +161,29 @@ class FileWriteTest extends TestCase
         }
     }
 
-    public function testFappendRejectsNonAppendHandleWithoutChangingIt()
-    {
-        $file = new File('php://temp');
-        $handle = $file->fopen('w+b');
-        fwrite($handle, 'abcd');
-        rewind($handle);
-
-        try {
-            $this->expectException(AppendModeRequiredException::class);
-            $this->expectExceptionMessage("handle mode 'w+b' is not an append mode");
-            $file->fappend('XY');
-        } finally {
-            $this->assertSame(0, ftell($handle));
-            $this->assertSame('abcd', stream_get_contents($handle));
-            fclose($handle);
-        }
-    }
-
-    public function testFappendLazilyOpensStreamOnceAcrossMultipleWrites()
+    public function testFwriteLazilyOpensStreamOnceAcrossMultipleWrites()
     {
         $this->withPartialStream(function (File $file): void {
             FileWriteStream::$partial = false;
             $this->assertSame(0, FileWriteStream::$openCalls);
-            $this->assertSame(3, $file->fappend('abc'));
-            $this->assertSame(3, $file->fappend('def'));
+            $this->assertSame(3, $file->fwrite('abc'));
+            $this->assertSame(3, $file->fwrite('def'));
             $this->assertSame(1, FileWriteStream::$openCalls);
             $this->assertSame('abcdef', FileWriteStream::$data);
-        }, null);
+        });
     }
 
-    public function testFappendUsesAppendModeAfterRewind()
+    public function testFwriteUsesAppendModeAfterRewind()
     {
-        $path = tempnam(sys_get_temp_dir(), 'gears-fappend-');
+        $path = tempnam(sys_get_temp_dir(), 'gears-fwrite-');
         file_put_contents($path, 'existing:');
         $file = new File($path);
-        $handle = $file->fopen('a+b');
+        $handle = fopen($path, 'a+b');
+        $this->storeHandle($file, $handle);
         rewind($handle);
 
         try {
-            $this->assertSame(4, $file->fappend('data'));
+            $this->assertSame(4, $file->fwrite('data'));
             fflush($handle);
             $this->assertSame('existing:data', file_get_contents($path));
         } finally {
@@ -211,22 +196,43 @@ class FileWriteTest extends TestCase
     {
         $path = tempnam(sys_get_temp_dir(), 'gears-fwrite-');
         $file = new File($path);
-        $handle = $file->fopen('rb');
+        $handle = fopen($path, 'rb');
+        $this->storeHandle($file, $handle);
 
         try {
-            $this->expectException(WriteFileException::class);
+            $this->expectException(WriteModeRequiredException::class);
+            $this->expectExceptionMessage("handle mode 'rb' is not writable");
             $file->fwrite('data');
         } finally {
+            $this->assertSame(0, ftell($handle));
+            $this->assertSame('', file_get_contents($path));
             fclose($handle);
             unlink($path);
         }
     }
 
-    private function withPartialStream(callable $test, ?string $mode = 'wb'): void
+    public function testDestructorClosesStoredStream()
+    {
+        $this->withPartialStream(function (File $file): void {
+            $file->fwrite('data');
+            $this->assertSame(0, FileWriteStream::$closeCalls);
+        });
+
+        $this->assertSame(1, FileWriteStream::$closeCalls);
+    }
+
+    private function storeHandle(File $file, $handle): void
+    {
+        // Set up stream states that cannot be selected through the public append API.
+        (new \ReflectionProperty(File::class, 'handle'))->setValue($file, $handle);
+    }
+
+    private function withPartialStream(callable $test): void
     {
         stream_wrapper_register('gears-file-write-test', FileWriteStream::class);
         FileWriteStream::$data = '';
         FileWriteStream::$openCalls = 0;
+        FileWriteStream::$closeCalls = 0;
         FileWriteStream::$writeCalls = 0;
         FileWriteStream::$stalled = false;
         FileWriteStream::$stopAfter = null;
@@ -234,9 +240,6 @@ class FileWriteTest extends TestCase
 
         try {
             $file = new File('gears-file-write-test://data');
-            if ($mode !== null) {
-                $file->fopen($mode);
-            }
 
             try {
                 $test($file);
@@ -255,6 +258,7 @@ class FileWriteStream
 
     public static string $data = '';
     public static int $openCalls = 0;
+    public static int $closeCalls = 0;
     public static int $writeCalls = 0;
     public static bool $stalled = false;
     public static ?int $stopAfter = null;
@@ -270,6 +274,11 @@ class FileWriteStream
     public function stream_eof(): bool
     {
         return false;
+    }
+
+    public function stream_close(): void
+    {
+        ++self::$closeCalls;
     }
 
     public function stream_write(string $data): int

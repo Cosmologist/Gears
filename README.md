@@ -318,65 +318,32 @@ ClassType::enumCase(FooEnum::class, 'bar');
 ## File object
 File object-oriented implementation
 
-### Open the file using the native fopen() modes and options
-Like native `fopen()`, but throws `OpenFileException` (which extends `FileException`) if opening returns `false`.
-Accepts the same mode strings, include-path option, and stream context.
-Stores the returned handle; `isFile()` and `isDirectory()` inspect its type with `fstat()`.
-```php
-$file = new File('storage/data.json');
-$handle = $file->fopen('rb');
-try {
-    if ($file->isFile()) {
-        $contents = stream_get_contents($handle);
-    }
-} finally {
-    fclose($handle);
-}
-```
+Instances cannot be cloned because they store file descriptors: a clone would share them with the original object.
+The stream used for writing is closed when the object is destroyed. `fopen()` is an internal helper.
 
-To protect against file substitution between a path-based check and the actual read or write (TOCTOU),
-open first, check with `isFile()` or `isDirectory()`, then read or write through that same handle.
-Path-based methods such as `get()` and `put()` do not use this handle.
-
-### Write all data through the handle stored by fopen()
-Unlike native `fwrite()`, `fwrite(string $data): int` uses the stored handle and continues after partial writes
-until the entire string is written; there is no optional length argument.
-Requires a handle opened by `fopen()` and uses its existing mode and file position.
-Throws `FileNotOpenException` for a missing or closed handle.
-A failed write or zero progress throws `WriteFileException` instead of returning `false` or `0`.
-Both exceptions extend `FileException`; write errors report the number of bytes already written.
-Bytes already written are not rolled back. The method does not open the file or add a newline.
-```php
-$file = new File('storage/data.bin');
-$handle = $file->fopen('wb');
-try {
-    $bytes = $file->fwrite('contents');
-} finally {
-    fclose($handle);
-}
-```
-
-### Append all data, opening the file in append-binary mode if needed
-`fappend(string $data): int` opens the file in `ab` mode when its handle is missing or closed.
-Reuses the stored handle while it is open. An existing handle must have an append mode (`a`, `ab`, `a+`, etc.);
-otherwise throws `AppendModeRequiredException`, reporting the actual mode without writing or reopening the file.
-Delegates complete-write handling to `fwrite()` and returns the byte count without adding a newline.
-Automatic opening can throw `OpenFileException`; failed writes or zero progress throw `WriteFileException`.
-All these exceptions extend `FileException`.
-Even an empty string opens the file if no open handle exists.
+### Write all data through the file stream, opening it in append-binary mode if needed
+`fwrite(string $data): int` opens the file in `ab` mode when its handle is missing or closed;
+parent directories are not created. Reuses an open writable handle with its existing mode and file position.
+Continues after partial writes until the entire string is written and returns the number of bytes written.
+Does not add a newline. An empty string returns `0` without opening or writing to the file.
+Throws `OpenFileException` if opening fails, `WriteModeRequiredException` if the stored handle is not writable,
+or `WriteFileException` if writing fails or makes no progress. All these exceptions extend `FileException`.
+Write errors report the number of bytes already written; those bytes are not rolled back.
+Path-based methods such as `get()` and `put()` do not use this stream.
 ```php
 $file = new File('storage/events.log');
-$file->fappend('Controller ');
-$file->fappend('connected');
+$bytes = $file->fwrite('Controller ');
+$file->fwrite('connected');
 ```
 
-### Append a string followed by PHP_EOL
-`fappendLine(string $string): int` is equivalent to `fappend($string . PHP_EOL)`.
-Uses the same automatic opening and partial-write handling; returns the byte count including the line ending.
-Throws `OpenFileException`, `AppendModeRequiredException`, or `WriteFileException` under the same conditions as `fappend()`.
+### Write a string followed by PHP_EOL
+`fwriteln(string $data): void` delegates to `fwrite($data . PHP_EOL)`.
+Uses the same automatic opening and partial-write handling; returns no value.
+An empty string still writes the line ending.
+Throws `OpenFileException`, `WriteModeRequiredException`, or `WriteFileException` under the same conditions as `fwrite()`.
 ```php
 $file = new File('storage/events.log');
-$bytes = $file->fappendLine('Controller connected');
+$file->fwriteln('Controller connected');
 ```
 
 ### Check if the target is a regular file or directory
@@ -385,7 +352,8 @@ $file->isFile(); // true for a regular file
 $file->isDirectory(); // true for a directory
 ```
 
-When the file is opened via `fopen()`, these methods inspect its open handle to avoid a path lookup and TOCTOU issues.
+Once `fwrite()` opens the stream, these methods inspect its handle with `fstat()` instead of looking up the path again.
+Without an open stream, they check the path.
 
 ### Check if the file or directory is writable
 ```php
