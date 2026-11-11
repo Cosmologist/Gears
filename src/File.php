@@ -5,7 +5,10 @@ namespace Cosmologist\Gears;
 use Cosmologist\Gears\File\Exception\DirectoryCreateException;
 use Cosmologist\Gears\File\Exception\FileException;
 use Cosmologist\Gears\File\Exception\FileNotOpenedException;
+use Cosmologist\Gears\File\Exception\LinkDepthExceededException;
+use Cosmologist\Gears\File\Exception\MagicLinuxLinksUnsupportedException;
 use Cosmologist\Gears\File\Exception\OpenFileException;
+use Cosmologist\Gears\File\Exception\ReadLinkException;
 use Cosmologist\Gears\File\Exception\ReadModeRequiredException;
 use Cosmologist\Gears\File\Exception\WriteFileException;
 use Cosmologist\Gears\File\Exception\WriteModeRequiredException;
@@ -194,17 +197,18 @@ final class File
     }
 
     /**
-     * Check whether the stored stream is a terminal, opening an existing path in ab mode if needed
+     * Check whether the stored stream is a terminal, opening the path in ab mode if needed
      *
      * Keeps the opened stream for subsequent operations. An open handle is checked without a path lookup.
      *
-     * @throws FileException If the path does not exist and no stream is open
+     * Opening a missing path may create a regular file, just as native fopen('ab') does.
+     *
      * @throws OpenFileException If the path cannot be opened for writing
+     * @throws FileException If symbolic link validation fails before opening
      */
     public function isTerminal(): bool
     {
         if (!is_resource($this->handle)) {
-            $this->assertExists();
             $this->fopen();
         }
 
@@ -394,19 +398,38 @@ final class File
      *
      * Used internally by fwrite() and isTerminal(). Defaults to append-binary mode.
      * Preserves native mode and wrapper behavior.
-     * Throws OpenFileException if native opening returns false.
+     * Validates symbolic link targets through resolve() before opening the stream.
      * The stream is closed when this object is destroyed; parent directories are not created.
      *
-     * @param  string  $mode  The native fopen() mode, ab by default
-     * @param  bool  $useIncludePath  Whether to search for the file in include_path
-     * @param  resource|null  $context  A stream context created with stream_context_create()
+     * @param  string         $mode            The native fopen() mode, ab by default
+     * @param  bool           $useIncludePath  Whether to search for the file in include_path
+     * @param  resource|null  $context         A stream context created with stream_context_create()
      *
      * @return resource The opened stream
      *
      * @throws OpenFileException If fopen() returns false
+     * @throws MagicLinuxLinksUnsupportedException If a link has a pipe: target
+     * @throws LinkDepthExceededException If link resolution exceeds its depth limit
+     * @throws ReadLinkException If a link cannot be read
      */
     private function fopen(string $mode = 'ab', bool $useIncludePath = false, mixed $context = null)
     {
+        /* Validate the link chain before opening the stream. Linux /proc/.../fd entries are
+        magic links: kernel references to already opened objects. For a pipe, readlink()
+        returns a display target such as pipe:[123], rather than a pathname to that pipe.
+        PHP may interpret this text as a relative path and try to open /proc/.../fd/pipe:[123],
+        failing with "No such file or directory". resolve() rejects these targets, unreadable
+        links and chains longer than five transitions before fopen() can create or truncate a file.
+
+        Check it: `./test.php | cat` with
+        ```php
+        #!/usr/bin/env php
+        <?php
+        var_dump(fopen('/dev/stdout', 'ab'));
+        ```
+         */
+        $this->resolve();
+
         $handle = @fopen($this->path, $mode, $useIncludePath, $context);
 
         if ($handle === false) {
@@ -414,6 +437,60 @@ final class File
         }
 
         return $this->handle = $handle;
+    }
+
+    /**
+     * Follow symbolic links and return the final path
+     *
+     * Relative targets are resolved against the link's directory. Missing final paths are returned as-is.
+     * The caller uses this traversal to validate the chain before opening a stream; native fopen()
+     * still receives the original path, retaining its wrapper, mode and include_path behavior.
+     * Stream wrapper URIs are returned unchanged: their resolution belongs to the wrapper, and
+     * calling filesystem predicates on them could invoke custom url_stat() callbacks before opening.
+     *
+     * Linux procfs FD entries (also reached through /dev/stdout and /dev/stderr) are magic links.
+     * Their pipe:[inode] target describes an opened pipe rather than naming it in the filesystem.
+     * PHP may treat that display target as a relative pathname while expanding links. Detecting
+     * the pipe: prefix here provides a specific exception and suggests the php:// descriptor wrappers.
+     * Detection uses the target text without checking its procfs origin or the operating system.
+     *
+     * Each readlink() result advances the traversal once. At most maxDepth links are followed;
+     * another link raises an exception, also bounding cycles. Failed readlink() calls raise a separate
+     * exception. Existence and access checks for the final path remain the responsibility of fopen().
+     * This checks successive link targets, not every symlink in parent directory components.
+     *
+     * @throws LinkDepthExceededException If another link remains after maxDepth transitions
+     * @throws ReadLinkException If a link cannot be read
+     * @throws MagicLinuxLinksUnsupportedException If a link has a Linux pipe: display target
+     */
+    private function resolve(int $maxDepth = 5): string
+    {
+        $path = $this->path;
+
+        if (str_contains($path, '://')) {
+            return $path;
+        }
+
+        // Bound traversal to stop cyclic or excessively long symlink chains.
+        for ($depth = 0; is_link($path); $depth++) {
+            if ($depth >= $maxDepth) {
+                throw new LinkDepthExceededException($this->path, $maxDepth);
+            }
+
+            if (false === $target = @readlink($path)) {
+                throw new ReadLinkException($path);
+            }
+
+            if (str_starts_with($target, 'pipe:')) {
+                throw new MagicLinuxLinksUnsupportedException($this->path, $target);
+            }
+
+            $path = FileType::isAbsolutePath($target)
+                ? $target
+                : FileType::joinPaths(dirname($path), $target);
+        }
+
+        return $path;
     }
 
     /**
@@ -503,6 +580,7 @@ final class File
      * @return int The number of bytes written, equal to strlen($data)
      *
      * @throws OpenFileException If the file cannot be opened
+     * @throws FileException If symbolic link validation fails before opening
      * @throws WriteModeRequiredException If the stored handle is not writable
      * @throws WriteFileException If writing fails or makes no progress
      */
@@ -544,12 +622,13 @@ final class File
      * @param  string  $data  The bytes to write before the line ending
      *
      * @throws OpenFileException If the file cannot be opened
+     * @throws FileException If symbolic link validation fails before opening
      * @throws WriteModeRequiredException If the stored handle is not writable
      * @throws WriteFileException If writing fails or makes no progress
      */
     public function fwriteln(string $data): void
     {
-        $this->fwrite($data . PHP_EOL);
+        $this->fwrite($data.PHP_EOL);
     }
 
     /**
@@ -602,7 +681,7 @@ final class File
     /**
      * Download file from URL and save to current path
      *
-     * @param  string  $url                     HTTP URL to download from
+     * @param  string                  $url     HTTP URL to download from
      * @param  GuzzleHttp\Client|null  $guzzle  Guzzle HTTP-client - if passed, will be used to get the contents of the URL
      */
     public function putFromUrl(string $url, ?GuzzleHttp\Client $guzzle = null): self

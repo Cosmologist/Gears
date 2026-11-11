@@ -334,7 +334,34 @@ These helpers are private. The three handle-state exceptions (`FileNotOpenedExce
 in the error message; they do not keep a reference to it or reopen the stream.
 All three extend `FileException` and implement `FileExceptionInterface`.
 `fopen()` defaults to `ab`, preserves native modes, wrappers, and `include_path` behavior, and stores the resulting stream.
-Failed native opening (including a missing file in `r`/`r+` mode) throws `OpenFileException`.
+Before native opening, `fopen()` calls `resolve()` to validate the symbolic link chain.
+If validation succeeds, the original path is passed to native `fopen()`; a native failure
+(including a missing file in `r`/`r+` mode) throws `OpenFileException`.
+
+Resolving a symbolic link whose target starts with `pipe:` throws
+`MagicLinuxLinksUnsupportedException`, which extends `FileException`.
+PHP can expand a magic link's `pipe:[inode]` display target as an ordinary relative pathname
+([PHP bug #53465](https://bugs.php.net/bug.php?id=53465)). The exception message explains the issue
+and suggests `php://stdin`, `php://stdout`, `php://stderr` or `php://fd/N` for descriptors of the current process.
+Linux procfs FD entries are magic links: references to kernel objects rather than ordinary pathname aliases.
+For an opened pipe, `readlink()` returns a display target such as `pipe:[123]`. PHP may interpret it
+as a relative pathname and attempt to open `/proc/.../fd/pipe:[123]`, producing an unrelated-looking
+"No such file or directory" error. Validation detects the `pipe:` target before native opening.
+It covers filesystem paths such as
+`/dev/stdout`, `/dev/stderr`, `/dev/fd/N`, `/proc/self/fd/N`, and symlink chains leading to them
+(up to 5 links). The resolver is called on every platform, including for stream wrapper paths.
+Stream wrapper URIs are returned unchanged so their own resolution rules and `url_stat()` callbacks
+are not invoked by filesystem link inspection before opening.
+The five-transition limit is a Gears restriction, even when native opening would accept a longer chain.
+Exactly five links are allowed if the last target is no longer a link. Validation runs before opening,
+so rejected chains cannot cause native `fopen()` to create or truncate a file.
+Detection follows symlinks and matches the target string without checking its procfs origin.
+The private `resolve(int $maxDepth = 5): string` helper returns the final path.
+It resolves relative targets against the link's directory and permits missing final paths.
+It follows successive link targets rather than inspecting every parent directory component.
+It throws `LinkDepthExceededException` when the link limit is exceeded (including cycles), or
+`ReadLinkException` if reading a link fails. Both extend `FileException`.
+All three resolver exceptions propagate unchanged through `fopen()`, `fwrite()`, `fwriteln()`, and `isTerminal()`.
 
 ### Write all data through the file stream, opening it in append-binary mode if needed
 `fwrite(string $data): int` opens the file in `ab` mode when its handle is missing or closed;
@@ -364,12 +391,10 @@ $file->fwriteln('Controller connected');
 
 ### Check whether the file stream is a terminal
 `isTerminal(): bool` calls `stream_isatty()` on an open handle without checking the path again.
-Without an open handle, it first requires an existing path (`FileException` if missing), then opens it
-in `ab` mode (`OpenFileException` on failure) and keeps the stream for subsequent operations.
+Without an open handle, it opens the path in `ab` mode (`OpenFileException` on failure) and keeps
+the stream for subsequent operations. This may create a missing file; parent directories are not created.
 Opening requires write permission. Already open read-only streams can be inspected without reopening;
 already open `php://` streams and files whose paths were removed or replaced remain usable.
-The existence check is a preflight check, not an atomic guarantee: if a path disappears between the
-check and native `fopen('ab')`, the native call may recreate it.
 ```php
 $file = new File('/dev/stderr');
 $file->isTerminal();
